@@ -1,188 +1,133 @@
 import 'package:afletes_app_v1/ui/components/password_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class LoginPage extends StatefulWidget {
-  LoginPage({Key? key}) : super(key: key);
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  late TabController tabController = TabController(length: 2, vsync: this);
-
-  @override
-  void initState() {
-    super.initState();
-    TabController(length: 2, vsync: this);
-  }
+class LoginPage extends StatelessWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.1,
-              ),
-              //Botones de registro e inicio de sesión
-              Row(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFED8232),
+        elevation: 0,
+      ),
+      body: ListView(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height * .3,
+            child: const Image(
+              image: AssetImage('assets/img/logo.jpg'),
+              fit: BoxFit.fitHeight,
+            ),
+            padding: const EdgeInsets.only(
+              bottom: 40,
+            ),
+            clipBehavior: Clip.hardEdge,
+            decoration: const BoxDecoration(
+                color: Color(0xFFED8232),
+                borderRadius:
+                    BorderRadius.only(bottomLeft: Radius.circular(80))),
+          ),
+          Form(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    child: TabBar(controller: tabController, tabs: const [
-                      Tab(
-                        child: Text(
-                          'Iniciar sesión',
-                          style: TextStyle(color: Colors.black, fontSize: 12),
-                        ),
+                  //email
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 5,
+                            color: Color(0xAACCCCCC),
+                            offset: Offset(0, 5)),
+                      ],
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(100),
                       ),
-                      Tab(
-                        child: Text(
-                          'Registrarse',
-                          style: TextStyle(color: Colors.black, fontSize: 12),
-                        ),
-                      ),
-                    ]),
-                  ),
-                  const Spacer(
-                    flex: 1,
-                  ),
-                  const CircleAvatar(
-                    backgroundColor: Colors.orange,
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.black,
                     ),
-                  )
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(100)),
+                          borderSide: BorderSide(color: Color(0xFFAAAAAA)),
+                        ),
+                        label: Text('Email'),
+                        prefixIcon: Icon(Icons.alternate_email),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  //contraseña
+                  PasswordInput(),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => {},
+                          child: const Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color(0xFFED8232)),
+                            padding: MaterialStateProperty.all(
+                                const EdgeInsets.all(15)),
+                            shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(100),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Text(
+                    'He olvidado mi contraseña',
+                    style: TextStyle(
+                        color: Colors.lightBlue,
+                        decoration: TextDecoration.underline),
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  RichText(
+                      text: TextSpan(children: [
+                    const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
+                    WidgetSpan(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/register'),
+                        child: const Text(
+                          'Crea una aquí!',
+                          style: TextStyle(
+                              color: Color(0xFFED8232),
+                              fontSize: 16,
+                              decoration: TextDecoration.underline),
+                        ),
+                      ),
+                    ),
+                  ]))
                 ],
               ),
-              Expanded(
-                  child: TabBarView(controller: tabController, children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: const LoginFormView(),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: const RegisterFormView(),
-                ),
-              ]))
-            ],
-          ),
-        ));
-  }
-}
-
-//### LOGIN ###//
-class LoginFormView extends StatelessWidget {
-  const LoginFormView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 300,
-          width: 400,
-          margin: const EdgeInsets.only(bottom: 20),
-          color: Colors.grey,
-        ),
-        LoginForm()
-      ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
-
-class LoginForm extends StatefulWidget {
-  LoginForm({Key? key}) : super(key: key);
-
-  @override
-  State<LoginForm> createState() => _LoginFormState();
-}
-
-class _LoginFormState extends State<LoginForm> {
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-        child: Column(
-      children: [
-        TextFormField(
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            prefixIcon: Icon(Icons.alternate_email),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(
-                style: BorderStyle.solid,
-                color: Color(0xFFAAAAAA),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        PasswordInput(),
-        const SizedBox(
-          height: 20,
-        ),
-        const Text(
-          'Olvidé mi contraseña',
-          textAlign: TextAlign.right,
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: TextButton.icon(
-                onPressed: () => {},
-                icon: const Icon(
-                  Icons.login,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Iniciar sesión',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                ),
-              ),
-            )
-          ],
-        )
-      ],
-    ));
-  }
-}
-//### LOGIN ###//
-
-//### REGISTRO ###//
-class RegisterFormView extends StatelessWidget {
-  const RegisterFormView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return RegisterForm();
-  }
-}
-
-class RegisterForm extends StatefulWidget {
-  RegisterForm({Key? key}) : super(key: key);
-
-  @override
-  State<RegisterForm> createState() => _RegisterFormState();
-}
-
-class _RegisterFormState extends State<RegisterForm> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-//### REGISTRO ###//
