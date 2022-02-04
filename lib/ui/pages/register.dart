@@ -35,8 +35,9 @@ class _RegisterPageState extends State<RegisterPage>
               height: MediaQuery.of(context).size.height * .3,
               width: MediaQuery.of(context).size.width,
               child: const Image(
-                image: AssetImage('assets/img/logo.jpg'),
+                image: AssetImage('assets/img/logo.jpg.png'),
                 fit: BoxFit.fitHeight,
+                height: 100,
               ),
               padding: const EdgeInsets.only(
                 bottom: 40,
@@ -84,9 +85,9 @@ class _RegisterPageState extends State<RegisterPage>
                                     setState(() {
                                       canAdvance = !canAdvance;
                                     }),
-                                    DefaultTabController.of(context)!.ani |
-                                        mateTo(1,
-                                            duration: Duration(seconds: 1))
+                                    DefaultTabController.of(context)!.animateTo(
+                                        1,
+                                        duration: Duration(seconds: 1))
                                   },
                                   child: const Text(
                                     'Siguiente',
@@ -129,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage>
     //         Container(
     //           height: MediaQuery.of(context).size.height * .3,
     //           child: const Image(
-    //             image: AssetImage('assets/img/logo.jpg'),
+    //             image: AssetImage('assets/img/logo.jpg.png'),
     //             fit: BoxFit.fitHeight,
     //           ),
     //           padding: const EdgeInsets.only(
