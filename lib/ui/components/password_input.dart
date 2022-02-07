@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 //input para contraseña
 class PasswordInput extends StatefulWidget {
-  PasswordInput({Key? key}) : super(key: key);
-
+  const PasswordInput({this.controller, Key? key}) : super(key: key);
+  final TextEditingController? controller;
   @override
   State<PasswordInput> createState() => _PasswordInputState();
 }
@@ -26,6 +26,7 @@ class _PasswordInputState extends State<PasswordInput> {
         //     ),
         //     child:
         TextFormField(
+      controller: widget.controller,
       decoration: InputDecoration(
         labelText: 'Contraseña',
         prefixIcon: IconButton(
