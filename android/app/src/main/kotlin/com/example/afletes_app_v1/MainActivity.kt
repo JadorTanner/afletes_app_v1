@@ -1,4 +1,4 @@
-package com.example.afletes_app_v1
+package com.jt.afletes_app
 
 import io.flutter.embedding.android.FlutterActivity
 
