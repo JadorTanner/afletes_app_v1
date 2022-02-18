@@ -33,10 +33,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     if (localStorage.getString('user') != null) {
       Navigator.pushNamed(context, '/home');
     } else {
-      bool emailValid = RegExp(
-              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-          .hasMatch(textController1.text);
-      if (emailValid) {
+      // bool emailValid = RegExp(
+      //         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+      //     .hasMatch(textController1.text);
+
+      if (formKey.currentState!.validate()) {
         Api api = Api();
 
         Response response = await api.auth({
@@ -66,6 +67,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         //     style: TextStyle(color: Colors.white),
         //   ))),
         // );
+        return false;
       }
     }
     return false;
@@ -244,7 +246,7 @@ class _LoginButtonState extends State<LoginButton> {
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
-      onPressed: isLoading
+      onPressed: (isLoading
           ? null
           : () async {
               setState(() {
@@ -257,16 +259,20 @@ class _LoginButtonState extends State<LoginButton> {
                 });
                 Navigator.pushNamed(context, '/home');
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Center(
-                          child: Text(
-                    'Error. Revise sus datos e inténtelo de nuevo.',
-                    style: TextStyle(color: Colors.white),
-                  ))),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(
+                //       content: Center(
+                //           child: Text(
+                //     'Error. Revise sus datos e inténtelo de nuevo.',
+                //     style: TextStyle(color: Colors.white),
+                //   ))),
+                // );
+                print('no logueado');
+                setState(() {
+                  isLoading = !isLoading;
+                });
               }
-            },
+            }),
       icon: isLoading
           ? const SizedBox(
               width: 30,

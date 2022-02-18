@@ -1,4 +1,219 @@
+import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
+class RegisterPage extends StatefulWidget {
+  RegisterPage({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFed8d23),
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          Hero(
+            tag: 'splash-screen-loading',
+            child: Lottie.asset('assets/lottie/camion.json'),
+          ),
+          RegisterPagePage()
+        ],
+      ),
+    );
+    ;
+  }
+}
+
+class RegisterPagePage extends StatefulWidget {
+  RegisterPagePage({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterPagePage> createState() => S_RegisterPageState();
+}
+
+class S_RegisterPageState extends State<RegisterPagePage> {
+  bool passwordVisibility = false;
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: PageView(
+      children: [
+        SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(
+                  width: 100,
+                  height: 20,
+                ),
+                RegisterFormField(
+                  'Email',
+                  hint: 'Ejemplo@gmail.com',
+                ),
+                const SizedBox(
+                  width: 100,
+                  height: 20,
+                ),
+                RegisterFormField(
+                  'Nombre',
+                  hint: 'José',
+                ),
+                const SizedBox(
+                  width: 100,
+                  height: 20,
+                ),
+                RegisterFormField(
+                  'Cédula',
+                  hint: '9888777',
+                ),
+                const SizedBox(
+                  width: 100,
+                  height: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(
+                    width: 100,
+                    height: 40,
+                  ),
+                  TextFormField(
+                    obscureText: false,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Ejemplo@gmail.com',
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xFFED8232),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xFFED8232),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.alternate_email,
+                        color: Color(0xFFED8232),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val!.isEmpty) {
+                        return 'Ingresa un email';
+                      }
+
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 40,
+                  ),
+                  TextFormField(
+                    obscureText: !passwordVisibility,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xFFED8232),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xFFED8232),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock,
+                        color: Color(0xFFED8232),
+                      ),
+                      suffixIcon: InkWell(
+                        onTap: () => setState(
+                          () => passwordVisibility = !passwordVisibility,
+                        ),
+                        child: Icon(
+                          passwordVisibility
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: const Color(0xFFED8232),
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 40,
+                  ),
+                  RegisterButton(
+                    Future<bool>.delayed(
+                        const Duration(seconds: 3), () => true),
+                    text: 'Registrarse',
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 20,
+                  ),
+                  const Text('He olvidado mi contraseña',
+                      textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+            const Spacer(),
+            RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(children: [
+                  const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
+                  WidgetSpan(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/register'),
+                      child: const Text(
+                        'Crea una aquí!',
+                        style: TextStyle(
+                            color: Color(0xFFED8232),
+                            fontSize: 16,
+                            decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ),
+                ])),
+            const Spacer(),
+          ],
+        ),
+      ],
+    ));
+  }
+}
+
+
+/* import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -728,3 +943,4 @@ class RegisterButtonState extends State<RegisterButton> {
     );
   }
 }
+ */
