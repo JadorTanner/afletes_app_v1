@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:afletes_app_v1/ui/pages/home.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 late AndroidNotificationChannel channel;
@@ -60,7 +64,13 @@ class AfletesApp extends StatefulWidget {
 
 class _AfletesAppState extends State<AfletesApp> {
   getToken() async {
-    print(await FirebaseMessaging.instance.getToken());
+    String? token = await FirebaseMessaging.instance.getToken();
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? user = sharedPreferences.getString('user');
+    if (user != null) {
+      await Api().postData('user/set-device-token',
+          {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
+    }
   }
 
   @override
