@@ -10,7 +10,7 @@ class Api {
 
   _getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    token = jsonDecode(localStorage.getString('token') ?? '')['token'];
+    token = localStorage.getString('token') ?? '';
   }
 
   auth(data, apiURL) async {
@@ -24,6 +24,16 @@ class Api {
     await _getToken();
     return await http.get(
       Uri.parse(fullUrl),
+      headers: _setHeaders(),
+    );
+  }
+
+  postData(apiURL, body) async {
+    var fullUrl = _url + apiURL;
+    await _getToken();
+    return await http.post(
+      Uri.parse(fullUrl),
+      body: jsonEncode(body),
       headers: _setHeaders(),
     );
   }

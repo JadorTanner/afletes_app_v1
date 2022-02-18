@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (response.statusCode == 200) {
           Map responseJson = jsonDecode(response.body);
-          localStorage.setString('token', responseJson['token']['token']);
+          localStorage.setString('token', responseJson['token']);
           localStorage.setString('user', jsonEncode(responseJson['user']));
           responseJson = responseJson['user'];
           userLogged = User(userData: responseJson).userFromArray();
