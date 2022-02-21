@@ -100,9 +100,10 @@ class _AfletesAppState extends State<AfletesApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Afletes',
-      initialRoute: '/loads',
+      initialRoute: '/login',
       debugShowCheckedModeBanner: false,
       routes: {
+        '/splashscreen': (context) => const Vehicles(),
         '/vehicles': (context) => const Vehicles(),
         '/loads': (context) => const Loads(),
         '/login': (context) => const LoginPage(),
