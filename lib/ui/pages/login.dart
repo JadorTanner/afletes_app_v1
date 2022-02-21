@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,51 +27,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     textController1 = TextEditingController();
     textController2 = TextEditingController();
     passwordVisibility = false;
-  }
-
-  Future<bool> login() async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    if (localStorage.getString('user') != null) {
-      Navigator.pushNamed(context, '/home');
-    } else {
-      // bool emailValid = RegExp(
-      //         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-      //     .hasMatch(textController1.text);
-
-      if (formKey.currentState!.validate()) {
-        Api api = Api();
-
-        Response response = await api.auth({
-          'email': textController1.text,
-          'password': textController2.text,
-        }, 'login');
-
-        print(response.body);
-        if (response.statusCode == 200) {
-          Map responseBody = jsonDecode(response.body);
-          print(responseBody);
-          if (responseBody['success']) {
-            localStorage.setString('user', jsonEncode(responseBody['user']));
-            localStorage.setString('token', responseBody['token']['token']);
-            return true;
-          } else {
-            return false;
-          }
-        }
-        return false;
-      } else {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //       content: Center(
-        //           child: Text(
-        //     'Ha ocurrido un error',
-        //     style: TextStyle(color: Colors.white),
-        //   ))),
-        // );
-        return false;
-      }
-    }
-    return false;
   }
 
   @override
@@ -196,7 +152,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       width: 100,
                       height: 40,
                     ),
-                    LoginButton(login()),
+                    LoginButton(login(
+                        context, textController1.text, textController2.text)),
                     const SizedBox(
                       width: 100,
                       height: 20,
