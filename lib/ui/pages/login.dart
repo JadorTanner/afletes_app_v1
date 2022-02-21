@@ -62,6 +62,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                     shape: BoxShape.rectangle,
                   ),
+                  child: Hero(
+                    tag: 'TruckHero',
+                    child: Image.asset(''),
+                  ),
                 ),
               ),
               Padding(
