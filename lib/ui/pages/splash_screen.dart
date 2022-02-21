@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   SplashScreen({Key? key}) : super(key: key);
@@ -13,11 +16,24 @@ class _SplashScreenState extends State<SplashScreen> {
   TextEditingController textController2 = TextEditingController();
   bool passwordVisibility = false;
 
+  changeScreen() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var user = sharedPreferences.getString('user');
+    Future.delayed(const Duration(seconds: 3)).then((value) async => {
+          if (user != null && user != 'null')
+            {
+              Navigator.of(context).pushReplacementNamed(
+                  jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles')
+            }
+          else
+            {Navigator.of(context).pushReplacementNamed('/login')}
+        });
+  }
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 3))
-        .then((value) => Navigator.of(context).pushNamed('/register'));
+    changeScreen();
   }
 
   @override

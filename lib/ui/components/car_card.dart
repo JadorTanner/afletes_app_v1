@@ -1,116 +1,119 @@
+import 'package:afletes_app_v1/ui/pages/vehicles/vehicle_info.dart';
+import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CarCard2 extends StatelessWidget {
-  const CarCard2({
-    Key? key,
-    this.domain = '',
-    this.senacsa = false,
-    this.seguro = false,
-    this.dinatran = false,
-    this.feedBack = 5,
-  }) : super(key: key);
+  CarCard2(this.vehicle, {Key? key}) : super(key: key);
 
-  final String domain;
-  final bool dinatran;
-  final bool senacsa;
-  final bool seguro;
-  final int feedBack;
+  Vehicle vehicle;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.none,
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(bottom: 15),
-      width: MediaQuery.of(context).size.width - 20,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border.fromBorderSide(
-            BorderSide(width: 1, color: Color(0xFFCCCCCC))),
-        borderRadius: BorderRadius.all(
-          Radius.circular(20),
+    return GestureDetector(
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => VehicleInfo(vehicle))),
+      child: Container(
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 15),
+        width: MediaQuery.of(context).size.width - 20,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border.fromBorderSide(
+              BorderSide(width: 1, color: Color(0xFFCCCCCC))),
+          borderRadius: BorderRadius.all(
+            Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+                offset: Offset(0, 10),
+                color: Color(0xFFBBBBBB),
+                blurRadius: 10),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-              offset: Offset(0, 10), color: Color(0xFFBBBBBB), blurRadius: 10),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            height: 115,
-            width: 270,
-            decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage('assets/img/image 121.png'),
-                    fit: BoxFit.fitWidth)),
-          ),
-          const Divider(
-            indent: 10,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  RichText(
-                    text: TextSpan(children: [
-                      const WidgetSpan(
-                        child: Icon(Icons.directions_car,
-                            color: Color.fromRGBO(22, 22, 26, 1)),
-                      ),
-                      TextSpan(
-                        text: ' ' + domain,
-                        style: const TextStyle(
-                            color: Color.fromRGBO(22, 22, 26, 1),
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal,
-                            height: 1),
-                      ),
-                    ]),
-                  ),
-                  const Spacer(flex: 1),
-                  Row(
-                    children: List.generate(
-                        feedBack, (index) => const StarFeedBack()),
-                  )
-                ],
+        child: Column(
+          children: [
+            Container(
+              height: 115,
+              width: 270,
+              // decoration: const BoxDecoration(
+              //     image: DecorationImage(
+              //         image: AssetImage('assets/img/image 121.png'),
+              //         fit: BoxFit.fitWidth)),
+              child: Hero(
+                tag: 'vehicle_' + vehicle.id.toString(),
+                child: const Image(
+                  image: AssetImage('assets/img/image 121.png'),
+                ),
               ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  (dinatran
-                      ? const Text(
-                          'DINATRAN',
-                          style: TextStyle(fontSize: 12),
-                        )
-                      : const SizedBox.shrink()),
-                  (senacsa
-                      ? const Text(
-                          'SENACSA',
-                          style: TextStyle(fontSize: 12),
-                        )
-                      : const SizedBox.shrink()),
-                  (seguro
-                      ? const Text(
-                          'SEGURO',
-                          style: TextStyle(fontSize: 12),
-                        )
-                      : const SizedBox.shrink()),
-                  // ( ? const Text(
-                  //   'A/C',
-                  //   style: TextStyle(fontSize: 12),
-                  // ) : const SizedBox.shrink()),
-                ],
-              )
-            ],
-          )
-        ],
+            ),
+            const Divider(
+              indent: 10,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(children: [
+                        const WidgetSpan(
+                          child: Icon(Icons.directions_car,
+                              color: Color.fromRGBO(22, 22, 26, 1)),
+                        ),
+                        TextSpan(
+                          text: ' ' + vehicle.licensePlate,
+                          style: const TextStyle(
+                              color: Color.fromRGBO(22, 22, 26, 1),
+                              fontFamily: 'Inter',
+                              fontSize: 16,
+                              letterSpacing: 0,
+                              fontWeight: FontWeight.normal,
+                              height: 1),
+                        ),
+                      ]),
+                    ),
+                    const Spacer(flex: 1),
+                    Row(
+                      children:
+                          List.generate(5, (index) => const StarFeedBack()),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    (vehicle.dinatran
+                        ? const Text(
+                            'DINATRAN',
+                            style: TextStyle(fontSize: 12),
+                          )
+                        : const SizedBox.shrink()),
+                    (vehicle.senacsa
+                        ? const Text(
+                            'SENACSA',
+                            style: TextStyle(fontSize: 12),
+                          )
+                        : const SizedBox.shrink()),
+                    (vehicle.seguro
+                        ? const Text(
+                            'SEGURO',
+                            style: TextStyle(fontSize: 12),
+                          )
+                        : const SizedBox.shrink()),
+                    // ( ? const Text(
+                    //   'A/C',
+                    //   style: TextStyle(fontSize: 12),
+                    // ) : const SizedBox.shrink()),
+                  ],
+                )
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

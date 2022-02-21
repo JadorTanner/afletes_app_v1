@@ -4,6 +4,7 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -63,8 +64,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     shape: BoxShape.rectangle,
                   ),
                   child: Hero(
-                    tag: 'TruckHero',
-                    child: Image.asset(''),
+                    tag: 'splash-screen-loading',
+                    child: Lottie.asset('assets/lottie/camion.json'),
                   ),
                 ),
               ),
@@ -81,6 +82,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     TextFormField(
                       controller: textController1,
                       obscureText: false,
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         labelText: 'Email',
                         hintText: 'Ejemplo@gmail.com',
@@ -118,6 +120,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     TextFormField(
                       controller: textController2,
                       obscureText: !passwordVisibility,
+                      textInputAction: TextInputAction.none,
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
                         enabledBorder: OutlineInputBorder(
@@ -156,8 +159,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       width: 100,
                       height: 40,
                     ),
-                    LoginButton(login(
-                        context, textController1.text, textController2.text)),
+                    LoginButton(Future(() => login(
+                        context, textController1.text, textController2.text))),
                     const SizedBox(
                       width: 100,
                       height: 20,
@@ -195,7 +198,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 }
 
 class LoginButton extends StatefulWidget {
-  LoginButton(this.login, {Key? key}) : super(key: key);
+  const LoginButton(this.login, {Key? key}) : super(key: key);
   final Future<bool> login;
   @override
   State<LoginButton> createState() => _LoginButtonState();
@@ -218,17 +221,8 @@ class _LoginButtonState extends State<LoginButton> {
                 setState(() {
                   isLoading = !isLoading;
                 });
-                Navigator.pushNamed(context, '/home');
+                Navigator.pushNamed(context, '/login');
               } else {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(
-                //       content: Center(
-                //           child: Text(
-                //     'Error. Revise sus datos e inténtelo de nuevo.',
-                //     style: TextStyle(color: Colors.white),
-                //   ))),
-                // );
-                print('no logueado');
                 setState(() {
                   isLoading = !isLoading;
                 });
@@ -253,26 +247,6 @@ class _LoginButtonState extends State<LoginButton> {
           backgroundColor: isLoading
               ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
               : MaterialStateProperty.all(const Color(0xFFED8232))),
-      // style: ButtonStyle(
-      //   backgroundColor: MaterialStateProperty.all(
-      //     const Color(0xFFED8232),
-      //   ),
-      // ),
-      // child: FlutterFlowIconButton(
-      //   borderColor: Colors.transparent,
-      //   borderRadius: 30,
-      //   borderWidth: 1,
-      //   buttonSize: 70,
-      //   fillColor: Color(0xFFED8232),
-      //   icon: Icon(
-      //     Icons.LoginPage,
-      //     color: Colors.white,
-      //     size: 30,
-      //   ),
-      //   onPressed: () {
-      //     print('IconButton pressed ...');
-      //   },
-      // ),
     );
   }
 }

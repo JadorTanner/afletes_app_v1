@@ -46,14 +46,19 @@ class User {
     this.cellphone = '',
   });
 
+  getUser() async {
+    SharedPreferences sh = await SharedPreferences.getInstance();
+    User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'));
+    return user.userFromArray();
+  }
+
   Future<bool> login(
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    if (localStorage.getString('user') != null) {
-      // Navigator.pushNamed(context, '/home');
-      print('logueado');
-      print(localStorage.getString('user'));
-      print(localStorage.getString('token'));
+    String? user = localStorage.getString('user');
+    if (user != null) {
+      Navigator.of(context).pushReplacementNamed(
+          jsonDecode(user)['is_carrier'] ? 'loads' : '/vehicles');
     } else {
       bool emailValid = RegExp(
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -182,7 +187,7 @@ class User {
     }
   }
 
-  Future logout() async {
+  Future logout(context) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     Response response = await Api().getData('logout');
     print(response.body);
@@ -193,6 +198,7 @@ class User {
         sharedPreferences.remove('token');
         print(sharedPreferences.get('user'));
         print(sharedPreferences.get('token'));
+        Navigator.of(context).pushReplacementNamed('/login');
         return true;
       } else {
         return false;

@@ -7,7 +7,7 @@ class Vehicle {
   int id, ownerId, yearOfProd;
   double maxCapacity;
   String observation, licensePlate, model;
-  bool situacion, esActivo;
+  bool situacion, esActivo, senacsa, dinatran, seguro;
 
   Vehicle({
     this.id = 0,
@@ -19,6 +19,9 @@ class Vehicle {
     this.model = '0',
     this.situacion = false,
     this.esActivo = false,
+    this.dinatran = false,
+    this.senacsa = false,
+    this.seguro = false,
   });
 
   createVehicle(body) async {

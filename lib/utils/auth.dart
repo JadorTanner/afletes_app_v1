@@ -7,27 +7,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<bool> login(BuildContext context, String email, String password) async {
   SharedPreferences localStorage = await SharedPreferences.getInstance();
-  if (localStorage.getString('user') != null) {
-    Navigator.pushNamed(context, '/home');
+  String? user = localStorage.getString('user');
+  if (user != null) {
+    Navigator.pushReplacementNamed(
+        context, jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
   } else {
     bool emailValid = RegExp(
             r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email);
     if (emailValid) {
       Api api = Api();
-
       Response response = await api.auth({
         'email': email,
         'password': password,
       }, 'login');
-
-      print(response.body);
       if (response.statusCode == 200) {
         Map responseBody = jsonDecode(response.body);
-        print(responseBody);
         if (responseBody['success']) {
-          localStorage.setString('user', jsonEncode(responseBody['user']));
-          localStorage.setString('token', responseBody['token']);
+          localStorage.setString(
+              'user', jsonEncode(responseBody['data']['user']));
+          localStorage.setString('token', responseBody['data']['token']);
+
+          Navigator.pushReplacementNamed(
+              context,
+              responseBody['data']['user']['is_carrier']
+                  ? '/loads'
+                  : '/vehicles');
           return true;
         } else {
           return false;

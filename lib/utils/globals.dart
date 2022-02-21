@@ -2,4 +2,7 @@
 // String apiUrl = 'http://192.168.0.3:8000/api/';
 
 //oficina
-String apiUrl = 'http://192.168.1.103:8000/api/';
+// String apiUrl = 'http://192.168.1.106:8000/api/';
+
+//producción
+String apiUrl = 'https://www.afletes.com/api/';

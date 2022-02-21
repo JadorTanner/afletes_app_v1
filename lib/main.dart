@@ -70,11 +70,8 @@ class _AfletesAppState extends State<AfletesApp> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     if (user != null) {
-      print(user);
-      print(token);
       Response response = await Api().postData('user/set-device-token',
           {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
-      print(response.body);
     }
   }
 
@@ -111,7 +108,11 @@ class _AfletesAppState extends State<AfletesApp> {
         '/splash_screen': (context) => SplashScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/home': (context) => const Home()
+        '/home': (context) => const Home(),
+        '/loads': (context) => const Loads(),
+        '/vehicles': (context) => const Vehicles(),
+        '/my-loads': (context) => const Loads(),
+        '/my-vehicles': (context) => const Vehicles(),
       },
     );
   }
