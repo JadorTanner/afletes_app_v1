@@ -10,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
@@ -68,8 +69,11 @@ class _AfletesAppState extends State<AfletesApp> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     if (user != null) {
-      await Api().postData('user/set-device-token',
+      print(user);
+      print(token);
+      Response response = await Api().postData('user/set-device-token',
           {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
+      print(response.body);
     }
   }
 
@@ -104,7 +108,7 @@ class _AfletesAppState extends State<AfletesApp> {
       debugShowCheckedModeBanner: false,
       routes: {
         '/vehicles': (context) => const Vehicles(),
-        '/loads': (context) => const Loads(),
+        '/loads': (context) => Loads(() => getToken()),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const Home()

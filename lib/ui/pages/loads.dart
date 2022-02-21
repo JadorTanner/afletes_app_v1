@@ -1,20 +1,54 @@
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 class Loads extends StatefulWidget {
-  const Loads({Key? key}) : super(key: key);
+  Loads(this.getToken, {Key? key}) : super(key: key);
+
+  void getToken;
 
   @override
   _LoadsState createState() => _LoadsState();
 }
 
 class _LoadsState extends State<Loads> {
+  TextEditingController textEditingController = TextEditingController();
+
+  Future sendMessage() async {
+    Api api = Api();
+    print('enviando');
+    Response response = await api.postData('negotiation/send-message', {
+      'message': int.parse(textEditingController.text),
+      'negotiation_id': 5,
+      'is_final_offer': false,
+      'user_id': 1,
+    });
+
+    print(response.body);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
         children: [
+          TextButton(
+              onPressed: () => widget.getToken, child: Text('obtener token')),
+          const SizedBox(
+            height: 20,
+          ),
+          TextField(
+            controller: textEditingController,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextButton(onPressed: sendMessage, child: Text('Enviar mensaje')),
+          const SizedBox(
+            height: 20,
+          ),
           ButtonBar(
             children: [
               TextButton(
