@@ -19,15 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
   changeScreen() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var user = sharedPreferences.getString('user');
-    Future.delayed(const Duration(seconds: 3)).then((value) async => {
-          if (user != null && user != 'null')
-            {
-              Navigator.of(context).pushReplacementNamed(
-                  jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles')
-            }
-          else
-            {Navigator.of(context).pushReplacementNamed('/login')}
-        });
+    if (user != null && user != 'null') {
+      Navigator.of(context).pushReplacementNamed(
+          jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+    } else {
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/pages/home.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
+import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
+import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
@@ -111,7 +113,8 @@ class _AfletesAppState extends State<AfletesApp> {
         '/home': (context) => const Home(),
         '/loads': (context) => const Loads(),
         '/vehicles': (context) => const Vehicles(),
-        '/my-loads': (context) => const Loads(),
+        '/my-loads': (context) => const MyLoadsPage(),
+        '/create-load': (context) => CreateLoadPage(),
         '/my-vehicles': (context) => const Vehicles(),
       },
     );

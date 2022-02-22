@@ -1,6 +1,43 @@
+import 'dart:convert';
+
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
+
+const double separacion = 15;
+List states = [];
+List cities = [];
+
+Future<List> getStates() async {
+  Api api = Api();
+
+  Response response = await api.getData('get-states');
+  if (response.statusCode == 200) {
+    Map jsonResponse = jsonDecode(response.body);
+    states = jsonResponse['data'];
+    return states;
+  } else {
+    states = [];
+  }
+  return states;
+}
+
+Future<List> getCities([String stateId = '']) async {
+  Api api = Api();
+
+  Response response = await api
+      .getData('get-cities' + (stateId != '' ? '?state_id=' + stateId : ''));
+  if (response.statusCode == 200) {
+    Map jsonResponse = jsonDecode(response.body);
+    cities = jsonResponse['data'];
+    return cities;
+  } else {
+    cities = [];
+  }
+  return cities;
+}
 
 class RegisterPage extends StatefulWidget {
   RegisterPage({Key? key}) : super(key: key);
@@ -11,6 +48,12 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   @override
+  void initState() {
+    super.initState();
+    getStates();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -19,10 +62,28 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       body: Column(
         children: [
-          Hero(
-            tag: 'splash-screen-loading',
-            child: Lottie.asset('assets/lottie/camion.json'),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.3,
+            decoration: const BoxDecoration(
+              color: Color(0xFFED8232),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(50),
+                bottomRight: Radius.circular(0),
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(0),
+              ),
+              shape: BoxShape.rectangle,
+            ),
+            child: Hero(
+              tag: 'splash-screen-loading',
+              child: Lottie.asset('assets/lottie/camion.json'),
+            ),
           ),
+          // Hero(
+          //   tag: 'splash-screen-loading',
+          //   child: Lottie.asset('assets/lottie/camion.json'),
+          // ),
           RegisterPagePage()
         ],
       ),
@@ -40,50 +101,16 @@ class RegisterPagePage extends StatefulWidget {
 
 class S_RegisterPageState extends State<RegisterPagePage> {
   bool passwordVisibility = false;
+  PageController pageController = PageController();
+  // static const double separacion = 15;
   @override
   Widget build(BuildContext context) {
     return Expanded(
         child: PageView(
+      controller: pageController,
       children: [
-        SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                RegisterFormField(
-                  'Email',
-                  hint: 'Ejemplo@gmail.com',
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                RegisterFormField(
-                  'Nombre',
-                  hint: 'José',
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                RegisterFormField(
-                  'Cédula',
-                  hint: '9888777',
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
+        PrimeraParte(pageController: pageController),
+        SegundaParte(pageController: pageController),
         ListView(
           children: [
             Padding(
@@ -177,10 +204,7 @@ class S_RegisterPageState extends State<RegisterPagePage> {
                         const Duration(seconds: 3), () => true),
                     text: 'Registrarse',
                   ),
-                  const SizedBox(
-                    width: 100,
-                    height: 20,
-                  ),
+                  const SizedBox(width: 100, height: separacion),
                   const Text('He olvidado mi contraseña',
                       textAlign: TextAlign.center),
                 ],
@@ -190,12 +214,12 @@ class S_RegisterPageState extends State<RegisterPagePage> {
             RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(children: [
-                  const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
+                  const WidgetSpan(child: Text('Ya tienes una cuenta? ')),
                   WidgetSpan(
                     child: GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/register'),
+                      onTap: () => Navigator.of(context).pop(),
                       child: const Text(
-                        'Crea una aquí!',
+                        'Ingresa aquí!',
                         style: TextStyle(
                             color: Color(0xFFED8232),
                             fontSize: 16,
@@ -212,677 +236,62 @@ class S_RegisterPageState extends State<RegisterPagePage> {
   }
 }
 
+class PrimeraParte extends StatelessWidget {
+  const PrimeraParte({
+    Key? key,
+    required this.pageController,
+  }) : super(key: key);
 
-/* import 'package:flutter/material.dart';
+  final PageController pageController;
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
-
-  @override
-  _RegisterPageState createState() => _RegisterPageState();
-}
-
-class _RegisterPageState extends State<RegisterPage>
-    with TickerProviderStateMixin {
-  TextEditingController textController10 = TextEditingController();
-  TextEditingController textController11 = TextEditingController();
-  TextEditingController textController9 = TextEditingController();
-  TextEditingController textController12 = TextEditingController();
-  TextEditingController textController13 = TextEditingController();
-  TextEditingController textController1 = TextEditingController();
-  TextEditingController textController2 = TextEditingController();
-  TextEditingController textController3 = TextEditingController();
-  TextEditingController textController4 = TextEditingController();
-  TextEditingController textController5 = TextEditingController();
-  TextEditingController textController6 = TextEditingController();
-  TextEditingController textController7 = TextEditingController();
-  TextEditingController textController8 = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  late final TabController tabController =
-      TabController(length: 3, vsync: this);
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  validateFirstPage() {
-    //TODO: Condicional de validación de datos en primera página
-    if (textController1.text != null &&
-        textController2 != null &&
-        textController3 != null &&
-        textController4.text != null) {
-      tabController.animateTo(tabController.index + 1);
-      ;
-    }
-  }
-
-  Future<bool> register() {
-    return Future.delayed(const Duration(seconds: 10)).then((value) => true);
-  }
+  // static const double separacion = 15;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFED8232),
-      ),
-      resizeToAvoidBottomInset: false,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
         child: Column(
           mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(
-                alignment: const AlignmentDirectional(-1, -1),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.35,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFED8232),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(50),
-                      bottomRight: Radius.circular(0),
-                      topLeft: Radius.circular(0),
-                      topRight: Radius.circular(0),
-                    ),
-                    shape: BoxShape.rectangle,
-                  ),
-                )),
-            Expanded(
-              child: TabBarView(
-                controller: tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  Form(
-                      key: formKey,
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            40, 40, 40, 40),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: textController1,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                labelText: 'Cédula',
-                                hintText: 'Ej: 1222333',
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.alternate_email,
-                                  color: Color(0xFFED8232),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return 'Ingresa tu número de cédula';
-                                }
-
-                                return null;
-                              },
-                            ),
-                            const SizedBox(
-                              width: 100,
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: textController2,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                labelText: 'Razón Social',
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.alternate_email,
-                                  color: Color(0xFFED8232),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 100,
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: textController3,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                labelText: 'Nombre',
-                                hintText: 'Ej: Ramiro',
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.alternate_email,
-                                  color: Color(0xFFED8232),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return 'Ingresa un nombre';
-                                }
-
-                                return null;
-                              },
-                            ),
-                            const SizedBox(
-                              width: 100,
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: textController4,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                labelText: 'Apellido',
-                                hintText: 'Ej: López',
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFED8232),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.alternate_email,
-                                  color: Color(0xFFED8232),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return 'Ingresa un apellido';
-                                }
-
-                                return null;
-                              },
-                            ),
-                            const SizedBox(
-                              width: 100,
-                              height: 20,
-                            ),
-                            TextButton.icon(
-                              style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      const Color(0xFFED8232))),
-                              icon: const Icon(
-                                Icons.navigate_next,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                              label: const Text(''),
-                              onPressed: () {
-                                validateFirstPage();
-                              },
-                            ),
-                          ],
-                        ),
-                      )),
-                  Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextFormField(
-                          controller: textController5,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Cédula',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        TextFormField(
-                          controller: textController6,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Razón Social',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        TextFormField(
-                          controller: textController7,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Nombre',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        TextFormField(
-                          controller: textController8,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Apellido',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.navigate_next,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                          onPressed: () {
-                            print('IconButton pressed ...');
-                          },
-                        ),
-                        TextButton.icon(
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  const Color(0xFFED8232))),
-                          icon: const Icon(
-                            Icons.navigate_next,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                          label: const Text(''),
-                          onPressed: () {
-                            validateFirstPage();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextFormField(
-                          controller: textController9,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: textController10,
-                                obscureText: false,
-                                decoration: InputDecoration(
-                                  labelText: 'Celular',
-                                  hintText: '[Some hint text...]',
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFED8232),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFED8232),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.alternate_email,
-                                    color: Color(0xFFED8232),
-                                  ),
-                                ),
-                                keyboardType: TextInputType.phone,
-                                validator: (val) {
-                                  if (val!.isEmpty) {
-                                    return 'Ingresa un email';
-                                  }
-
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              child: TextFormField(
-                                controller: textController11,
-                                obscureText: false,
-                                decoration: InputDecoration(
-                                  labelText: 'Teléfono',
-                                  hintText: '[Some hint text...]',
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFED8232),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFED8232),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.alternate_email,
-                                    color: Color(0xFFED8232),
-                                  ),
-                                ),
-                                keyboardType: TextInputType.phone,
-                                validator: (val) {
-                                  if (val!.isEmpty) {
-                                    return 'Ingresa un email';
-                                  }
-
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        TextFormField(
-                          controller: textController12,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Nombre',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        TextFormField(
-                          controller: textController13,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Apellido',
-                            hintText: '[Some hint text...]',
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xFFED8232),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.alternate_email,
-                              color: Color(0xFFED8232),
-                            ),
-                          ),
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return 'Ingresa un email';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          width: 100,
-                          height: 20,
-                        ),
-                        // IconButton(
-                        //   icon: const Icon(
-                        //     Icons.navigate_next,
-                        //     color: Colors.white,
-                        //     size: 30,
-                        //   ),
-                        //   onPressed: () {
-                        //     print('IconButton pressed ...');
-                        //   },
-                        // ),
-
-                        RegisterButton(register())
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(children: [
-                  const WidgetSpan(child: Text('Ya tienes una cuenta? ')),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Inicia sesión!',
-                        style: TextStyle(
-                            color: Color(0xFFED8232),
-                            fontSize: 16,
-                            decoration: TextDecoration.underline),
-                      ),
-                    ),
-                  ),
-                ])),
             const SizedBox(
-              height: 18,
+              width: 100,
+              height: 10,
+            ),
+            RegisterFormField(
+              'Cédula o RUC *',
+              hint: '9888777',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Razón social',
+              hint: 'José',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Nombre',
+              hint: 'José',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Apellido',
+              hint: 'Gonzalez',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Celular',
+              hint: '0981222333',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            ButtonBar(
+              children: [
+                IconButton(
+                    onPressed: () => pageController.nextPage(
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.ease),
+                    icon: const Icon(Icons.navigate_next))
+              ],
             )
           ],
         ),
@@ -891,56 +300,215 @@ class _RegisterPageState extends State<RegisterPage>
   }
 }
 
-class RegisterButton extends StatefulWidget {
-  RegisterButton(this.register, {Key? key}) : super(key: key);
+class SegundaParte extends StatelessWidget {
+  const SegundaParte({
+    Key? key,
+    required this.pageController,
+  }) : super(key: key);
 
-  Future<bool> register;
-  @override
-  State<RegisterButton> createState() => RegisterButtonState();
-}
+  final PageController pageController;
+  // static const double separacion = 15;
 
-class RegisterButtonState extends State<RegisterButton> {
-  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
-      style: ButtonStyle(
-          backgroundColor: isLoading
-              ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
-              : MaterialStateProperty.all(const Color(0xFFED8232))),
-      icon: isLoading
-          ? const SizedBox(
-              width: 30,
-              height: 30,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-              ),
-            )
-          : const Icon(
-              Icons.app_registration,
-              color: Colors.white,
-              size: 30,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(
+              width: 100,
+              height: 10,
             ),
-      label: const Text(''),
-      onPressed: isLoading
-          ? null
-          : () async {
-              print('Registrando');
-              print('Estado: ' + isLoading.toString());
-              setState(() {
-                isLoading = !isLoading;
-              });
-              print('Estado: ' + isLoading.toString());
-              bool resp = await widget.register;
-              print(resp);
-              if (resp) {
-                print('Registrado');
-                setState(() {
-                  isLoading = !isLoading;
-                });
-              }
-            },
+            RegisterFormField(
+              'Teléfono fijo:',
+              hint: '021444666',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            //TODO: UBICACION
+            UbicacionPicker(),
+            // RegisterFormField(
+            //   'Ubicación',
+            //   hint: 'José',
+            // ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Nombre',
+              hint: 'José',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Calle Principal *',
+              hint: 'Avda Mcal López',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Calle Secundaria',
+              hint: 'esq. #',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            ButtonBar(
+              children: [
+                IconButton(
+                    onPressed: () => pageController.nextPage(
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.ease),
+                    icon: const Icon(Icons.navigate_next))
+              ],
+            )
+          ],
+        ),
+      ),
     );
   }
 }
- */
+
+class UbicacionPicker extends StatefulWidget {
+  UbicacionPicker({Key? key}) : super(key: key);
+
+  @override
+  State<UbicacionPicker> createState() => _UbicacionPickerState();
+}
+
+class _UbicacionPickerState extends State<UbicacionPicker> {
+  String stateId = '';
+  changeState(newVal) {
+    setState(() {
+      stateId = newVal;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [StatePicker(changeState), CitiesPicker(stateId)],
+    );
+  }
+}
+
+//Selector de estado y ciudad
+class StatePicker extends StatefulWidget {
+  const StatePicker(this.callBack, {Key? key}) : super(key: key);
+  final callBack;
+  @override
+  State<StatePicker> createState() => _StatePickerState();
+}
+
+class _StatePickerState extends State<StatePicker> {
+  String value = '1';
+
+  @override
+  void initState() {
+    super.initState();
+    if (states.isNotEmpty) {
+      value = states[0]['id'].toString();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: getStates(),
+      builder: (context, snapshot) {
+        return DropdownButton(
+            value: value,
+            icon: const Icon(Icons.arrow_downward),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            underline: Container(
+              height: 2,
+              color: Colors.deepPurpleAccent,
+            ),
+            onChanged: (String? newValue) {
+              setState(() {
+                value = newValue!;
+              });
+              widget.callBack(newValue!);
+            },
+            items: snapshot.connectionState == ConnectionState.done
+                ? List.generate(
+                    states.length,
+                    (index) => DropdownMenuItem(
+                          value: states[index]['id'].toString(),
+                          child: Text(states[index]['name']),
+                        ))
+                : [
+                    DropdownMenuItem(
+                      value: value,
+                      child: Text('Dpto'),
+                    )
+                  ]);
+      },
+    );
+  }
+}
+
+//Selector de estado y ciudad
+class CitiesPicker extends StatefulWidget {
+  CitiesPicker(this.stateId, {Key? key}) : super(key: key);
+  String stateId;
+  @override
+  State<CitiesPicker> createState() => _CitiesPickerState();
+}
+
+class _CitiesPickerState extends State<CitiesPicker> {
+  String value = '0';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: getCities(widget.stateId),
+      builder: (context, snapshot) {
+        return DropdownButton(
+            value: value,
+            icon: const Icon(Icons.arrow_downward),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            underline: Container(
+              height: 2,
+              color: Colors.deepPurpleAccent,
+            ),
+            onChanged: (String? newValue) {
+              setState(() {
+                value = newValue!;
+              });
+            },
+            items: snapshot.connectionState == ConnectionState.done
+                ? List.generate(
+                    cities.length,
+                    (index) => DropdownMenuItem(
+                          value: cities[index]['id'].toString(),
+                          child: Text(cities[index]['name']),
+                        ))
+                : [
+                    DropdownMenuItem(
+                      value: '0',
+                      child: Text('Ciudades'),
+                    )
+                  ]);
+      },
+    );
+  }
+}
+
+class TransportistForm extends StatefulWidget {
+  TransportistForm({Key? key}) : super(key: key);
+
+  @override
+  State<TransportistForm> createState() => _TransportistFormState();
+}
+
+class _TransportistFormState extends State<TransportistForm> {
+  @override
+  Widget build(BuildContext context) {
+    return Text('formulario transportista');
+  }
+}
