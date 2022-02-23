@@ -41,5 +41,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>For creation of loads or vehicles</string>
+	<key>NSCameraUsageDescription</key>
+	<string>For creation of loads or vehicles</string>
 </dict>
 </plist>

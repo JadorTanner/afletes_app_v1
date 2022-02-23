@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'globals.dart' as globals;
 
@@ -37,6 +38,28 @@ class Api {
       body: jsonEncode(body),
       headers: _setHeaders(),
     );
+  }
+
+  postWithFiles(apiURL, Map body, List<XFile> files) async {
+    var fullUrl = _url + apiURL;
+    await _getToken();
+    http.MultipartRequest request =
+        http.MultipartRequest('POST', Uri.parse(fullUrl));
+    Map headers = _setHeaders();
+    headers.forEach((key, value) {
+      request.headers[key] = value;
+    });
+    body.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
+
+    files.forEach((file) async {
+      print(file.path);
+      request.files
+          .add(await http.MultipartFile.fromPath('imagenes[]', file.path));
+    });
+
+    return await request.send();
   }
 
   _setHeaders() => {

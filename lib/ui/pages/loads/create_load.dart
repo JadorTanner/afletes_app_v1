@@ -1,32 +1,89 @@
-// ignore_for_file: avoid_init_to_null
+// ignore_for_file: avoid_init_to_null, must_be_immutable
 
 import 'dart:convert';
 
-import 'package:afletes_app_v1/models/categories.dart';
+import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
-import 'package:afletes_app_v1/ui/components/custom_paint.dart';
+import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
+import 'package:image_picker/image_picker.dart';
 
-Future<List<Category>> getCategories() async {
+ImagePicker _picker = ImagePicker();
+List<XFile> imagenes = [];
+
+List<Category> categories = [];
+List<StateModel> states = [];
+List<City> cities = [];
+PageController pageController = PageController();
+late AfletesGoogleMap originMap;
+late AfletesGoogleMap deliveryMap;
+
+//CONTROLADORES DE INPUTS
+TextEditingController ubicacionController = TextEditingController(),
+    productController = TextEditingController(),
+    descriptionController = TextEditingController(),
+    categoriaController = TextEditingController(),
+    unidadMedidaController = TextEditingController(),
+    pesoController = TextEditingController(),
+    ofertaInicialController = TextEditingController(),
+    vehiculosController = TextEditingController(),
+    ayudantesController = TextEditingController(),
+    volumenController = TextEditingController(),
+    originAddressController = TextEditingController(),
+    originCityController = TextEditingController(),
+    originStateController = TextEditingController(),
+    originCoordsController = TextEditingController(),
+    destinAddressController = TextEditingController(),
+    destinCityController = TextEditingController(),
+    destinStateController = TextEditingController(),
+    destinCoordsController = TextEditingController(),
+    loadDateController = TextEditingController(),
+    loadHourController = TextEditingController(),
+    esperaCargaController = TextEditingController(),
+    esperaDescargaController = TextEditingController(),
+    observacionesController = TextEditingController(),
+    isUrgentController = TextEditingController();
+
+// Key latLngInput = Key('Ubicación');
+
+Future getCategories() async {
   Api api = Api();
-  Response response = await api.getData('get-categories');
+  Response response = await api.getData('create-load-data');
   if (response.statusCode == 200) {
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
-      List data = jsonResponse['data'];
-      if (data.isNotEmpty) {
+      Map data = jsonResponse['data'];
+      if (data['categories'].isNotEmpty) {
         categories.clear();
-        data.asMap().forEach((key, category) {
+        data['categories'].asMap().forEach((key, category) {
           categories.add(Category(id: category['id'], name: category['name']));
         });
-        return categories;
       }
+      if (data['states'].isNotEmpty) {
+        states.clear();
+        data['states'].asMap().forEach((key, category) {
+          states.add(StateModel(id: category['id'], name: category['name']));
+        });
+      }
+      if (data['cities'].isNotEmpty) {
+        cities.clear();
+        data['cities'].asMap().forEach((key, city) {
+          cities.add(City(
+              id: city['id'], name: city['name'], state_id: city['state_id']));
+        });
+        return cities;
+      }
+      return true;
     }
   }
-  return categories;
+  return true;
 }
 
 class CreateLoadPage extends StatefulWidget {
@@ -36,24 +93,45 @@ class CreateLoadPage extends StatefulWidget {
   State<CreateLoadPage> createState() => _CreateLoadPageState();
 }
 
-List<Category> categories = [];
-
 class _CreateLoadPageState extends State<CreateLoadPage> {
+  late Position position;
+
   @override
   void initState() {
     super.initState();
-    getCategories();
+    //MAPA DE CARGA
+    originMap = AfletesGoogleMap(onTap: (LatLng argument) {
+      originCoordsController.text =
+          argument.latitude.toString() + ',' + argument.longitude.toString();
+    });
+
+    //MAPA DE ENTREGA
+    deliveryMap = AfletesGoogleMap(onTap: (LatLng argument) {
+      destinCoordsController.text =
+          argument.latitude.toString() + ',' + argument.longitude.toString();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(PageView(
-      children: [
-        DatosGenerales(),
-        Text('ubicacion de salida'),
-        Text('ubicacion de entrega'),
-        Text('Tiempos'),
-      ],
+    return BaseApp(FutureBuilder(
+      future: getCategories(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return PageView(
+            controller: pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              DatosGenerales(),
+              DatosUbicacion(),
+              DatosUbicacionDelivery(),
+              PaginaFinal(),
+            ],
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
     ));
   }
 }
@@ -61,25 +139,28 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
 class DatosGenerales extends StatelessWidget {
   DatosGenerales({Key? key}) : super(key: key);
 
-  TextEditingController productController = TextEditingController(),
-      descriptionController = TextEditingController();
-  GlobalKey productKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       children: [
-        Container(
-          width: double.infinity,
-          height: 200,
-          color: Colors.grey[200],
+        GestureDetector(
+          onTap: () async {
+            imagenes = (await _picker.pickMultiImage())!;
+            if (imagenes.isNotEmpty) {
+              print(imagenes);
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            height: 200,
+            color: Colors.grey[200],
+          ),
         ),
         //producto
         LoadFormField(
           productController,
           'Producto *',
-          key: productKey,
           maxLength: 10,
         ),
 
@@ -97,7 +178,7 @@ class DatosGenerales extends StatelessWidget {
             //Peso
             Flexible(
               child: LoadFormField(
-                descriptionController,
+                pesoController,
                 'Peso *',
                 type: const TextInputType.numberWithOptions(decimal: true),
               ),
@@ -108,7 +189,7 @@ class DatosGenerales extends StatelessWidget {
             //Volumen
             Flexible(
               child: LoadFormField(
-                descriptionController,
+                volumenController,
                 'Volumen',
                 type: const TextInputType.numberWithOptions(decimal: true),
               ),
@@ -120,7 +201,7 @@ class DatosGenerales extends StatelessWidget {
             //Vehiculos requeridos
             Flexible(
               child: LoadFormField(
-                descriptionController,
+                vehiculosController,
                 'Vehículos requeridos',
                 type: TextInputType.number,
               ),
@@ -131,42 +212,30 @@ class DatosGenerales extends StatelessWidget {
             //Ayudante requeridos
             Flexible(
               child: LoadFormField(
-                descriptionController,
+                ayudantesController,
                 'Ayudantes requeridos',
                 type: TextInputType.number,
               ),
             ),
           ],
         ),
+        //Precio
+        LoadFormField(
+          ofertaInicialController,
+          'Oferta inicial',
+          type: TextInputType.number,
+        ),
         //Descripción
-        LoadFormField(descriptionController, 'Descripción'),
+        LoadFormField(
+          descriptionController,
+          'Descripción',
+          type: TextInputType.multiline,
+        ),
+        const SizedBox(
+          height: 40,
+        ),
+        const NextPageButton()
       ],
-    );
-  }
-}
-
-class LoadFormField extends StatelessWidget {
-  LoadFormField(this.controller, this.label,
-      {this.maxLength = 255,
-      this.type = TextInputType.text,
-      this.autofocus = false,
-      this.icon = null,
-      Key? key})
-      : super(key: key);
-  bool autofocus;
-  TextEditingController controller;
-  TextInputType type;
-  int maxLength;
-  Icon? icon;
-  String label;
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      autofocus: autofocus,
-      controller: controller,
-      keyboardType: type,
-      maxLength: maxLength != 255 ? maxLength : null,
-      decoration: InputDecoration(prefixIcon: icon, label: Text(label)),
     );
   }
 }
@@ -182,26 +251,33 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
   String value = '1';
   @override
   Widget build(BuildContext context) {
-    return DropdownButton(
-        value: value,
-        icon: const Icon(Icons.arrow_downward),
-        elevation: 16,
-        style: const TextStyle(color: Colors.deepPurple),
-        underline: Container(
-          height: 2,
-          color: Colors.deepPurpleAccent,
-        ),
-        onChanged: (String? newValue) {
-          setState(() {
-            value = newValue!;
-          });
-        },
-        items: const [
-          DropdownMenuItem(
-            child: Text('Kilo'),
-            value: '1',
-          )
-        ]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Unidad de medida'),
+        DropdownButton(
+            value: value,
+            icon: const Icon(Icons.arrow_downward),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            underline: Container(
+              height: 2,
+              color: Colors.deepPurpleAccent,
+            ),
+            onChanged: (String? newValue) {
+              setState(() {
+                value = newValue!;
+                unidadMedidaController.text = newValue;
+              });
+            },
+            items: const [
+              DropdownMenuItem(
+                child: Text('Kilo'),
+                value: '1',
+              )
+            ])
+      ],
+    );
   }
 }
 
@@ -213,25 +289,21 @@ class CategoriaSelect extends StatefulWidget {
 }
 
 class _CategoriaSelectState extends State<CategoriaSelect> {
-  String value = '0';
+  late String value = categories[0].id.toString();
 
   @override
   void initState() {
     super.initState();
-    if (categories.isNotEmpty) {
-      setState(() {
-        value = categories[0].id.toString();
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getCategories(),
-      builder: (context, snapshot) {
-        return DropdownButton(
-          value: value,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Categoría'),
+        DropdownButton(
+          value: categories.isNotEmpty ? value : categories[0].id.toString(),
           icon: const Icon(Icons.arrow_downward),
           elevation: 16,
           style: const TextStyle(color: Colors.deepPurple),
@@ -240,27 +312,452 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
             color: Colors.deepPurpleAccent,
           ),
           onChanged: (String? newValue) {
-            // setState(() {
-            //   value = newValue!;
-            // });
-            print(newValue);
+            setState(() {
+              value = newValue!;
+              categoriaController.text = newValue;
+            });
+            // print(newValue);
           },
-          items: snapshot.connectionState == ConnectionState.done
-              ? List.generate(categories.length, (index) {
-                  print(categories[index].id);
-                  return DropdownMenuItem(
-                    child: Text(categories[index].name),
-                    value: categories[index].id.toString(),
-                  );
-                })
-              : const [
-                  DropdownMenuItem(
-                    child: Text('Categorías'),
-                    value: '0',
-                  )
-                ],
-        );
-      },
+          items: List.generate(
+            categories.length,
+            (index) {
+              return DropdownMenuItem(
+                child: Text(categories[index].name),
+                value: categories[index].id.toString(),
+              );
+            },
+          ),
+        )
+      ],
+    );
+  }
+}
+
+//PAGINA DE UBICACION ORIGEN
+class DatosUbicacion extends StatelessWidget {
+  DatosUbicacion({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text('Dónde está tu carga?'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              DepartamentoPicker(originStateController),
+              CityPicker(originCityController)
+            ],
+          ),
+          LoadFormField(originAddressController, 'Dirección *'),
+          SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: AfletesGoogleMap(onTap: (LatLng argument) {
+              originCoordsController.text = argument.latitude.toString() +
+                  ',' +
+                  argument.longitude.toString();
+            }),
+          ),
+          LoadFormField(originCoordsController, 'Coordenadas'),
+          const ButtonBar(
+            children: [
+              PrevPageButton(),
+              NextPageButton(),
+            ],
+          )
+        ]);
+  }
+}
+
+//PAGINA DE UBICACION ENTREGA
+class DatosUbicacionDelivery extends StatelessWidget {
+  DatosUbicacionDelivery({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text('Dónde quieres llevarla?'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              DepartamentoPicker(destinStateController),
+              CityPicker(destinCityController)
+            ],
+          ),
+          LoadFormField(destinAddressController, 'Dirección *'),
+          SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: deliveryMap,
+          ),
+          LoadFormField(destinCoordsController, 'Coordenadas'),
+          const ButtonBar(
+            children: [
+              PrevPageButton(),
+              NextPageButton(),
+            ],
+          )
+        ]);
+  }
+}
+
+class DepartamentoPicker extends StatefulWidget {
+  DepartamentoPicker(this.controller, {Key? key}) : super(key: key);
+  TextEditingController controller;
+  @override
+  State<DepartamentoPicker> createState() => _DepartamentoPickerState();
+}
+
+class _DepartamentoPickerState extends State<DepartamentoPicker> {
+  late String value = states[0].id.toString();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Departamento'),
+        DropdownButton(
+          value: states.isNotEmpty ? value : states[0].id.toString(),
+          icon: const Icon(Icons.arrow_downward),
+          elevation: 16,
+          style: const TextStyle(color: Colors.deepPurple),
+          underline: Container(
+            height: 2,
+            color: Colors.deepPurpleAccent,
+          ),
+          onChanged: (String? newValue) {
+            setState(() {
+              value = newValue!;
+              widget.controller.text = newValue;
+            });
+            // print(newValue);
+          },
+          items: List.generate(
+            states.length,
+            (index) {
+              return DropdownMenuItem(
+                child: Text(states[index].name),
+                value: states[index].id.toString(),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CityPicker extends StatefulWidget {
+  CityPicker(this.controller, {Key? key}) : super(key: key);
+  TextEditingController controller;
+  @override
+  State<CityPicker> createState() => CityPickerState();
+}
+
+class CityPickerState extends State<CityPicker> {
+  late String value = cities[0].id.toString();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Ciudad'),
+        DropdownButton(
+          value: cities.isNotEmpty ? value : cities[0].id.toString(),
+          icon: const Icon(Icons.arrow_downward),
+          elevation: 16,
+          style: const TextStyle(color: Colors.deepPurple),
+          underline: Container(
+            height: 2,
+            color: Colors.deepPurpleAccent,
+          ),
+          onChanged: (String? newValue) {
+            setState(() {
+              value = newValue!;
+              widget.controller.text = newValue;
+            });
+            // print(newValue);
+          },
+          items: List.generate(
+            cities.length,
+            (index) {
+              return DropdownMenuItem(
+                child: Text(cities[index].name),
+                value: cities[index].id.toString(),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+//PAGINA FINAL DEL FORMULARIO
+class PaginaFinal extends StatelessWidget {
+  const PaginaFinal({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    print(imagenes);
+    return ListView(padding: const EdgeInsets.all(20), children: [
+      Row(
+        children: [
+          Flexible(
+            child: DatePicker(loadDateController, 'Fecha de carga'),
+          ),
+          Flexible(
+            child: LoadTimePicker(loadHourController, 'Hora de carga'),
+          ),
+        ],
+      ),
+      Row(
+        children: [
+          Flexible(
+            child: LoadFormField(
+              esperaCargaController,
+              'Espera en carga',
+              type: TextInputType.number,
+            ),
+          ),
+          Flexible(
+            child: LoadFormField(esperaDescargaController, 'Espera en descarga',
+                type: TextInputType.number),
+          ),
+        ],
+      ),
+      Row(
+        children: [
+          Flexible(
+            child: IsUrgent(),
+          ),
+          // Flexible(
+          //     child: LoadFormField(
+          //   loadDateController,
+          //   'Cargar Imágenes',
+          //   onFocus: () => _picker,
+          //   showCursor: true,
+          //   readOnly: true,
+          // ))
+        ],
+      ),
+
+      //Descripción
+      LoadFormField(
+        observacionesController,
+        'Observaciones',
+        type: TextInputType.multiline,
+      ),
+      ButtonBar(
+        children: [
+          const PrevPageButton(),
+          IconButton(
+              onPressed: () async {
+                Load load = Load();
+                var response = load.createLoad({
+                  'vehicle_type_id': 1,
+                  'product_category_id': categoriaController.text,
+                  'product': productController.text,
+                  'vehicles_quantity': vehiculosController.text,
+                  'helpers_quantity': ayudantesController.text,
+                  'weight': pesoController.text,
+                  'measurement_unit_id': unidadMedidaController.text,
+                  'initial_offer': ofertaInicialController.text,
+                  'state_id': originStateController.text,
+                  'city_id': originCityController.text,
+                  'address': originAddressController.text,
+                  'latitude':
+                      originCoordsController.text.split(',')[0].toString(),
+                  'longitude':
+                      originCoordsController.text.split(',')[1].toString(),
+                  'destination_state_id': destinStateController.text,
+                  'destination_city_id': destinCityController.text,
+                  'destination_address': destinAddressController.text,
+                  'destination_latitude':
+                      destinCoordsController.text.split(',')[0].toString(),
+                  'destination_longitude':
+                      destinCoordsController.text.split(',')[1].toString(),
+                  'pickup_at': loadDateController.text,
+                  'pickup_time': loadHourController.text,
+                  'payment_term_after_delivery': 1,
+                  'wait_in_origin': esperaCargaController.text,
+                  'wait_in_destination': esperaDescargaController.text,
+                }, imagenes, context: context);
+              },
+              icon: const Icon(Icons.upload))
+        ],
+      )
+    ]);
+  }
+}
+
+class IsUrgent extends StatefulWidget {
+  IsUrgent({Key? key}) : super(key: key);
+
+  @override
+  State<IsUrgent> createState() => _IsUrgentState();
+}
+
+class _IsUrgentState extends State<IsUrgent> {
+  bool checked = false;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text('Es urgente?'),
+        Checkbox(
+          value: checked,
+          onChanged: (newVal) => setState(
+            () {
+              checked = newVal!;
+              isUrgentController.text = checked ? '1' : '0';
+            },
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class DatePicker extends StatefulWidget {
+  DatePicker(this.controller, this.title, {Key? key}) : super(key: key);
+  TextEditingController controller;
+  String title;
+  @override
+  State<DatePicker> createState() => _DatePickerState();
+}
+
+class _DatePickerState extends State<DatePicker> {
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        widget.controller.text = selectedDate.year.toString() +
+            '-' +
+            selectedDate.day.toString() +
+            '-' +
+            selectedDate.month.toString();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LoadFormField(
+      widget.controller,
+      widget.title,
+      onFocus: () => _selectDate(context),
+      showCursor: true,
+      readOnly: true,
+    );
+  }
+}
+
+class LoadTimePicker extends StatefulWidget {
+  LoadTimePicker(this.controller, this.title, {Key? key}) : super(key: key);
+  TextEditingController controller;
+  String title;
+  @override
+  State<LoadTimePicker> createState() => Load_TimePickerState();
+}
+
+class Load_TimePickerState extends State<LoadTimePicker> {
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked =
+        await showTimePicker(context: context, initialTime: selectedTime);
+    if (picked != null && picked != selectedTime) {
+      setState(() {
+        selectedTime = picked;
+        widget.controller.text =
+            selectedTime.hour.toString() + ':' + selectedTime.minute.toString();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LoadFormField(
+      widget.controller,
+      widget.title,
+      onFocus: () => _selectTime(context),
+      showCursor: true,
+      readOnly: true,
+    );
+  }
+}
+
+//COMPONENTES
+
+class NextPageButton extends StatelessWidget {
+  const NextPageButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () => pageController.nextPage(
+            duration: const Duration(milliseconds: 100), curve: Curves.ease),
+        icon: const Icon(Icons.navigate_next));
+  }
+}
+
+class PrevPageButton extends StatelessWidget {
+  const PrevPageButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () => pageController.previousPage(
+            duration: const Duration(milliseconds: 100), curve: Curves.ease),
+        icon: const Icon(Icons.navigate_before));
+  }
+}
+
+class LoadFormField extends StatelessWidget {
+  LoadFormField(this.controller, this.label,
+      {this.maxLength = 255,
+      this.type = TextInputType.text,
+      this.autofocus = false,
+      this.showCursor = false,
+      this.readOnly = false,
+      this.onFocus = null,
+      this.icon = null,
+      Key? key})
+      : super(key: key);
+  bool autofocus;
+  bool showCursor;
+  bool readOnly;
+  var onFocus;
+  TextEditingController controller;
+  TextInputType type;
+  int maxLength;
+  Icon? icon;
+  String label;
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      onTap: onFocus,
+      showCursor: showCursor,
+      readOnly: readOnly,
+      autofocus: autofocus,
+      controller: controller,
+      keyboardType: type,
+      maxLength: maxLength != 255 ? maxLength : null,
+      decoration: InputDecoration(prefixIcon: icon, label: Text(label)),
     );
   }
 }

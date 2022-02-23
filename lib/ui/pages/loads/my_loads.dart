@@ -48,8 +48,19 @@ Future<List<Load>> getMyLoads() async {
   return loads;
 }
 
-class MyLoadsPage extends StatelessWidget {
-  const MyLoadsPage({Key? key}) : super(key: key);
+class MyLoadsPage extends StatefulWidget {
+  MyLoadsPage({Key? key}) : super(key: key);
+
+  @override
+  State<MyLoadsPage> createState() => _MyLoadsPageState();
+}
+
+class _MyLoadsPageState extends State<MyLoadsPage> {
+  @override
+  void initState() {
+    super.initState();
+    getMyLoads();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Load {
   int id,
@@ -69,14 +71,20 @@ class Load {
     this.attachments = const [],
   });
 
-  Future createLoad(body) async {
+  Future createLoad(body, List<XFile> imagenes, {context = null}) async {
     Api api = Api();
-    Response response = await api.postData('load/create-load', body);
-
+    StreamedResponse response =
+        await api.postWithFiles('load/create-load', body, imagenes);
+    print(response.statusCode);
+    print(await response.stream.bytesToString());
     if (response.statusCode == 200) {
-      Map responseBody = jsonDecode(response.body);
+      print(await response.stream.bytesToString());
+      Map responseBody = jsonDecode(await response.stream.bytesToString());
       if (responseBody['success']) {
         print(responseBody);
+        if (context != null) {
+          Navigator.of(context).pop();
+        }
         return true;
       } else {
         return false;

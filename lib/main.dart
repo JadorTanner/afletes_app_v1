@@ -5,6 +5,8 @@ import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
@@ -13,6 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -20,6 +23,47 @@ import 'firebase_options.dart';
 late AndroidNotificationChannel channel;
 
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+//PERMISOS DE LOCALIZACION
+
+Future<Position> _determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  // Test if location services are enabled.
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    // Location services are not enabled don't continue
+    // accessing the position and request users of the
+    // App to enable the location services.
+    return Future.error('Servicios de localizacion están deshabilitadas.');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      // Permissions are denied, next time you could try
+      // requesting permissions again (this is also where
+      // Android's shouldShowRequestPermissionRationale
+      // returned true. According to Android guidelines
+      // your App should show an explanatory UI now.
+      return Future.error('Se ha denegado el permiso.');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    // Permissions are denied forever, handle appropriately.
+    return Future.error('Permisos denegados completamente.');
+  }
+
+  // When we reach here, permissions are granted and we can
+  // continue accessing the position of the device.
+  Position position = await Geolocator.getCurrentPosition();
+  print(position);
+  return position;
+}
+//PERMISOS DE LOCALIZACION
 
 /// To verify things are working, check out the native platform logs.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -81,6 +125,7 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
     getToken();
+    _determinePosition();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
@@ -113,9 +158,11 @@ class _AfletesAppState extends State<AfletesApp> {
         '/home': (context) => const Home(),
         '/loads': (context) => const Loads(),
         '/vehicles': (context) => const Vehicles(),
-        '/my-loads': (context) => const MyLoadsPage(),
+        '/my-loads': (context) => MyLoadsPage(),
         '/create-load': (context) => CreateLoadPage(),
         '/my-vehicles': (context) => const Vehicles(),
+        '/my-negotiations': (context) => MyNegotiations(),
+        '/negotiation-chat': (context) => NegotiationChat()
       },
     );
   }
