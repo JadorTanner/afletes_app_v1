@@ -21,6 +21,7 @@ class Api {
 
   getData(apiURL) async {
     var fullUrl = _url + apiURL;
+    print(fullUrl);
     await _getToken();
     return await http.get(
       Uri.parse(fullUrl),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -15,9 +16,8 @@ Future<List<Load>> getMyLoads() async {
   if (response.statusCode == 200) {
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
-      var data = jsonResponse['data']['data'];
+      var data = jsonResponse['data'];
       if (data.isNotEmpty) {
-        print(data[0]);
         data.asMap().forEach((key, load) {
           loads.add(Load(
             id: load['id'],
@@ -33,6 +33,7 @@ Future<List<Load>> getMyLoads() async {
             destinCityId: load['destination_city_id'],
             destinStateId: load['destination_state_id'],
             product: load['product'] ?? '',
+            attachments: load['attachments'],
           ));
         });
         return loads;
@@ -116,7 +117,9 @@ class LoadCard extends StatelessWidget {
               backgroundColor: Colors.white,
               child: hasData
                   ? Image.network(
-                      'https://magazine.medlineplus.gov/images/uploads/main_images/red-meat-v2.jpg',
+                      loads[index].attachments.isNotEmpty
+                          ? imgUrl + loads[index].attachments[0]['filename']
+                          : 'https://magazine.medlineplus.gov/images/uploads/main_images/red-meat-v2.jpg',
                       loadingBuilder:
                           (context, child, ImageChunkEvent? loadingProgress) {
                         if (loadingProgress == null) {
