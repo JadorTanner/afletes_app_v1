@@ -26,7 +26,7 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 //PERMISOS DE LOCALIZACION
 
-Future<Position> _determinePosition() async {
+Future _determinePosition() async {
   bool serviceEnabled;
   LocationPermission permission;
 
@@ -59,9 +59,6 @@ Future<Position> _determinePosition() async {
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
-  Position position = await Geolocator.getCurrentPosition();
-  print(position);
-  return position;
 }
 //PERMISOS DE LOCALIZACION
 

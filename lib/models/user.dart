@@ -17,12 +17,14 @@ class User {
   bool isCarrier = false;
   bool isLoadGenerator = false;
   int cityId = 0;
+  int id = 0;
   String latitude = '';
   String longitude = '';
   String cellphone = '';
 
   userFromArray() {
     return User(
+      id: userData['id'],
       fullName: userData['full_name'],
       firstName: userData['first_name'],
       lastName: userData['last_name'],
@@ -31,6 +33,7 @@ class User {
   }
 
   User({
+    this.id = 0,
     this.userData = const {},
     this.firstName = '',
     this.lastName = '',

@@ -54,7 +54,6 @@ class Api {
     });
 
     files.forEach((file) async {
-      print(file.path);
       request.files
           .add(await http.MultipartFile.fromPath('imagenes[]', file.path));
     });

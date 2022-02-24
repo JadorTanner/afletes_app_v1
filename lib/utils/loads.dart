@@ -74,7 +74,7 @@ class Load {
   Future createLoad(body, List<XFile> imagenes, {context = null}) async {
     Api api = Api();
     StreamedResponse response =
-        await api.postWithFiles('load/create-load', body, imagenes);
+        api.postWithFiles('load/create-load', body, imagenes);
     print(response.statusCode);
     print(await response.stream.bytesToString());
     if (response.statusCode == 200) {

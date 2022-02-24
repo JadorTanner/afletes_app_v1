@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_init_to_null, must_be_immutable
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
@@ -125,7 +126,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
               DatosGenerales(),
               DatosUbicacion(),
               DatosUbicacionDelivery(),
-              PaginaFinal(),
+              const PaginaFinal(),
             ],
           );
         } else {
@@ -141,101 +142,167 @@ class DatosGenerales extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        GestureDetector(
-          onTap: () async {
-            imagenes = (await _picker.pickMultiImage())!;
-            if (imagenes.isNotEmpty) {
-              print(imagenes);
-            }
-          },
-          child: Container(
-            width: double.infinity,
-            height: 200,
-            color: Colors.grey[200],
-          ),
-        ),
-        //producto
-        LoadFormField(
-          productController,
-          'Producto *',
-          maxLength: 10,
-        ),
+    return FocusScope(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const ImagesPicker(),
+          //producto
+          LoadFormField(productController, 'Producto *', maxLength: 10),
 
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            //Categoría
-            CategoriaSelect(),
-            //Unidad de medida
-            MeasurementUnit()
-          ],
-        ),
-        Row(
-          children: [
-            //Peso
-            Flexible(
-              child: LoadFormField(
-                pesoController,
-                'Peso *',
-                type: const TextInputType.numberWithOptions(decimal: true),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              //Categoría
+              CategoriaSelect(),
+              //Unidad de medida
+              MeasurementUnit()
+            ],
+          ),
+          Row(
+            children: [
+              //Peso
+              Flexible(
+                child: LoadFormField(
+                  pesoController,
+                  'Peso *',
+                  type: const TextInputType.numberWithOptions(decimal: true),
+                ),
               ),
-            ),
-            const SizedBox(
-              width: 20,
-            ),
-            //Volumen
-            Flexible(
-              child: LoadFormField(
-                volumenController,
-                'Volumen',
-                type: const TextInputType.numberWithOptions(decimal: true),
+              const SizedBox(
+                width: 20,
               ),
-            )
-          ],
-        ),
-        Row(
-          children: [
-            //Vehiculos requeridos
-            Flexible(
-              child: LoadFormField(
-                vehiculosController,
-                'Vehículos requeridos',
-                type: TextInputType.number,
+              //Volumen
+              Flexible(
+                child: LoadFormField(
+                  volumenController,
+                  'Volumen',
+                  type: const TextInputType.numberWithOptions(decimal: true),
+                ),
+              )
+            ],
+          ),
+          Row(
+            children: [
+              //Vehiculos requeridos
+              Flexible(
+                child: LoadFormField(
+                  vehiculosController,
+                  'Vehículos requeridos',
+                  type: TextInputType.number,
+                ),
               ),
-            ),
-            const SizedBox(
-              width: 20,
-            ),
-            //Ayudante requeridos
-            Flexible(
-              child: LoadFormField(
-                ayudantesController,
-                'Ayudantes requeridos',
-                type: TextInputType.number,
+              const SizedBox(
+                width: 20,
               ),
-            ),
-          ],
-        ),
-        //Precio
-        LoadFormField(
-          ofertaInicialController,
-          'Oferta inicial',
-          type: TextInputType.number,
-        ),
-        //Descripción
-        LoadFormField(
-          descriptionController,
-          'Descripción',
-          type: TextInputType.multiline,
-        ),
-        const SizedBox(
-          height: 40,
-        ),
-        const NextPageButton()
-      ],
+              //Ayudante requeridos
+              Flexible(
+                child: LoadFormField(
+                  ayudantesController,
+                  'Ayudantes requeridos',
+                  type: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          //Precio
+          LoadFormField(
+            ofertaInicialController,
+            'Oferta inicial',
+            type: TextInputType.number,
+          ),
+          //Descripción
+          LoadFormField(
+            descriptionController,
+            'Descripción',
+            type: TextInputType.multiline,
+            action: TextInputAction.next,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          const NextPageButton()
+        ],
+      ),
+    );
+  }
+}
+
+class ImagesPicker extends StatefulWidget {
+  const ImagesPicker({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<ImagesPicker> createState() => _ImagesPickerState();
+}
+
+class _ImagesPickerState extends State<ImagesPicker> {
+  int currentImage = 0;
+  PageController imagePageController = PageController();
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        List<XFile>? imgs = await _picker.pickMultiImage();
+        imagenes = imgs ?? [];
+        if (imagenes.isNotEmpty) {
+          setState(() {
+            imagePageController.jumpToPage(0);
+          });
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        height: 200,
+        color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
+        child: imagenes.isNotEmpty
+            ? Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  PageView(
+                    controller: imagePageController,
+                    onPageChanged: (value) => setState(() {
+                      currentImage = value;
+                    }),
+                    children: List.generate(
+                      imagenes.length,
+                      (index) => Image.file(
+                        File(imagenes[index].path),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        imagenes.length,
+                        (index) => Container(
+                          width: 10,
+                          height: 10,
+                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                          decoration: BoxDecoration(
+                            color: index == currentImage
+                                ? const Color(0xFF686868)
+                                : const Color(0xFFEEEEEE),
+                            border: Border.all(
+                              color: index == currentImage
+                                  ? const Color(0xFF686868)
+                                  : const Color(0xFFEEEEEE),
+                            ),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : null,
+      ),
     );
   }
 }
@@ -351,7 +418,11 @@ class DatosUbicacion extends StatelessWidget {
               CityPicker(originCityController)
             ],
           ),
-          LoadFormField(originAddressController, 'Dirección *'),
+          LoadFormField(
+            originAddressController,
+            'Dirección *',
+            action: TextInputAction.done,
+          ),
           SizedBox(
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.4,
@@ -361,7 +432,10 @@ class DatosUbicacion extends StatelessWidget {
                   argument.longitude.toString();
             }),
           ),
-          LoadFormField(originCoordsController, 'Coordenadas'),
+          SizedBox(
+            height: 0,
+            child: LoadFormField(originCoordsController, 'Coordenadas'),
+          ),
           const ButtonBar(
             children: [
               PrevPageButton(),
@@ -390,13 +464,20 @@ class DatosUbicacionDelivery extends StatelessWidget {
               CityPicker(destinCityController)
             ],
           ),
-          LoadFormField(destinAddressController, 'Dirección *'),
+          LoadFormField(
+            destinAddressController,
+            'Dirección *',
+            action: TextInputAction.next,
+          ),
           SizedBox(
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.4,
             child: deliveryMap,
           ),
-          LoadFormField(destinCoordsController, 'Coordenadas'),
+          SizedBox(
+            height: 0,
+            child: LoadFormField(destinCoordsController, 'Coordenadas'),
+          ),
           const ButtonBar(
             children: [
               PrevPageButton(),
@@ -553,6 +634,7 @@ class PaginaFinal extends StatelessWidget {
         observacionesController,
         'Observaciones',
         type: TextInputType.multiline,
+        action: TextInputAction.next,
       ),
       ButtonBar(
         children: [
@@ -560,7 +642,7 @@ class PaginaFinal extends StatelessWidget {
           IconButton(
               onPressed: () async {
                 Load load = Load();
-                var response = load.createLoad({
+                load.createLoad({
                   'vehicle_type_id': 1,
                   'product_category_id': categoriaController.text,
                   'product': productController.text,
@@ -732,14 +814,15 @@ class LoadFormField extends StatelessWidget {
       {this.maxLength = 255,
       this.type = TextInputType.text,
       this.autofocus = false,
-      this.showCursor = false,
+      this.showCursor = null,
       this.readOnly = false,
       this.onFocus = null,
       this.icon = null,
+      this.action = TextInputAction.next,
       Key? key})
       : super(key: key);
   bool autofocus;
-  bool showCursor;
+  bool? showCursor;
   bool readOnly;
   var onFocus;
   TextEditingController controller;
@@ -747,6 +830,7 @@ class LoadFormField extends StatelessWidget {
   int maxLength;
   Icon? icon;
   String label;
+  TextInputAction action;
   @override
   Widget build(BuildContext context) {
     return TextField(
