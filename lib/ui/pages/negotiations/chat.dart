@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
@@ -8,6 +9,7 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 GlobalKey<AnimatedListState> globalKey = GlobalKey<AnimatedListState>();
 List<ChatMessage> chatMessages = [];
@@ -23,7 +25,7 @@ userData() async {
       .userFromArray();
 }
 
-Future<List<ChatMessage>> getNegotiationChat(id) async {
+Future<List<ChatMessage>> getNegotiationChat(id, ChatProvider chat) async {
   await userData();
   Api api = Api();
   chatMessages.clear();
@@ -34,7 +36,12 @@ Future<List<ChatMessage>> getNegotiationChat(id) async {
     List listMessages = jsonResp['data']['messages'];
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
-        chatMessages.add(ChatMessage(message['message'], message['sender_id']));
+        // chatMessages.add(ChatMessage(
+        //     message['message'], message['sender_id'], message['id']));
+        chat.addMessage(
+          id,
+          ChatMessage(message['message'], message['sender_id'], message['id']),
+        );
       });
     }
     receriverId = jsonResp['data']['negotiation']
@@ -48,7 +55,7 @@ Future<List<ChatMessage>> getNegotiationChat(id) async {
   return [];
 }
 
-Future sendMessage(id, context) async {
+Future sendMessage(id, BuildContext context, ChatProvider chat) async {
   Api api = Api();
   Response response = await api.postData('negotiation/send-message', {
     'negotiation_id': id,
@@ -59,7 +66,9 @@ Future sendMessage(id, context) async {
 
   Map jsonResp = jsonDecode(response.body);
   if (jsonResp['success']) {
-    chatMessages.insert(0, ChatMessage(jsonResp['data']['message'], user.id));
+    // chatMessages.insert(0, ChatMessage(jsonResp['data']['message'], user.id));
+    // context.read<ChatProvider>().addMessage(id, jsonResp['data']['message']);
+    chat.addMessage(id, jsonResp['data']['message']);
     globalKey.currentState!
         .insertItem(0, duration: const Duration(milliseconds: 100));
   } else {
@@ -93,24 +102,29 @@ class _NegotiationChatState extends State<NegotiationChat> {
 
   @override
   Widget build(BuildContext context) {
+    ChatProvider chat = context.watch<ChatProvider>();
+    chatMessages = chat.messages;
     return BaseApp(
       FutureBuilder<List<ChatMessage>>(
         initialData: const [],
-        future: getNegotiationChat(arguments['id']),
+        future: getNegotiationChat(arguments['id'], chat),
         builder: (context, snapshot) {
-          List<Widget> items = [];
-          if (snapshot.connectionState == ConnectionState.done) {
-            items = List.generate(
-              chatMessages.length,
-              (index) => Container(
-                  margin: const EdgeInsets.symmetric(vertical: 3),
-                  child: chatMessages[index].senderId != user.id
-                      ? MessageBubbleReceived(
-                          chatMessages[index].message,
-                        )
-                      : MessageBubbleSent(chatMessages[index].message)),
-            );
-          }
+          // if (snapshot.connectionState == ConnectionState.done) {
+          //   // items = List.generate(
+          //   //   chatMessages.length,
+          //   //   (index) => Container(
+          //   //       margin: const EdgeInsets.symmetric(vertical: 3),
+          //   //       child: chatMessages[index].senderId != user.id
+          //   //           ? MessageBubbleReceived(
+          //   //               chatMessages[index].message,
+          //   //             )
+          //   //           : MessageBubbleSent(chatMessages[index].message)),
+          //   // );
+          //   // items = context.watch<ChatProvider>().messages;
+          //   chatMessages.forEach((element) {
+          //     chat.addMessage(element.negotiationId, element);
+          //   });
+          // }
           return ListView(
             children: [
               SizedBox(
@@ -119,12 +133,16 @@ class _NegotiationChatState extends State<NegotiationChat> {
                   key: globalKey,
                   reverse: true,
                   padding: const EdgeInsets.all(20),
-                  initialItemCount: items.length,
+                  initialItemCount: chatMessages.length,
                   itemBuilder: (context, index, animation) {
                     return SizeTransition(
                         key: UniqueKey(),
                         sizeFactor: animation,
-                        child: items[index]);
+                        child: chatMessages[index].senderId != user.id
+                            ? MessageBubbleReceived(
+                                chatMessages[index].message,
+                              )
+                            : MessageBubbleSent(chatMessages[index].message));
                   },
                 ),
               ),
@@ -145,7 +163,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
                         ),
                         IconButton(
                           onPressed: () =>
-                              {sendMessage(arguments['id'], context)},
+                              {sendMessage(arguments['id'], context, chat)},
                           icon: const Icon(Icons.send),
                           splashColor: Colors.red,
                         ),

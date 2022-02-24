@@ -9,43 +9,45 @@ class Api {
   // 192.168.1.2 is my IP, change with your IP address
   var token;
 
-  _getToken() async {
+  getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     token = localStorage.getString('token') ?? '';
+    return token;
   }
 
   auth(data, apiURL) async {
     var fullUrl = _url + apiURL;
     return await http.post(Uri.parse(fullUrl),
-        body: jsonEncode(data), headers: _setHeaders());
+        body: jsonEncode(data), headers: setHeaders());
   }
 
   getData(apiURL) async {
     var fullUrl = _url + apiURL;
     print(fullUrl);
-    await _getToken();
+    await getToken();
     return await http.get(
       Uri.parse(fullUrl),
-      headers: _setHeaders(),
+      headers: setHeaders(),
     );
   }
 
   postData(apiURL, body) async {
     var fullUrl = _url + apiURL;
-    await _getToken();
+    await getToken();
     return await http.post(
       Uri.parse(fullUrl),
       body: jsonEncode(body),
-      headers: _setHeaders(),
+      headers: setHeaders(),
     );
   }
 
   postWithFiles(apiURL, Map body, List<XFile> files) async {
     var fullUrl = _url + apiURL;
-    await _getToken();
+    print(body);
+    await getToken();
     http.MultipartRequest request =
         http.MultipartRequest('POST', Uri.parse(fullUrl));
-    Map headers = _setHeaders();
+    Map headers = setHeaders();
     headers.forEach((key, value) {
       request.headers[key] = value;
     });
@@ -58,10 +60,10 @@ class Api {
           .add(await http.MultipartFile.fromPath('imagenes[]', file.path));
     });
 
-    return await request.send();
+    return request.send();
   }
 
-  _setHeaders() => {
+  setHeaders() => {
         'Content-type': 'application/json',
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',

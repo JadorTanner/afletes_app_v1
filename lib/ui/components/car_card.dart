@@ -1,4 +1,4 @@
-import 'package:afletes_app_v1/ui/pages/vehicles/vehicle_info.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,8 +10,8 @@ class CarCard2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => VehicleInfo(vehicle))),
+      // onTap: () => Navigator.of(context)
+      //     .push(MaterialPageRoute(builder: (context) => VehicleInfo)),
       child: Container(
         clipBehavior: Clip.none,
         padding: const EdgeInsets.all(20),
@@ -42,9 +42,11 @@ class CarCard2 extends StatelessWidget {
               //         fit: BoxFit.fitWidth)),
               child: Hero(
                 tag: 'vehicle_' + vehicle.id.toString(),
-                child: const Image(
-                  image: AssetImage('assets/img/image 121.png'),
-                ),
+                child: vehicle.imgs.isNotEmpty
+                    ? Image.network(vehicleImgUrl + vehicle.imgs[0]['path'])
+                    : const Image(
+                        image: AssetImage('assets/img/image 121.png'),
+                      ),
               ),
             ),
             const Divider(

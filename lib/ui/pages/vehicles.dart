@@ -23,19 +23,22 @@ class _VehiclesState extends State<Vehicles> {
     Response response = await Api().getData('user/find-vehicles');
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
+      print(jsonResponse['data']['data'][0]['vehicleattachments']);
+      print(jsonResponse['data']['data'][0]['vehicleBrand']);
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
           for (var vehicle in jsonResponse['data']['data']) {
             vehicles.add(Vehicle(
-              id: vehicle['id'],
-              licensePlate: vehicle['license_plate'],
-              senacsa: vehicle['senacsa_authorization_attachment_id'] != null
-                  ? true
-                  : false,
-              dinatran: vehicle['dinatran_authorization_attachment_id'] != null
-                  ? true
-                  : false,
-            ));
+                id: vehicle['id'],
+                licensePlate: vehicle['license_plate'],
+                senacsa: vehicle['senacsa_authorization_attachment_id'] != null
+                    ? true
+                    : false,
+                dinatran:
+                    vehicle['dinatran_authorization_attachment_id'] != null
+                        ? true
+                        : false,
+                imgs: vehicle['vehicleattachments'] ?? ''));
           }
         }
       }

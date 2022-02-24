@@ -64,6 +64,7 @@ class Negotiation {
 
 class ChatMessage {
   String message;
-  int senderId;
-  ChatMessage(this.message, this.senderId);
+  int senderId, negotiationId;
+
+  ChatMessage(this.message, this.senderId, this.negotiationId);
 }

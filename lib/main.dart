@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/ui/pages/home.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
@@ -11,18 +12,27 @@ import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
+import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
 
 late AndroidNotificationChannel channel;
 
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+PusherOptions options = PusherOptions(
+  encrypted: false,
+  cluster: 'us2',
+);
+PusherClient pusher =
+    PusherClient(pusherKey, options, autoConnect: true, enableLogging: true);
 
 //PERMISOS DE LOCALIZACION
 
@@ -97,7 +107,15 @@ void main() async {
     sound: true,
   );
 
-  runApp(AfletesApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ChatProvider>(
+            create: (context) => ChatProvider())
+      ],
+      child: AfletesApp(),
+    ),
+  );
 }
 
 class AfletesApp extends StatefulWidget {
@@ -122,6 +140,28 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
     getToken();
+    pusher.onConnectionStateChange((state) {
+      print(
+          "previousState: ${state!.previousState}, currentState: ${state.currentState}");
+    });
+
+    pusher.onConnectionError((error) {
+      print("error: ${error!.message}");
+    });
+
+// Subscribe to a private channel
+    Channel pusherChannel = pusher.subscribe("negotiation-chat");
+
+// Bind to listen for events called "order-status-updated" sent to "private-orders" channel
+    pusherChannel.bind("negotiation-chat", (PusherEvent? event) {
+      print(event);
+      print(event!.data);
+      Map jsonData = jsonDecode(event.data!);
+      context
+          .read<ChatProvider>()
+          .addMessage(jsonData['id'], jsonData['message']);
+    });
+
     _determinePosition();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
@@ -133,9 +173,12 @@ class _AfletesAppState extends State<AfletesApp> {
           notification.title,
           notification.body,
           NotificationDetails(
-            android: AndroidNotificationDetails(channel.id, channel.name,
-                icon: 'launch_background',
-                channelDescription: channel.description),
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              icon: 'launch_background',
+              channelDescription: channel.description,
+            ),
           ),
         );
       }

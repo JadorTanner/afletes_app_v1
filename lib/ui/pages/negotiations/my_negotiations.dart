@@ -48,7 +48,6 @@ class _MyNegotiationsState extends State<MyNegotiations> {
   @override
   void initState() {
     super.initState();
-    getNegotiations();
   }
 
   @override

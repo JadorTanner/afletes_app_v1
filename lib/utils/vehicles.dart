@@ -6,8 +6,16 @@ import 'package:http/http.dart';
 class Vehicle {
   int id, ownerId, yearOfProd;
   double maxCapacity;
-  String observation, licensePlate, model;
+  String observation,
+      licensePlate,
+      model,
+      measurementUnit,
+      vtoMunicipal,
+      vtoDinatran,
+      vtoSenacsa,
+      vtoSeguro;
   bool situacion, esActivo, senacsa, dinatran, seguro;
+  List imgs;
 
   Vehicle({
     this.id = 0,
@@ -17,11 +25,17 @@ class Vehicle {
     this.observation = '0',
     this.licensePlate = '0',
     this.model = '0',
+    this.measurementUnit = '',
+    this.vtoMunicipal = '',
+    this.vtoDinatran = '',
+    this.vtoSenacsa = '',
+    this.vtoSeguro = '',
     this.situacion = false,
     this.esActivo = false,
     this.dinatran = false,
     this.senacsa = false,
     this.seguro = false,
+    this.imgs = const [],
   });
 
   createVehicle(body) async {

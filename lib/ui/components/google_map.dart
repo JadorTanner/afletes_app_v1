@@ -22,12 +22,14 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
 
   getPosition() async {
     position = await Geolocator.getCurrentPosition();
-    setState(() {
-      print(position);
-      widget.center = LatLng(position.latitude, position.longitude);
-      mapController.animateCamera(CameraUpdate.newLatLng(widget.center!));
-      print(widget.center);
-    });
+    mounted
+        ? setState(() {
+            print(position);
+            widget.center = LatLng(position.latitude, position.longitude);
+            mapController.animateCamera(CameraUpdate.newLatLng(widget.center!));
+            print(widget.center);
+          })
+        : () => {};
   }
 
   void _onMapCreated(GoogleMapController controller) {

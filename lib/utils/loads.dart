@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -17,7 +19,7 @@ class Load {
       destinCityId,
       stateId,
       finalOffer;
-  double weight;
+  double weight, volumen;
   String description,
       measurement,
       stateFrom,
@@ -34,6 +36,8 @@ class Load {
       pickUpTime,
       observations,
       state,
+      loadWait,
+      deliveryWait,
       product;
   bool isUrgent;
   List attachments;
@@ -50,6 +54,7 @@ class Load {
     this.stateId = 0,
     this.finalOffer = 0,
     this.weight = 0,
+    this.volumen = 0,
     this.description = '',
     this.measurement = '',
     this.stateFrom = '',
@@ -67,30 +72,51 @@ class Load {
     this.observations = '',
     this.state = '',
     this.product = '',
+    this.loadWait = '',
+    this.deliveryWait = '',
     this.isUrgent = false,
     this.attachments = const [],
   });
 
-  Future createLoad(body, List<XFile> imagenes, {context = null}) async {
+  Future createLoad(Map body, List<XFile> imagenes,
+      {context = null, update = false, loadId = 0}) async {
     Api api = Api();
-    StreamedResponse response =
-        api.postWithFiles('load/create-load', body, imagenes);
-    print(response.statusCode);
-    print(await response.stream.bytesToString());
+    if (update) {
+      body.addEntries([MapEntry('id', loadId)]);
+    }
+
+    var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
+
+    String token = await api.getToken();
+    MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
+    Map headers = api.setHeaders();
+    headers.forEach((key, value) {
+      request.headers[key] = value;
+    });
+    body.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
+
+    imagenes.forEach((file) async {
+      request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
+    });
+
+    StreamedResponse response = await request.send();
+    print(request.finalized);
     if (response.statusCode == 200) {
-      print(await response.stream.bytesToString());
       Map responseBody = jsonDecode(await response.stream.bytesToString());
+      print(responseBody);
       if (responseBody['success']) {
-        print(responseBody);
         if (context != null) {
-          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          Future.delayed(
+              Duration(seconds: 1), () => {Navigator.of(context).pop()});
         }
         return true;
       } else {
         return false;
       }
-    } else {
-      return false;
     }
   }
 
