@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -5,11 +8,17 @@ import 'package:http/http.dart';
 
 TextEditingController controller = TextEditingController();
 
-startNegotiation(Load load) async {
+startNegotiation(Load load, context) async {
   Api api = Api();
 
   Response response = await api.postData('negotiation/start-negotiation',
       {'load_id': load.id, 'initial_offer': controller.text});
+  if (response.statusCode == 200) {
+    Map jsonResponse = jsonDecode(response.body);
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            NegotiationChat(jsonResponse['data']['negotiation_id'])));
+  }
 }
 
 class LoadInfo extends StatelessWidget {
@@ -29,7 +38,7 @@ class LoadInfo extends StatelessWidget {
             keyboardType: TextInputType.number,
           ),
           IconButton(
-            onPressed: () => startNegotiation(load),
+            onPressed: () => startNegotiation(load, context),
             icon: Icon(Icons.check),
           )
         ],

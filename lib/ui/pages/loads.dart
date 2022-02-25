@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/pages/loads/load_info.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -29,21 +30,24 @@ class _LoadsState extends State<Loads> {
       loads.clear();
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
-          jsonResponse.forEach((key, load) {
+          print(jsonResponse['data']);
+          List data = jsonResponse['data']['data'];
+          data.asMap().forEach((key, load) {
             loads.add(Load(
-              id: load.id,
-              addressFrom: load.address,
-              cityFrom: load.city_id,
-              stateFromId: load.state_id,
-              initialOffer: load.initial_offer,
-              longitudeFrom: load.longitude,
-              latitudeFrom: load.latitude,
-              destinLongitude: load.destination_longitude,
-              destinLatitude: load.destination_latitude,
-              destinAddress: load.destination_address,
-              destinCityId: load.destination_city_id,
-              destinStateId: load.destination_state_id,
-              product: load.product,
+              id: load['id'],
+              addressFrom: load['address'],
+              cityFromId: load['city_id'],
+              stateFromId: load['state_id'],
+              initialOffer: int.parse(
+                  load['initial_offer'].toString().replaceAll('.00', '')),
+              longitudeFrom: load['longitude'],
+              latitudeFrom: load['latitude'],
+              destinLongitude: load['destination_longitude'],
+              destinLatitude: load['destination_latitude'],
+              destinAddress: load['destination_address'],
+              destinCityId: load['destination_city_id'],
+              destinStateId: load['destination_state_id'],
+              product: load['product'] ?? '',
             ));
           });
           globalKey.currentState!
@@ -95,6 +99,12 @@ class LoadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(load.addressFrom);
+    return GestureDetector(
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => LoadInfo(load))),
+      child: Card(
+        child: SizedBox(width: double.infinity, child: Text(load.addressFrom)),
+      ),
+    );
   }
 }
