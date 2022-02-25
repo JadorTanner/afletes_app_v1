@@ -384,7 +384,15 @@ class _UbicacionPickerState extends State<UbicacionPicker> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [StatePicker(changeState), CitiesPicker(stateId)],
+      children: [
+        StatePicker(changeState),
+        FutureBuilder(
+          future: getCities(stateId),
+          builder: (context, snapshot) {
+            return CitiesPicker(stateId);
+          },
+        )
+      ],
     );
   }
 }
@@ -464,38 +472,26 @@ class _CitiesPickerState extends State<CitiesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getCities(widget.stateId),
-      builder: (context, snapshot) {
-        return DropdownButton(
-            value: value,
-            icon: const Icon(Icons.arrow_downward),
-            elevation: 16,
-            style: const TextStyle(color: Colors.deepPurple),
-            underline: Container(
-              height: 2,
-              color: Colors.deepPurpleAccent,
-            ),
-            onChanged: (String? newValue) {
-              setState(() {
-                value = newValue!;
-              });
-            },
-            items: snapshot.connectionState == ConnectionState.done
-                ? List.generate(
-                    cities.length,
-                    (index) => DropdownMenuItem(
-                          value: cities[index]['id'].toString(),
-                          child: Text(cities[index]['name']),
-                        ))
-                : [
-                    DropdownMenuItem(
-                      value: '0',
-                      child: Text('Ciudades'),
-                    )
-                  ]);
-      },
-    );
+    return DropdownButton(
+        icon: const Icon(Icons.arrow_downward),
+        elevation: 16,
+        style: const TextStyle(color: Colors.deepPurple),
+        underline: Container(
+          height: 2,
+          color: Colors.deepPurpleAccent,
+        ),
+        onChanged: (String? newValue) {
+          setState(() {
+            value = newValue!;
+          });
+        },
+        items: List.generate(
+          cities.length,
+          (index) => DropdownMenuItem(
+            value: cities[index]['id'].toString(),
+            child: Text(cities[index]['name']),
+          ),
+        ));
   }
 }
 

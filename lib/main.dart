@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/common.dart';
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/home.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
@@ -153,13 +155,28 @@ class _AfletesAppState extends State<AfletesApp> {
     Channel pusherChannel = pusher.subscribe("negotiation-chat");
 
 // Bind to listen for events called "order-status-updated" sent to "private-orders" channel
-    pusherChannel.bind("negotiation-chat", (PusherEvent? event) {
+    pusherChannel.bind('App\\Events\\NegotiationChat',
+        (PusherEvent? event) async {
       print(event);
       print(event!.data);
       Map jsonData = jsonDecode(event.data!);
-      context
-          .read<ChatProvider>()
-          .addMessage(jsonData['id'], jsonData['message']);
+      print(jsonData);
+      ChatProvider chat = context.read<ChatProvider>();
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      User user =
+          User(userData: jsonDecode(sharedPreferences.getString('user')!))
+              .userFromArray();
+      print(user.id);
+      if (user.id != jsonData['sender_id']) {
+        if (chat.negotiationId == jsonData['negotiation_id']) {
+          chat.addMessage(
+            jsonData['negotiation_id'],
+            ChatMessage(jsonData['message'], jsonData['sender_id'],
+                jsonData['negotiation_id']),
+          );
+        }
+      }
     });
 
     _determinePosition();
@@ -202,7 +219,6 @@ class _AfletesAppState extends State<AfletesApp> {
         '/create-load': (context) => CreateLoadPage(),
         '/my-vehicles': (context) => const Vehicles(),
         '/my-negotiations': (context) => MyNegotiations(),
-        '/negotiation-chat': (context) => NegotiationChat()
       },
     );
   }

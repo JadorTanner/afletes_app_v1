@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -103,13 +104,10 @@ class NegotiationCard extends StatelessWidget {
       child: GestureDetector(
         onTap: hasData
             ? () => {
-                  Navigator.pushNamed(
-                    context,
-                    '/negotiation-chat',
-                    arguments: {
-                      'id': negotiations[index].id,
-                    },
-                  )
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) =>
+                        NegotiationChat(negotiations[index].id),
+                  ))
                 }
             : null,
         child: Container(

@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class User {
+class User extends ChangeNotifier {
   Map userData = {};
   String firstName = '';
   String lastName = '';
@@ -49,19 +49,22 @@ class User {
     this.cellphone = '',
   });
 
-  getUser() async {
+  Future<User> getUser() async {
     SharedPreferences sh = await SharedPreferences.getInstance();
-    User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'));
-    return user.userFromArray();
+    User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'))
+        .userFromArray();
+    return user;
   }
 
   Future<bool> login(
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? user = localStorage.getString('user');
-    if (user != null) {
-      Navigator.of(context).pushReplacementNamed(
-          jsonDecode(user)['is_carrier'] ? 'loads' : '/vehicles');
+    String? userStored = localStorage.getString('user');
+    if (userStored != null) {
+      Map userJson = jsonDecode(userStored);
+      notifyListeners();
+      Navigator.of(context)
+          .pushReplacementNamed(userJson['is_carrier'] ? 'loads' : '/vehicles');
     } else {
       bool emailValid = RegExp(
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -77,9 +80,11 @@ class User {
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
+            Map userJson = responseBody['data']['user'];
             localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
+            notifyListeners();
             return true;
           } else {
             return false;

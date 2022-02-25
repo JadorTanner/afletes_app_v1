@@ -1,14 +1,11 @@
-// String baseUrl = 'http://181.120.66.16:8000/';
-String baseUrl = 'http://192.168.1.176:8000/';
-
 //casa
-// String apiUrl = 'http://192.168.0.3:8000/api/';
-
+// String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
-String apiUrl = baseUrl + 'api/';
-
+// String baseUrl = 'http://192.168.1.176:8000/';
 //producción
-// String apiUrl = 'https://www.afletes.com/api/';
+String baseUrl = 'https://www.afletes.com/';
+
+String apiUrl = baseUrl + 'api/';
 
 String imgUrl = baseUrl + 'images/load_attachments_images/';
 String vehicleImgUrl = baseUrl + 'images/vehicle_images/';

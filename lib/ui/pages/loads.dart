@@ -9,6 +9,9 @@ import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
+List loads = [];
+GlobalKey<AnimatedListState> globalKey = GlobalKey<AnimatedListState>();
+
 class Loads extends StatefulWidget {
   const Loads({Key? key}) : super(key: key);
   @override
@@ -17,28 +20,13 @@ class Loads extends StatefulWidget {
 
 class _LoadsState extends State<Loads> {
   TextEditingController textEditingController = TextEditingController();
-  List loads = [];
 
-  // Future sendMessage() async {
-  //   Api api = Api();
-  //   Response response = await api.postData('negotiation/send-message', {
-  //     'message': int.parse(textEditingController.text),
-  //     'negotiation_id': 5,
-  //     'is_final_offer': false,
-  //     'user_id': 1,
-  //   });
-  // }
-
-  // constructUser() async {
-  //   user = await User().getUser();
-  //   setState(() {});
-  // }
-
-  Future<List> getLoads() async {
+  Future<List> getLoads([refresh = false]) async {
     Response response = await Api().getData('user/find-loads');
 
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
+      loads.clear();
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
           jsonResponse.forEach((key, load) {
@@ -58,6 +46,11 @@ class _LoadsState extends State<Loads> {
               product: load.product,
             ));
           });
+          globalKey.currentState!
+              .insertItem(0, duration: const Duration(milliseconds: 100));
+          if (refresh) {
+            setState(() {});
+          }
         }
       }
     }
@@ -70,28 +63,28 @@ class _LoadsState extends State<Loads> {
   @override
   void initState() {
     super.initState();
+    getLoads();
     // constructUser();
   }
 
   @override
   Widget build(BuildContext context) {
     return BaseApp(
-      FutureBuilder(
-        future: getLoads(),
-        initialData: const [],
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          } else if (snapshot.connectionState == ConnectionState.done) {
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: List.generate(
-                  loads.length, (index) => LoadCard(loads[index])),
-            );
-          }
-          return const CircularProgressIndicator();
-        },
-      ),
+      RefreshIndicator(
+          child: AnimatedList(
+            key: globalKey,
+            padding: const EdgeInsets.all(20),
+            itemBuilder: (context, index, animation) => SizeTransition(
+              key: UniqueKey(),
+              sizeFactor: animation,
+              child: LoadCard(loads[index]),
+            ),
+          ),
+          // child: ListView.builder(
+          //   padding: const EdgeInsets.all(20),
+          //   itemBuilder: (context, index) => LoadCard(loads[index]),
+          // ),
+          onRefresh: () => getLoads()),
     );
   }
 }
