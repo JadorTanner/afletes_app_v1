@@ -80,6 +80,15 @@ Future sendMessage(id, BuildContext context, ChatProvider chat) async {
   }
 }
 
+Future cancelNegotiation(id) async {
+  Api api = Api();
+  Response response = await api.postData('negotiation/reject', {
+    'id': id,
+  });
+
+  print(response.body);
+}
+
 class NegotiationChat extends StatefulWidget {
   NegotiationChat(this.id, {Key? key}) : super(key: key);
   int id;
@@ -106,7 +115,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
         ListView(
           children: [
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
+              height: MediaQuery.of(context).size.height * 0.75,
               child: ChatPanel(),
             ),
             Row(
@@ -137,6 +146,14 @@ class _NegotiationChatState extends State<NegotiationChat> {
                       ),
                     ]
                   : [],
+            ),
+            ButtonBar(
+              children: [
+                IconButton(onPressed: () => {}, icon: Icon(Icons.check)),
+                IconButton(
+                    onPressed: () => cancelNegotiation(widget.id),
+                    icon: Icon(Icons.cancel)),
+              ],
             )
           ],
         ),

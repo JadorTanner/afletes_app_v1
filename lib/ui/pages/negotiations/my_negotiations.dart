@@ -18,6 +18,7 @@ Future<List<Negotiation>> getNegotiations() async {
   Response response = await api.getData('user/my-negotiations');
   if (response.statusCode == 200) {
     Map jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
     if (jsonResponse['success']) {
       List data = jsonResponse['data'];
       data.asMap().forEach((key, negotiation) {
