@@ -177,7 +177,102 @@ class _LoadsMapState extends State<LoadsMap> {
         }
       }
       stackKey.currentState != null
-          ? stackKey.currentState!.insert(
+          ? showModalBottomSheet(
+              context: context,
+              builder: (context) => Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xAA4E4E4E),
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ]),
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: PageView(
+                        children: List.generate(
+                            attachments.length,
+                            (index) => GestureDetector(
+                                  onTap: () => showDialog(
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                      child: InteractiveViewer(
+                                        panEnabled: true,
+                                        minScale: 0.5,
+                                        maxScale: 4,
+                                        clipBehavior: Clip.none,
+                                        child: attachments[index],
+                                      ),
+                                    ),
+                                  ),
+                                  child: attachments[index],
+                                )),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Carga nro: ' + id.toString()),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Text('Oferta inicial: ' + data['initial_offer']),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text('Salida'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Departamento: ' +
+                            (data['state'] != null
+                                ? data['state']['name']
+                                : '')),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Text('Ciudad: ' +
+                            (data['city'] != null ? data['city']['name'] : '')),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text('Entrega'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Departamento: ' +
+                            (data['destinationState'] != null
+                                ? data['destinationState']['name']
+                                : '')),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Text('Ciudad: ' +
+                            (data['destinationCity'] != null
+                                ? data['destinationCity']['name']
+                                : '')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          /* stackKey.currentState!.insert(
               OverlayEntry(
                 builder: (context) => Align(
                   alignment: Alignment.bottomCenter,
@@ -281,6 +376,7 @@ class _LoadsMapState extends State<LoadsMap> {
                 ),
               ),
             )
+           */
           : null;
     }
   }
