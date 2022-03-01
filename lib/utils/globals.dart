@@ -1,5 +1,5 @@
 //casa
-String baseUrl = 'http://181.120.66.16:8000/';
+// String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
 String baseUrl = 'http://192.168.1.176:8000/';
 //producción
