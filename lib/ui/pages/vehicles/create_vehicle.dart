@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
+import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -19,70 +20,60 @@ import 'package:image_picker/image_picker.dart';
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
 
-bool hasLoadData = false;
-int loadId = 0;
+bool hasVehicleData = false;
+int vehicleId = 0;
 
-List<Category> categories = [];
-List<StateModel> states = [];
-List<City> cities = [];
+List brands = [];
+List<DropdownMenuItem<String>> brandsSelectList = [];
 PageController pageController = PageController();
 late AfletesGoogleMap originMap;
 late AfletesGoogleMap deliveryMap;
 
+late XFile? greenCard;
+late XFile? greenCardBack;
+late XFile? municipal;
+late XFile? municipalBack;
+late XFile? dinatran;
+late XFile? dinatranBack;
+late XFile? senacsa;
+late XFile? senacsaBack;
+late XFile? seguro;
+
 //CONTROLADORES DE INPUTS
-TextEditingController ubicacionController = TextEditingController(),
-    productController = TextEditingController(),
-    descriptionController = TextEditingController(),
-    categoriaController = TextEditingController(),
+TextEditingController chapaController = TextEditingController(),
+    marcaController = TextEditingController(),
+    modeloController = TextEditingController(),
+    fabricacionController = TextEditingController(),
     unidadMedidaController = TextEditingController(),
     pesoController = TextEditingController(),
-    ofertaInicialController = TextEditingController(),
-    vehiculosController = TextEditingController(),
-    ayudantesController = TextEditingController(),
-    volumenController = TextEditingController(),
-    originAddressController = TextEditingController(),
-    originCityController = TextEditingController(),
-    originStateController = TextEditingController(),
-    originCoordsController = TextEditingController(),
-    destinAddressController = TextEditingController(),
-    destinCityController = TextEditingController(),
-    destinStateController = TextEditingController(),
-    destinCoordsController = TextEditingController(),
-    loadDateController = TextEditingController(),
-    loadHourController = TextEditingController(),
-    esperaCargaController = TextEditingController(),
-    esperaDescargaController = TextEditingController(),
-    observacionesController = TextEditingController(),
-    isUrgentController = TextEditingController();
+    vtoMunicipalController = TextEditingController(),
+    vtoDinatranController = TextEditingController(),
+    vtoSenacsaController = TextEditingController(),
+    vtoSeguroController = TextEditingController();
 
 // Key latLngInput = Key('Ubicación');
 
-Future getCategories() async {
+Future getBrands() async {
   Api api = Api();
-  Response response = await api.getData('create-load-data');
+  Response response = await api.getData('get-brands');
   if (response.statusCode == 200) {
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
-      Map data = jsonResponse['data'];
-      if (data['categories'].isNotEmpty) {
-        categories.clear();
-        data['categories'].asMap().forEach((key, category) {
-          categories.add(Category(id: category['id'], name: category['name']));
+      List data = jsonResponse['data'];
+      if (data.isNotEmpty) {
+        brands.clear();
+        data.asMap().forEach((key, brand) {
+          brands.add({'name': brand['name'], 'id': brand['id']});
         });
-      }
-      if (data['states'].isNotEmpty) {
-        states.clear();
-        data['states'].asMap().forEach((key, category) {
-          states.add(StateModel(id: category['id'], name: category['name']));
-        });
-      }
-      if (data['cities'].isNotEmpty) {
-        cities.clear();
-        data['cities'].asMap().forEach((key, city) {
-          cities.add(City(
-              id: city['id'], name: city['name'], state_id: city['state_id']));
-        });
-        return cities;
+        brandsSelectList = List.generate(
+          brands.length,
+          (index) {
+            return DropdownMenuItem(
+              child: Text(brands[index]['name']),
+              value: brands[index]['id'].toString(),
+            );
+          },
+        );
       }
       return true;
     }
@@ -90,30 +81,19 @@ Future getCategories() async {
   return true;
 }
 
-class CreateLoadPage extends StatefulWidget {
-  CreateLoadPage({Key? key}) : super(key: key);
+class CreateVehicle extends StatefulWidget {
+  CreateVehicle({Key? key}) : super(key: key);
 
   @override
-  State<CreateLoadPage> createState() => _CreateLoadPageState();
+  State<CreateVehicle> createState() => _CreateVehicleState();
 }
 
-class _CreateLoadPageState extends State<CreateLoadPage> {
+class _CreateVehicleState extends State<CreateVehicle> {
   late Position position;
   late final arguments;
   @override
   void initState() {
     super.initState();
-    //MAPA DE CARGA
-    originMap = AfletesGoogleMap(onTap: (LatLng argument) {
-      originCoordsController.text =
-          argument.latitude.toString() + ',' + argument.longitude.toString();
-    });
-
-    //MAPA DE ENTREGA
-    deliveryMap = AfletesGoogleMap(onTap: (LatLng argument) {
-      destinCoordsController.text =
-          argument.latitude.toString() + ',' + argument.longitude.toString();
-    });
   }
 
   @override
@@ -122,32 +102,21 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
     setState(() {
       arguments = ModalRoute.of(context)!.settings.arguments;
       if (arguments != null) {
-        hasLoadData = true;
-        loadId = arguments['id'];
-        print(loadId);
-        productController.text = arguments['product'];
+        hasVehicleData = true;
+        vehicleId = arguments['id'];
+        chapaController.text = arguments['chapa'];
         pesoController.text = arguments['peso'].toString();
-        volumenController.text = arguments['volumen'].toString();
-        descriptionController.text = arguments['description'];
-        categoriaController.text = arguments['categoria'].toString();
-        unidadMedidaController.text = arguments['unidadMedida'];
-        ofertaInicialController.text = arguments['ofertaInicial'].toString();
-        vehiculosController.text = arguments['vehiculos'].toString();
-        ayudantesController.text = arguments['ayudantes'].toString();
-        originAddressController.text = arguments['originAddress'];
-        originCityController.text = arguments['originCity'].toString();
-        originStateController.text = arguments['originState'].toString();
-        originCoordsController.text = arguments['originCoords'];
-        destinAddressController.text = arguments['destinAddress'];
-        destinCityController.text = arguments['destinCity'].toString();
-        destinStateController.text = arguments['destinState'].toString();
-        destinCoordsController.text = arguments['destinCoords'];
-        loadDateController.text = arguments['loadDate'];
-        loadHourController.text = arguments['loadHour'];
-        esperaCargaController.text = arguments['esperaCarga'].toString();
-        esperaDescargaController.text = arguments['esperaDescarga'].toString();
-        observacionesController.text = arguments['observaciones'];
-        isUrgentController.text = arguments['isUrgent'].toString();
+        modeloController.text = arguments['modelo'] ?? '';
+        marcaController.text = arguments['marca'].toString();
+        fabricacionController.text = arguments['fabricacion'].toString();
+        unidadMedidaController.text = arguments['unidadMedida'].toString();
+        vtoMunicipalController.text = arguments['vtoMunicipal'];
+        vtoDinatranController.text = arguments['vtoDinatran'];
+        vtoSenacsaController.text = arguments['vtoSenacsa'];
+        vtoSeguroController.text = arguments['vtoSeguro'];
+      } else {
+        hasVehicleData = false;
+        vehicleId = 0;
       }
     });
   }
@@ -155,7 +124,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
   @override
   Widget build(BuildContext context) {
     return BaseApp(FutureBuilder(
-      future: getCategories(),
+      future: getBrands(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return PageView(
@@ -163,9 +132,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
             physics: const NeverScrollableScrollPhysics(),
             children: [
               DatosGenerales(),
-              DatosUbicacion(),
-              DatosUbicacionDelivery(),
-              const PaginaFinal(),
+              const Documentos(),
             ],
           );
         } else {
@@ -186,20 +153,33 @@ class DatosGenerales extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           const ImagesPicker(),
-          //producto
-          LoadFormField(productController, 'Producto *', maxLength: 10),
+          //chapa
+          LoadFormField(chapaController, 'Dominio o chapa *'),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              //Categoría
-              CategoriaSelect(),
-              //Unidad de medida
-              MeasurementUnit()
+              //Marca
+              MarcaSelect(),
+              const SizedBox(
+                width: 20,
+              ),
+              //Modelo
+              Flexible(
+                child: LoadFormField(
+                  modeloController,
+                  'Modelo *',
+                  type: const TextInputType.numberWithOptions(decimal: true),
+                ),
+              ),
             ],
           ),
           Row(
             children: [
+              MeasurementUnit(),
+              const SizedBox(
+                width: 20,
+              ),
               //Peso
               Flexible(
                 child: LoadFormField(
@@ -208,59 +188,181 @@ class DatosGenerales extends StatelessWidget {
                   type: const TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
-              const SizedBox(
-                width: 20,
-              ),
-              //Volumen
-              Flexible(
-                child: LoadFormField(
-                  volumenController,
-                  'Volumen',
-                  type: const TextInputType.numberWithOptions(decimal: true),
-                ),
-              )
             ],
           ),
-          Row(
-            children: [
-              //Vehiculos requeridos
-              Flexible(
-                child: LoadFormField(
-                  vehiculosController,
-                  'Vehículos requeridos',
-                  type: TextInputType.number,
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              //Ayudante requeridos
-              Flexible(
-                child: LoadFormField(
-                  ayudantesController,
-                  'Ayudantes requeridos',
-                  type: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
-          //Precio
+
           LoadFormField(
-            ofertaInicialController,
-            'Oferta inicial',
-            type: TextInputType.number,
-          ),
-          //Descripción
-          LoadFormField(
-            descriptionController,
-            'Descripción',
-            type: TextInputType.multiline,
-            action: TextInputAction.next,
-          ),
-          const SizedBox(
-            height: 20,
+            fabricacionController,
+            'Año de producción *',
+            type: const TextInputType.numberWithOptions(decimal: true),
           ),
           const NextPageButton()
+        ],
+      ),
+    );
+  }
+}
+
+class Documentos extends StatelessWidget {
+  const Documentos({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(padding: const EdgeInsets.all(20), children: [
+      Row(
+        children: [
+          ImageInput(
+              'Cédula verde (Frente)', (XFile img) => greenCard = img, 170),
+          const SizedBox(
+            width: 20,
+          ),
+          ImageInput(
+              'Cédula verde (Atras)', (XFile img) => greenCardBack = img, 170),
+        ],
+      ),
+      const SizedBox(
+        height: 20,
+      ),
+      Row(
+        children: [
+          ImageInput(
+              'Habilitación Munic.', (XFile img) => municipal = img, 170),
+          const SizedBox(
+            width: 20,
+          ),
+          ImageInput('Habilitación Munic. (Atras)',
+              (XFile img) => municipalBack = img, 170),
+        ],
+      ),
+      DatePicker(
+          vtoMunicipalController, 'Fecha de vto. Habilitación Municipal'),
+      const SizedBox(
+        height: 20,
+      ),
+      Row(
+        children: [
+          ImageInput(
+              'Habilitación DINATRAN', (XFile img) => dinatran = img, 170),
+          const SizedBox(
+            width: 20,
+          ),
+          ImageInput('Habilitación DINATRAN (Atras)',
+              (XFile img) => dinatranBack = img, 170),
+        ],
+      ),
+      DatePicker(vtoDinatranController, 'Fecha de vto. Habilitación DINATRAN'),
+      const SizedBox(
+        height: 20,
+      ),
+      Row(
+        children: [
+          ImageInput('Habilitación SENACSA', (XFile img) => senacsa = img, 170),
+          const SizedBox(
+            width: 20,
+          ),
+          ImageInput('Habilitación SENACSA (Atras)',
+              (XFile img) => senacsaBack = img, 170),
+        ],
+      ),
+      DatePicker(vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
+      const SizedBox(
+        height: 20,
+      ),
+      Row(
+        children: [
+          ImageInput('Seguro', (XFile img) => seguro = img, 170),
+        ],
+      ),
+      DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
+      ButtonBar(
+        children: [
+          const PrevPageButton(),
+          IconButton(
+              onPressed: () async {
+                Vehicle vehicle = Vehicle();
+                vehicle.createVehicle(
+                  {
+                    'license_plate': chapaController.text,
+                    'vehicle_brand_id': marcaController.text,
+                    'year_of_production': fabricacionController.text,
+                    'max_capacity': pesoController.text,
+                    'measurement_unit_id': unidadMedidaController.text,
+                    'model': modeloController.text,
+                    'expiration_date_vehicle_authorization':
+                        vtoMunicipalController.text != ''
+                            ? vtoMunicipalController.text
+                            : null,
+                    'expiration_date_dinatran_authorization':
+                        vtoDinatranController.text != ''
+                            ? vtoDinatranController.text
+                            : null,
+                    'expiration_date_senacsa_authorization':
+                        vtoSenacsaController.text != ''
+                            ? vtoSenacsaController.text
+                            : null,
+                    'expiration_date_insurance': vtoSeguroController.text != ''
+                        ? vtoSeguroController.text
+                        : null,
+                    'vehicleId': vehicleId,
+                  },
+                  imagenes,
+                  context: context,
+                  update: hasVehicleData,
+                  vehicleId: vehicleId,
+                  greenCard: greenCard,
+                  greenCardBack: greenCardBack,
+                  municipal: municipal,
+                  municipalBack: municipalBack,
+                  senacsa: senacsa,
+                  senacsaBack: senacsaBack,
+                  dinatran: dinatran,
+                  dinatranBack: dinatranBack,
+                  insurance: seguro,
+                );
+              },
+              icon: const Icon(Icons.upload))
+        ],
+      )
+    ]);
+  }
+}
+
+class ImageInput extends StatefulWidget {
+  ImageInput(this.title, this.fileVariable, this.width, {Key? key})
+      : super(key: key);
+  String title;
+  var fileVariable;
+  double width;
+  @override
+  State<ImageInput> createState() => _ImageInputState();
+}
+
+class _ImageInputState extends State<ImageInput> {
+  XFile? img;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        img = await _picker.pickImage(source: ImageSource.gallery);
+        if (img != null) {
+          setState(() {
+            widget.fileVariable(img!);
+          });
+        }
+      },
+      child: Column(
+        children: [
+          Text(widget.title),
+          Container(
+            width: widget.width,
+            height: 200,
+            color: img != null ? Colors.transparent : Colors.grey[200],
+            child: img != null
+                ? Image.file(
+                    File(img!.path),
+                  )
+                : null,
+          ),
         ],
       ),
     );
@@ -387,21 +489,22 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
   }
 }
 
-class CategoriaSelect extends StatefulWidget {
-  CategoriaSelect({Key? key}) : super(key: key);
+class MarcaSelect extends StatefulWidget {
+  MarcaSelect({Key? key}) : super(key: key);
 
   @override
-  State<CategoriaSelect> createState() => _CategoriaSelectState();
+  State<MarcaSelect> createState() => _MarcaSelectState();
 }
 
-class _CategoriaSelectState extends State<CategoriaSelect> {
-  late String value = categoriaController.text != ''
-      ? categoriaController.text
-      : categories[0].id.toString();
+class _MarcaSelectState extends State<MarcaSelect> {
+  late String value;
 
   @override
   void initState() {
     super.initState();
+    value = marcaController.text != ''
+        ? marcaController.text
+        : brands[0]['id'].toString();
   }
 
   @override
@@ -409,9 +512,9 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Categoría'),
+        const Text('Marca *'),
         DropdownButton(
-          value: (categories.isNotEmpty ? value : categories[0].id.toString()),
+          value: value,
           icon: const Icon(Icons.arrow_downward),
           elevation: 16,
           style: const TextStyle(color: Colors.deepPurple),
@@ -422,332 +525,11 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
           onChanged: (String? newValue) {
             setState(() {
               value = newValue!;
-              categoriaController.text = newValue;
+              marcaController.text = newValue;
             });
             // print(newValue);
           },
-          items: List.generate(
-            categories.length,
-            (index) {
-              return DropdownMenuItem(
-                child: Text(categories[index].name),
-                value: categories[index].id.toString(),
-              );
-            },
-          ),
-        )
-      ],
-    );
-  }
-}
-
-//PAGINA DE UBICACION ORIGEN
-class DatosUbicacion extends StatelessWidget {
-  DatosUbicacion({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text('Dónde está tu carga?'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              DepartamentoPicker(originStateController),
-              CityPicker(originCityController)
-            ],
-          ),
-          LoadFormField(
-            originAddressController,
-            'Dirección *',
-            action: TextInputAction.done,
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: AfletesGoogleMap(onTap: (LatLng argument) {
-              originCoordsController.text = argument.latitude.toString() +
-                  ',' +
-                  argument.longitude.toString();
-            }),
-          ),
-          SizedBox(
-            height: 0,
-            child: LoadFormField(originCoordsController, 'Coordenadas'),
-          ),
-          const ButtonBar(
-            children: [
-              PrevPageButton(),
-              NextPageButton(),
-            ],
-          )
-        ]);
-  }
-}
-
-//PAGINA DE UBICACION ENTREGA
-class DatosUbicacionDelivery extends StatelessWidget {
-  DatosUbicacionDelivery({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text('Dónde quieres llevarla?'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              DepartamentoPicker(destinStateController),
-              CityPicker(destinCityController)
-            ],
-          ),
-          LoadFormField(
-            destinAddressController,
-            'Dirección *',
-            action: TextInputAction.next,
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: deliveryMap,
-          ),
-          SizedBox(
-            height: 0,
-            child: LoadFormField(destinCoordsController, 'Coordenadas'),
-          ),
-          const ButtonBar(
-            children: [
-              PrevPageButton(),
-              NextPageButton(),
-            ],
-          )
-        ]);
-  }
-}
-
-class DepartamentoPicker extends StatefulWidget {
-  DepartamentoPicker(this.controller, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  @override
-  State<DepartamentoPicker> createState() => _DepartamentoPickerState();
-}
-
-class _DepartamentoPickerState extends State<DepartamentoPicker> {
-  late String value = states[0].id.toString();
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Departamento'),
-        DropdownButton(
-          value: widget.controller.text != ''
-              ? widget.controller.text
-              : (states.isNotEmpty ? value : states[0].id.toString()),
-          icon: const Icon(Icons.arrow_downward),
-          elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
-          underline: Container(
-            height: 2,
-            color: Colors.deepPurpleAccent,
-          ),
-          onChanged: (String? newValue) {
-            setState(() {
-              value = newValue!;
-              widget.controller.text = newValue;
-            });
-            // print(newValue);
-          },
-          items: List.generate(
-            states.length,
-            (index) {
-              return DropdownMenuItem(
-                child: Text(states[index].name),
-                value: states[index].id.toString(),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class CityPicker extends StatefulWidget {
-  CityPicker(this.controller, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  @override
-  State<CityPicker> createState() => CityPickerState();
-}
-
-class CityPickerState extends State<CityPicker> {
-  late String value = cities[0].id.toString();
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Ciudad'),
-        DropdownButton(
-          value: widget.controller.text != ''
-              ? widget.controller.text
-              : (cities.isNotEmpty ? value : cities[0].id.toString()),
-          icon: const Icon(Icons.arrow_downward),
-          elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
-          underline: Container(
-            height: 2,
-            color: Colors.deepPurpleAccent,
-          ),
-          onChanged: (String? newValue) {
-            setState(() {
-              value = newValue!;
-              widget.controller.text = newValue;
-            });
-            // print(newValue);
-          },
-          items: List.generate(
-            cities.length,
-            (index) {
-              return DropdownMenuItem(
-                child: Text(cities[index].name),
-                value: cities[index].id.toString(),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-//PAGINA FINAL DEL FORMULARIO
-class PaginaFinal extends StatelessWidget {
-  const PaginaFinal({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    print(imagenes);
-    return ListView(padding: const EdgeInsets.all(20), children: [
-      Row(
-        children: [
-          Flexible(
-            child: DatePicker(loadDateController, 'Fecha de carga'),
-          ),
-          Flexible(
-            child: LoadTimePicker(loadHourController, 'Hora de carga'),
-          ),
-        ],
-      ),
-      Row(
-        children: [
-          Flexible(
-            child: LoadFormField(
-              esperaCargaController,
-              'Espera en carga',
-              type: TextInputType.number,
-            ),
-          ),
-          Flexible(
-            child: LoadFormField(esperaDescargaController, 'Espera en descarga',
-                type: TextInputType.number),
-          ),
-        ],
-      ),
-      Row(
-        children: [
-          Flexible(
-            child: IsUrgent(),
-          ),
-          // Flexible(
-          //     child: LoadFormField(
-          //   loadDateController,
-          //   'Cargar Imágenes',
-          //   onFocus: () => _picker,
-          //   showCursor: true,
-          //   readOnly: true,
-          // ))
-        ],
-      ),
-
-      //Descripción
-      LoadFormField(
-        observacionesController,
-        'Observaciones',
-        type: TextInputType.multiline,
-        action: TextInputAction.next,
-      ),
-      ButtonBar(
-        children: [
-          const PrevPageButton(),
-          IconButton(
-              onPressed: () async {
-                Load load = Load();
-                load.createLoad({
-                  'vehicle_type_id': 1,
-                  'product_category_id': categoriaController.text,
-                  'product': productController.text,
-                  'vehicles_quantity': vehiculosController.text,
-                  'helpers_quantity': ayudantesController.text,
-                  'weight': pesoController.text,
-                  'measurement_unit_id': unidadMedidaController.text,
-                  'initial_offer': ofertaInicialController.text,
-                  'state_id': originStateController.text,
-                  'city_id': originCityController.text,
-                  'address': originAddressController.text,
-                  'latitude':
-                      originCoordsController.text.split(',')[0].toString(),
-                  'longitude':
-                      originCoordsController.text.split(',')[1].toString(),
-                  'destination_state_id': destinStateController.text,
-                  'destination_city_id': destinCityController.text,
-                  'destination_address': destinAddressController.text,
-                  'destination_latitude':
-                      destinCoordsController.text.split(',')[0].toString(),
-                  'destination_longitude':
-                      destinCoordsController.text.split(',')[1].toString(),
-                  'pickup_at': loadDateController.text,
-                  'pickup_time': loadHourController.text,
-                  'payment_term_after_delivery': 1,
-                  'wait_in_origin': esperaCargaController.text,
-                  'wait_in_destination': esperaDescargaController.text,
-                  'loadId': loadId
-                }, imagenes,
-                    context: context, update: hasLoadData, loadId: loadId);
-              },
-              icon: const Icon(Icons.upload))
-        ],
-      )
-    ]);
-  }
-}
-
-class IsUrgent extends StatefulWidget {
-  IsUrgent({Key? key}) : super(key: key);
-
-  @override
-  State<IsUrgent> createState() => _IsUrgentState();
-}
-
-class _IsUrgentState extends State<IsUrgent> {
-  bool checked = false;
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text('Es urgente?'),
-        Checkbox(
-          value: checked,
-          onChanged: (newVal) => setState(
-            () {
-              checked = newVal!;
-              isUrgentController.text = checked ? '1' : '0';
-            },
-          ),
+          items: brandsSelectList,
         )
       ],
     );
@@ -776,9 +558,9 @@ class _DatePickerState extends State<DatePicker> {
         selectedDate = picked;
         widget.controller.text = selectedDate.year.toString() +
             '-' +
-            selectedDate.day.toString() +
+            selectedDate.month.toString() +
             '-' +
-            selectedDate.month.toString();
+            selectedDate.day.toString();
       });
     }
   }

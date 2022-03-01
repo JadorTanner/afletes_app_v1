@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 
 List<Vehicle> vehicles = [];
 
-Future<List<Vehicle>> getMyVechicles() async {
+Future<List<Vehicle>> getMyVehicles() async {
   Response response = await Api().getData('user/my-vehicles');
   vehicles.clear();
   if (response.statusCode == 200) {
@@ -19,18 +19,22 @@ Future<List<Vehicle>> getMyVechicles() async {
     if (jsonResponse['success']) {
       var data = jsonResponse['data'];
       if (data.isNotEmpty) {
+        print(data[0]);
         data.asMap().forEach((key, vehicle) {
           vehicles.add(Vehicle(
             id: vehicle['id'],
             licensePlate: vehicle['license_plate'],
-            yearOfProd: vehicle['year_of_production'],
+            yearOfProd: vehicle['year_of_production'] ?? 0,
             model: vehicle['model'],
-            maxCapacity: vehicle['max_capacity'],
-            measurementUnit: vehicle['measurement_unit_id'],
-            vtoMunicipal: vehicle['expiration_date_vehicle_authorization'],
-            vtoDinatran: vehicle['expiration_date_dinatran_authorization'],
-            vtoSenacsa: vehicle['expiration_date_senacsa_authorization'],
-            vtoSeguro: vehicle['expiration_date_insurance'],
+            brand: vehicle['vehicle_brand_id'],
+            maxCapacity: double.parse(vehicle['max_capacity']),
+            measurementUnitId: vehicle['measurement_unit_id'],
+            vtoMunicipal:
+                vehicle['expiration_date_vehicle_authorization'] ?? '',
+            vtoDinatran:
+                vehicle['expiration_date_dinatran_authorization'] ?? '',
+            vtoSenacsa: vehicle['expiration_date_senacsa_authorization'] ?? '',
+            vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
           ));
         });
         return vehicles;
@@ -45,14 +49,14 @@ Future<List<Vehicle>> getMyVechicles() async {
   return vehicles;
 }
 
-class MyVechiclesPage extends StatefulWidget {
-  MyVechiclesPage({Key? key}) : super(key: key);
+class MyVehiclesPage extends StatefulWidget {
+  MyVehiclesPage({Key? key}) : super(key: key);
 
   @override
-  State<MyVechiclesPage> createState() => _MyVechiclesPageState();
+  State<MyVehiclesPage> createState() => _MyVehiclesPageState();
 }
 
-class _MyVechiclesPageState extends State<MyVechiclesPage> {
+class _MyVehiclesPageState extends State<MyVehiclesPage> {
   @override
   void initState() {
     super.initState();
@@ -63,7 +67,7 @@ class _MyVechiclesPageState extends State<MyVechiclesPage> {
     return BaseApp(
       FutureBuilder<List<Vehicle>>(
         initialData: const [],
-        future: getMyVechicles(),
+        future: getMyVehicles(),
         builder: (context, snapshot) {
           List items = [];
           if (snapshot.connectionState == ConnectionState.done) {
@@ -86,16 +90,16 @@ class _MyVechiclesPageState extends State<MyVechiclesPage> {
             padding: const EdgeInsets.all(20),
             children: [
               TextButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/create-vehicle'),
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed('/create-vehicle', arguments: null),
                   icon: const Icon(Icons.add),
-                  label: const Text('Agregar carga')),
+                  label: const Text('Agregar vehículo')),
               ...items
             ],
           );
         },
       ),
-      title: 'Mis cargas',
+      title: 'Mis vehículos',
     );
   }
 }
@@ -110,30 +114,28 @@ class VehicleCard extends StatelessWidget {
   bool hasData;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        margin: const EdgeInsets.only(bottom: 15),
-        elevation: 10,
-        child: GestureDetector(
-          onTap: hasData
-              ? () => Navigator.of(context)
-                      .pushNamed('/create-vehicle', arguments: {
-                    'id': vehicles[index].id,
-                    'licensePlate': vehicles[index].licensePlate,
-                    'yearOfProd': vehicles[index].yearOfProd,
-                    'model': vehicles[index].model,
-                    'maxCapacity': vehicles[index].maxCapacity,
-                    'measurementUnit': vehicles[index].measurementUnit,
-                    'vtoMunicipal': vehicles[index].vtoMunicipal,
-                    'vtoDinatran': vehicles[index].vtoDinatran,
-                    'vtoSenacsa': vehicles[index].vtoSenacsa,
-                    'vtoSeguro': vehicles[index].vtoSeguro,
-                  })
-              : null,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: double.infinity,
-            child: CarCard2(vehicles[index]),
-          ),
-        ));
+    return GestureDetector(
+      onTap: hasData
+          ? () =>
+              Navigator.of(context).pushNamed('/create-vehicle', arguments: {
+                'id': vehicles[index].id,
+                'chapa': vehicles[index].licensePlate,
+                'fabricacion': vehicles[index].yearOfProd,
+                'model': vehicles[index].model,
+                'marca': vehicles[index].brand,
+                'peso': vehicles[index].maxCapacity,
+                'unidadMedida': vehicles[index].measurementUnit,
+                'vtoMunicipal': vehicles[index].vtoMunicipal,
+                'vtoDinatran': vehicles[index].vtoDinatran,
+                'vtoSenacsa': vehicles[index].vtoSenacsa,
+                'vtoSeguro': vehicles[index].vtoSeguro,
+              })
+          : null,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        width: double.infinity,
+        child: hasData ? CarCard2(vehicles[index]) : null,
+      ),
+    );
   }
 }

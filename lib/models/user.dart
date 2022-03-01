@@ -29,6 +29,8 @@ class User extends ChangeNotifier {
       firstName: userData['first_name'],
       lastName: userData['last_name'],
       email: userData['email'],
+      isCarrier: userData['is_carrier'],
+      isLoadGenerator: userData['is_load_generator'],
     );
   }
 

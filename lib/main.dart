@@ -13,6 +13,8 @@ import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
+import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
+import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -214,10 +216,11 @@ class _AfletesAppState extends State<AfletesApp> {
         '/register': (context) => RegisterPage(),
         '/home': (context) => const Home(),
         '/loads': (context) => const Loads(),
-        '/vehicles': (context) => const Vehicles(),
+        '/vehicles': (context) => Vehicles(),
         '/my-loads': (context) => MyLoadsPage(),
         '/create-load': (context) => CreateLoadPage(),
-        '/my-vehicles': (context) => const Vehicles(),
+        '/create-vehicle': (context) => CreateVehicle(),
+        '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),
       },
     );
