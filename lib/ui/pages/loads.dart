@@ -74,21 +74,7 @@ class _LoadsState extends State<Loads> {
   @override
   Widget build(BuildContext context) {
     return BaseApp(
-      RefreshIndicator(
-          child: AnimatedList(
-            key: globalKey,
-            padding: const EdgeInsets.all(20),
-            itemBuilder: (context, index, animation) => SizeTransition(
-              key: UniqueKey(),
-              sizeFactor: animation,
-              child: LoadCard(loads[index]),
-            ),
-          ),
-          // child: ListView.builder(
-          //   padding: const EdgeInsets.all(20),
-          //   itemBuilder: (context, index) => LoadCard(loads[index]),
-          // ),
-          onRefresh: () => getLoads()),
+      page,
     );
   }
 }
