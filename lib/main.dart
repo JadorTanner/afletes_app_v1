@@ -114,8 +114,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<User>(create: (context) => User()),
         ChangeNotifierProvider<ChatProvider>(
-            create: (context) => ChatProvider())
+            create: (context) => ChatProvider()),
       ],
       child: AfletesApp(),
     ),
@@ -164,11 +165,7 @@ class _AfletesAppState extends State<AfletesApp> {
       Map jsonData = jsonDecode(event.data!);
       print(jsonData);
       ChatProvider chat = context.read<ChatProvider>();
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      User user =
-          User(userData: jsonDecode(sharedPreferences.getString('user')!))
-              .userFromArray();
+      User user = context.read<User>().user;
       print(user.id);
       if (user.id != jsonData['sender_id']) {
         if (chat.negotiationId == jsonData['negotiation_id']) {

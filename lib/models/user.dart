@@ -7,6 +7,9 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class User extends ChangeNotifier {
+  User? _user = null;
+  User get user => _user!;
+
   Map userData = {};
   String firstName = '';
   String lastName = '';
@@ -51,6 +54,11 @@ class User extends ChangeNotifier {
     this.cellphone = '',
   });
 
+  setUser(User newUser) {
+    _user = newUser;
+    notifyListeners();
+  }
+
   Future<User> getUser() async {
     SharedPreferences sh = await SharedPreferences.getInstance();
     User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'))
@@ -83,10 +91,10 @@ class User extends ChangeNotifier {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
             Map userJson = responseBody['data']['user'];
+            setUser(User(userData: userJson).userFromArray());
             localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
-            notifyListeners();
             return true;
           } else {
             return false;
@@ -188,6 +196,7 @@ class User extends ChangeNotifier {
         sharedPreferences.setString(
             'user', jsonEncode(responseBody['data']['user']));
         sharedPreferences.setString('token', responseBody['data']['token']);
+        setUser(User(userData: responseBody['data']['user']).userFromArray());
         return true;
       } else {
         return false;
