@@ -18,7 +18,6 @@ Future<List<Negotiation>> getNegotiations() async {
   Response response = await api.getData('user/my-negotiations');
   if (response.statusCode == 200) {
     Map jsonResponse = jsonDecode(response.body);
-    print(jsonResponse);
     if (jsonResponse['success']) {
       List data = jsonResponse['data'];
       data.asMap().forEach((key, negotiation) {
@@ -30,10 +29,16 @@ Future<List<Negotiation>> getNegotiations() async {
             vehicleId: negotiation['vehicle_id'],
             stateId: negotiation['negotiation_state_id'],
             fecha: negotiation['fecha'],
-            // negotiationLoad: Load(
-            //     product: negotiation['negotiation_load'] != null
-            //         ? negotiation['negotiation_load']['product']
-            //         : ''),
+            negotiationLoad: Load(
+              id: negotiation['negotiation_load']['id'],
+              product: negotiation['negotiation_load']['product'] ?? '',
+              description: negotiation['negotiation_load']['description'] ?? '',
+              weight: double.parse(negotiation['negotiation_load']['weight']
+                  .replaceAll('.00', '')),
+              initialOffer: int.parse(negotiation['negotiation_load']
+                      ['initial_offer']
+                  .replaceAll('.00', '')),
+            ),
           ),
         );
       });
@@ -61,23 +66,6 @@ class _MyNegotiationsState extends State<MyNegotiations> {
         initialData: const [],
         future: getNegotiations(),
         builder: (context, snapshot) {
-          // List items = [];
-          // if (snapshot.connectionState == ConnectionState.done) {
-          //   items = List.generate(
-          //       negotiations.length,
-          //       (index) => NegotiationCard(
-          //             index,
-          //             hasData: true,
-          //           ));
-          // } else {
-          //   items = List.generate(
-          //     5,
-          //     (index) => NegotiationCard(
-          //       index,
-          //       hasData: false,
-          //     ),
-          //   );
-          // }
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -107,47 +95,51 @@ class _MyNegotiationsState extends State<MyNegotiations> {
                           CircleAvatar(
                             maxRadius: 50,
                             minRadius: 50,
-                            backgroundColor: Colors.white,
-                            child: Text('PR'),
-                            // child: Text(negotiations.isNotEmpty
-                            //     ? (negotiations[index].negotiationLoad != null
-                            //         ? negotiations[index]
-                            //             .negotiationLoad!
-                            //             .product
-                            //         : '')
-                            //     : ''),
+                            // backgroundColor: Colors.white,
+                            child: Text(negotiations.isNotEmpty
+                                ? (negotiations[index].negotiationLoad != null
+                                    ? negotiations[index]
+                                        .negotiationLoad!
+                                        .product
+                                    : '')
+                                : ''),
+                          ),
+                          SizedBox(
+                            width: 20,
                           ),
                           Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               negotiations.isNotEmpty
-                                  ? Text('producto')
-                                  // ? Text(negotiations[index]
-                                  //             .negotiationLoad!
-                                  //             .product !=
-                                  //         ''
-                                  //     ? negotiations[index]
-                                  //         .negotiationLoad!
-                                  //         .product
-                                  //     : 'Producto')
+                                  ? Text(negotiations[index]
+                                              .negotiationLoad!
+                                              .product !=
+                                          ''
+                                      ? negotiations[index]
+                                          .negotiationLoad!
+                                          .product
+                                      : 'Producto')
                                   : CustomPaint(
-                                      painter: OpenPainter(100, 10, 10, -10),
+                                      painter: OpenPainter(50, 10, 10, -10),
                                     ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  negotiations.isNotEmpty
-                                      ? Text('Algo')
-                                      : CustomPaint(
-                                          painter: OpenPainter(50, 10, 10, 20),
-                                        ),
-                                  negotiations.isNotEmpty
-                                      ? Text('Algo más')
-                                      : CustomPaint(
-                                          painter: OpenPainter(100, 10, 65, 20),
-                                        ),
-                                ],
-                              )
+                              negotiations.isNotEmpty
+                                  ? Text('Oferta inicial: ' +
+                                      negotiations[index]
+                                          .negotiationLoad!
+                                          .initialOffer
+                                          .toString())
+                                  : CustomPaint(
+                                      painter: OpenPainter(100, 10, 10, 5),
+                                    ),
+                              negotiations.isNotEmpty
+                                  ? Text('Peso: ' +
+                                      negotiations[index]
+                                          .negotiationLoad!
+                                          .weight
+                                          .toString())
+                                  : CustomPaint(
+                                      painter: OpenPainter(100, 10, 10, 20),
+                                    ),
                             ],
                           )
                         ],

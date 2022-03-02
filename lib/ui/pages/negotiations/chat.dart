@@ -19,6 +19,7 @@ User user = User();
 List<ChatMessage> messages = [];
 
 late bool canOffer;
+late bool toPay = false;
 
 userData() async {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -38,6 +39,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   //           .removeItem(0, (context, animation) => const SizedBox.shrink())
   //       : null;
   // });
+  FocusManager.instance.primaryFocus?.unfocus();
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
   if (response.statusCode == 200) {
@@ -59,6 +61,10 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
     if (jsonResp['data']['negotiation_state']['id'] != 6) {
       context.read<ChatProvider>().setCanOffer(false);
+      if (jsonResp['data']['negotiation_state']['id'] == 2 &&
+          user.isLoadGenerator) {
+        context.read<ChatProvider>().setToPay(true);
+      }
     } else {
       context.read<ChatProvider>().setCanOffer(true);
     }
@@ -67,10 +73,13 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 }
 
 Future sendMessage(id, BuildContext context, ChatProvider chat) async {
+  FocusManager.instance.primaryFocus?.unfocus();
+  String offer = oferta.text;
+  oferta.text = '';
   Api api = Api();
   Response response = await api.postData('negotiation/send-message', {
     'negotiation_id': id,
-    'message': oferta.text,
+    'message': offer,
     'is_final_offer': false,
     'user_id': receiverId
   });
@@ -90,11 +99,14 @@ Future sendMessage(id, BuildContext context, ChatProvider chat) async {
   }
 }
 
-Future cancelNegotiation(id) async {
+Future cancelNegotiation(id, context) async {
   Api api = Api();
   Response response = await api.postData('negotiation/reject', {
     'id': id,
   });
+  if (response.statusCode == 200) {
+    context.read<ChatProvider>().setCanOffer(false);
+  }
 
   print(response.body);
 }
@@ -107,6 +119,7 @@ Future acceptNegotiation(id, context) async {
 
   print(response.body);
   if (response.statusCode == 200) {
+    context.read<ChatProvider>().setCanOffer(false);
     if (user.isLoadGenerator) {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => Payment(id),
@@ -145,24 +158,52 @@ class _NegotiationChatState extends State<NegotiationChat> {
               child: ChatPanel(),
             ),
             OfferInputSection(widget: widget),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                TextButton.icon(
-                  onPressed: () => acceptNegotiation(widget.id, context),
-                  icon: const Icon(Icons.check),
-                  label: const Text('Aceptar'),
-                ),
-                TextButton.icon(
-                  onPressed: () => cancelNegotiation(widget.id),
-                  icon: const Icon(Icons.cancel),
-                  label: const Text('Rechazar'),
-                ),
-              ],
-            )
+            ButtonsSection(widget: widget)
           ],
         ),
       ),
+    );
+  }
+}
+
+class ButtonsSection extends StatelessWidget {
+  const ButtonsSection({
+    Key? key,
+    required this.widget,
+  }) : super(key: key);
+
+  final NegotiationChat widget;
+
+  @override
+  Widget build(BuildContext context) {
+    toPay = context.watch<ChatProvider>().toPay;
+
+    return ButtonBar(
+      alignment: MainAxisAlignment.center,
+      children: toPay
+          ? [
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => Payment(widget.id),
+                  ),
+                ),
+                icon: const Icon(Icons.attach_money),
+                label: const Text('Pagar'),
+              ),
+            ]
+          : [
+              TextButton.icon(
+                onPressed: () => acceptNegotiation(widget.id, context),
+                icon: const Icon(Icons.check),
+                label: const Text('Aceptar'),
+              ),
+              TextButton.icon(
+                onPressed: () => cancelNegotiation(widget.id, context),
+                icon: const Icon(Icons.cancel),
+                label: const Text('Rechazar'),
+              ),
+            ],
     );
   }
 }

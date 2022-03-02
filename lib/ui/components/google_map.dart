@@ -62,17 +62,18 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
         ),
       );
     });
-    if (markers.isNotEmpty) {
-      setState(() {
-        mapController.animateCamera(CameraUpdate.newLatLngZoom(
-            LatLng(position.latitude, position.longitude), 6));
-      });
-    }
+    // if (markers.isNotEmpty) {
+    //   setState(() {
+    //     mapController.animateCamera(CameraUpdate.newLatLngZoom(
+    //         LatLng(position.latitude, position.longitude), 6));
+    //   });
+    // }
   }
 
   void _onMapCreated(GoogleMapController controller) {
     print('created map');
     mapController = controller;
+    // mapController.setMapStyle('');
     getPosition();
   }
 

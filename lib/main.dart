@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
+import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
@@ -201,7 +202,7 @@ class _AfletesAppState extends State<AfletesApp> {
                   ChatMessage(jsonData['message'], jsonData['sender_id'],
                       jsonData['negotiation_id']),
                 );
-                if (jsonData['is_final_offer']) {
+                if (jsonData['is_final_offer'] == 'true') {
                   context.read<ChatProvider>().setCanOffer(false);
                 }
               }
@@ -279,7 +280,7 @@ class _AfletesAppState extends State<AfletesApp> {
         '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),
       },
-      navigatorKey: navigatorKey,
+      // navigatorKey: navigatorKey,
     );
   }
 }

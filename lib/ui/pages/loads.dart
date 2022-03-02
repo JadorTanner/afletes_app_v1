@@ -255,23 +255,26 @@ class _LoadsState extends State<Loads> {
           List data = jsonResponse['data']['data'];
           data.asMap().forEach((key, load) {
             loads.insert(
-                0,
-                Load(
-                  id: load['id'],
-                  addressFrom: load['address'],
-                  cityFromId: load['city_id'],
-                  stateFromId: load['state_id'],
-                  initialOffer: int.parse(
-                      load['initial_offer'].toString().replaceAll('.00', '')),
-                  longitudeFrom: load['longitude'],
-                  latitudeFrom: load['latitude'],
-                  destinLongitude: load['destination_longitude'],
-                  destinLatitude: load['destination_latitude'],
-                  destinAddress: load['destination_address'],
-                  destinCityId: load['destination_city_id'],
-                  destinStateId: load['destination_state_id'],
-                  product: load['product'] ?? '',
-                ));
+              0,
+              Load(
+                id: load['id'],
+                addressFrom: load['address'],
+                cityFromId: load['city_id'],
+                stateFromId: load['state_id'],
+                initialOffer: int.parse(
+                    load['initial_offer'].toString().replaceAll('.00', '')),
+                longitudeFrom: load['longitude'],
+                latitudeFrom: load['latitude'],
+                destinLongitude: load['destination_longitude'],
+                destinLatitude: load['destination_latitude'],
+                destinAddress: load['destination_address'],
+                destinCityId: load['destination_city_id'],
+                destinStateId: load['destination_state_id'],
+                weight: double.parse(load['weight']),
+                product: load['product'] ?? '',
+                attachments: load['attachments'] ?? [],
+              ),
+            );
             animatedListKey.currentState != null
                 ? animatedListKey.currentState!
                     .insertItem(0, duration: const Duration(milliseconds: 100))
@@ -326,7 +329,7 @@ class _LoadsState extends State<Loads> {
                                 // ),
                                 onRefresh: () => getLoads()),
                             snapshot.connectionState == ConnectionState.done
-                                ? LoadsMap()
+                                ? const LoadsMap()
                                 : const Center(
                                     child: CircularProgressIndicator(),
                                   )
@@ -361,12 +364,13 @@ class _LoadsState extends State<Loads> {
 }
 
 class LoadsMap extends StatefulWidget {
-  LoadsMap({Key? key}) : super(key: key);
+  const LoadsMap({Key? key}) : super(key: key);
   @override
   State<LoadsMap> createState() => _LoadsMapState();
 }
 
-class _LoadsMapState extends State<LoadsMap> {
+class _LoadsMapState extends State<LoadsMap>
+    with AutomaticKeepAliveClientMixin {
   late List<OverlayEntry> initialEntries;
 
   @override
@@ -376,6 +380,7 @@ class _LoadsMapState extends State<LoadsMap> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return AfletesGoogleMap(
       loads: loads,
       onTapMarker: onLoadTap,
@@ -385,6 +390,10 @@ class _LoadsMapState extends State<LoadsMap> {
     //   initialEntries: initialEntries,
     // );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 // class LoadCard extends StatelessWidget {
@@ -446,7 +455,11 @@ class LoadCard extends StatelessWidget {
                     },
                   ),
                 ),
+                const SizedBox(
+                  width: 20,
+                ),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(load.product != '' ? load.product : 'Producto'),
                     Row(

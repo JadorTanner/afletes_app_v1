@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,7 +61,21 @@ class _BaseAppState extends State<BaseApp> {
                       const SizedBox(
                         height: 25,
                       ),
-                      DrawerItem('/my-profile', 'Mi perfil', Icons.person),
+                      TextButton.icon(
+                        onPressed: () => {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => MyProfilePage(user),
+                          ))
+                        },
+                        icon: CircleAvatar(
+                          child: Icon(Icons.person),
+                        ),
+                        label: Container(
+                          padding: const EdgeInsets.all(15),
+                          width: double.infinity,
+                          child: Text('Mi perfil'),
+                        ),
+                      ),
                       const SizedBox(
                         height: 15,
                       ),
@@ -68,6 +83,13 @@ class _BaseAppState extends State<BaseApp> {
                           user.isCarrier ? '/my-vehicles' : '/my-loads',
                           user.isCarrier ? 'Mis vehículos' : 'Mis cargas',
                           Icons.local_activity),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      DrawerItem(
+                          user.isCarrier ? '/loads' : '/vehicles',
+                          user.isCarrier ? 'Buscar cargas' : 'Buscar vehículos',
+                          Icons.search),
                       const SizedBox(
                         height: 15,
                       ),

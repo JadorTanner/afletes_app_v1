@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class Vehicle {
       vtoSeguro;
   bool situacion, esActivo, senacsa, dinatran, seguro;
   List imgs;
+  User? owner;
 
   Vehicle({
     this.id = 0,
@@ -41,6 +43,7 @@ class Vehicle {
     this.senacsa = false,
     this.seguro = false,
     this.imgs = const [],
+    this.owner,
   });
 
   createVehicle(

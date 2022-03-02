@@ -1,16 +1,26 @@
+import 'dart:convert';
+
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class CarCard2 extends StatelessWidget {
+class CarCard2 extends StatefulWidget {
   CarCard2(this.vehicle, {this.onTap, Key? key}) : super(key: key);
   var onTap;
   Vehicle vehicle;
+
+  @override
+  State<CarCard2> createState() => _CarCard2State();
+}
+
+class _CarCard2State extends State<CarCard2> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap ?? () => {},
+      onTap: widget.onTap ?? () => {},
       // onTap: () => Navigator.of(context)
       //     .push(MaterialPageRoute(builder: (context) => VehicleInfo)),
       child: Container(
@@ -42,9 +52,10 @@ class CarCard2 extends StatelessWidget {
               //         image: AssetImage('assets/img/image 121.png'),
               //         fit: BoxFit.fitWidth)),
               child: Hero(
-                tag: 'vehicle_' + vehicle.id.toString(),
-                child: vehicle.imgs.isNotEmpty
-                    ? Image.network(vehicleImgUrl + vehicle.imgs[0]['path'])
+                tag: 'vehicle_' + widget.vehicle.id.toString(),
+                child: widget.vehicle.imgs.isNotEmpty
+                    ? Image.network(
+                        vehicleImgUrl + widget.vehicle.imgs[0]['path'])
                     : const Image(
                         image: AssetImage('assets/img/image 121.png'),
                       ),
@@ -65,7 +76,7 @@ class CarCard2 extends StatelessWidget {
                               color: Color.fromRGBO(22, 22, 26, 1)),
                         ),
                         TextSpan(
-                          text: ' ' + vehicle.licensePlate,
+                          text: ' ' + widget.vehicle.licensePlate,
                           style: const TextStyle(
                               color: Color.fromRGBO(22, 22, 26, 1),
                               fontFamily: 'Inter',
@@ -89,19 +100,19 @@ class CarCard2 extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    (vehicle.dinatran
+                    (widget.vehicle.dinatran
                         ? const Text(
                             'DINATRAN',
                             style: TextStyle(fontSize: 12),
                           )
                         : const SizedBox.shrink()),
-                    (vehicle.senacsa
+                    (widget.vehicle.senacsa
                         ? const Text(
                             'SENACSA',
                             style: TextStyle(fontSize: 12),
                           )
                         : const SizedBox.shrink()),
-                    (vehicle.seguro
+                    (widget.vehicle.seguro
                         ? const Text(
                             'SEGURO',
                             style: TextStyle(fontSize: 12),
@@ -112,7 +123,10 @@ class CarCard2 extends StatelessWidget {
                     //   style: TextStyle(fontSize: 12),
                     // ) : const SizedBox.shrink()),
                   ],
-                )
+                ),
+                Text(widget.vehicle.owner != null
+                    ? widget.vehicle.owner!.fullName
+                    : '')
               ],
             )
           ],

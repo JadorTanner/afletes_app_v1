@@ -3,11 +3,15 @@ import 'dart:convert';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+
+int page = 1;
+List<Vehicle> vehicles = [];
 
 class Vehicles extends StatefulWidget {
   Vehicles({this.id = null, Key? key}) : super(key: key);
@@ -19,15 +23,14 @@ class Vehicles extends StatefulWidget {
 }
 
 class _VehiclesState extends State<Vehicles> {
-  List<Vehicle> vehicles = [];
-
   Future<List> getVehicles([int? id = null]) async {
     vehicles.clear();
-    Response response = await Api().getData('user/find-vehicles');
+    Response response =
+        await Api().getData('user/find-vehicles?page=' + page.toString());
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       print(jsonResponse['data']['data'][0]['vehicleattachments']);
-      print(jsonResponse['data']['data'][0]['vehicleBrand']);
+      print(jsonResponse['data']['data'][0]['createdBy']);
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
           for (var vehicle in jsonResponse['data']['data']) {
@@ -41,6 +44,9 @@ class _VehiclesState extends State<Vehicles> {
                     vehicle['dinatran_authorization_attachment_id'] != null
                         ? true
                         : false,
+                // owner: vehicle['owner_name'] != null
+                //     ? User(fullName: vehicle['owner_name'])
+                //     : null,
                 imgs: vehicle['vehicleattachments'] ?? ''));
           }
         }
@@ -48,6 +54,51 @@ class _VehiclesState extends State<Vehicles> {
     }
 
     return vehicles;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseApp(
+      FutureBuilder(
+        future: getVehicles(widget.id),
+        initialData: const [],
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.connectionState == ConnectionState.done) {
+            return RefreshIndicator(
+                child: VehiclesList(), onRefresh: getVehicles);
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+}
+
+class VehiclesList extends StatefulWidget {
+  VehiclesList({Key? key}) : super(key: key);
+
+  @override
+  State<VehiclesList> createState() => _VehiclesListState();
+}
+
+class _VehiclesListState extends State<VehiclesList> {
+  final listViewController = ScrollController();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // listViewController.addListener(() {
+    //   final position = listViewController.offset /
+    //       listViewController.position.maxScrollExtent;
+    //   if (position >= 0.8) {
+    //     print('final');
+    //     setState(() {
+    //       page += 1;
+    //     });
+    //   }
+    // });
   }
 
   onVehicleTap(int id, BuildContext context) async {
@@ -69,11 +120,15 @@ class _VehiclesState extends State<Vehicles> {
 
       if (images.isNotEmpty) {
         for (var element in images) {
-          attachments.add(Image.network(vehicleImgUrl + element['filename']));
+          attachments.add(Image.network(vehicleImgUrl + element['path']));
         }
       }
+      late BuildContext bottomSheetContext;
+      late BuildContext loadsContext;
+      late BuildContext loadingContext;
+      bottomSheetContext = context;
       showModalBottomSheet(
-        context: context,
+        context: bottomSheetContext,
         backgroundColor: Colors.transparent,
         builder: (context) => Container(
           decoration: const BoxDecoration(
@@ -142,30 +197,208 @@ class _VehiclesState extends State<Vehicles> {
                 children: [
                   TextButton.icon(
                       onPressed: () async {
+                        loadsContext = context;
                         showDialog(
                           context: context,
                           builder: (context) => Dialog(
-                            child: ListView(
-                              children: [Text('carga'), Text('carga')],
+                            child: FutureBuilder<Map>(
+                              initialData: {},
+                              future: Future(() async {
+                                Api api = Api();
+                                Response response = await api.getData(
+                                    'user/my-loads?open=' + true.toString());
+                                if (response.statusCode == 200) {
+                                  return jsonDecode(response.body);
+                                } else {
+                                  return {};
+                                }
+                              }),
+                              builder: (context, snapshot) {
+                                Map? data = snapshot.connectionState ==
+                                        ConnectionState.done
+                                    ? snapshot.data
+                                    : {};
+                                return ListView(
+                                  padding: const EdgeInsets.all(20),
+                                  children: snapshot.connectionState ==
+                                          ConnectionState.done
+                                      ? [
+                                          const Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Mis cargas',
+                                              style: TextStyle(fontSize: 24),
+                                            ),
+                                          ),
+                                          const Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Pulse sobre la flecha para negociar',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 30,
+                                          ),
+                                          ...List.generate(
+                                              snapshot.data!['data'].length,
+                                              (index) {
+                                            return Card(
+                                              margin: const EdgeInsets.only(
+                                                  bottom: 20),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 10),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          data!['data'][index]
+                                                              ['product'],
+                                                          textScaleFactor: 1.1,
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        Text('Oferta inicial' +
+                                                            data['data'][index][
+                                                                    'initial_offer']
+                                                                .toString()),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        Text('Carga: ' +
+                                                            data['data'][index][
+                                                                    'pickup_at']
+                                                                .toString() +
+                                                            ' ' +
+                                                            data['data'][index][
+                                                                    'pickup_time']
+                                                                .toString()),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        Text('Desde: ' +
+                                                            data['data'][index]
+                                                                ['address']),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        Text('Hasta: ' +
+                                                            data['data'][index][
+                                                                    'destination_address']
+                                                                .toString()),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        (data['data'][index]
+                                                                ['is_urgent']
+                                                            ? const Text(
+                                                                'Urgente',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .red),
+                                                              )
+                                                            : const SizedBox
+                                                                .shrink()),
+                                                      ],
+                                                    ),
+                                                    //COMENZAR LA NEGOCIACION
+                                                    IconButton(
+                                                      onPressed: () async {
+                                                        Api api = Api();
+                                                        loadingContext =
+                                                            context;
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                const Dialog(
+                                                                  child: Center(
+                                                                    child:
+                                                                        CircularProgressIndicator(),
+                                                                  ),
+                                                                ));
+                                                        Response response =
+                                                            await api.postData(
+                                                                'negotiation/start-negotiation',
+                                                                {
+                                                              'load_id': data[
+                                                                      'data']
+                                                                  [index]['id'],
+                                                              'vehicle_id': id
+                                                            });
+
+                                                        if (response
+                                                                .statusCode ==
+                                                            200) {
+                                                          Navigator.pop(
+                                                              loadingContext);
+
+                                                          Navigator.pop(
+                                                              loadsContext);
+                                                          Navigator.pop(
+                                                              bottomSheetContext);
+                                                          Map jsonResponse =
+                                                              jsonDecode(
+                                                                  response
+                                                                      .body);
+                                                          if (jsonResponse[
+                                                              'success']) {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .push(
+                                                                    MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  NegotiationChat(
+                                                                      jsonResponse[
+                                                                              'data']
+                                                                          [
+                                                                          'negotiation_id']),
+                                                            ));
+                                                          } else {
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(SnackBar(
+                                                                    content: Text(
+                                                                        jsonResponse[
+                                                                            'message'])));
+                                                          }
+                                                        }
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.chevron_right),
+                                                      // label: const Text(
+                                                      //     'Negociar'),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          })
+                                        ]
+                                      : [
+                                          const Center(
+                                            child: CircularProgressIndicator(),
+                                          )
+                                        ],
+                                );
+                              },
                             ),
                           ),
                         );
-                        // Api api = Api();
-                        // Response response = await api.postData(
-                        //     'negotiation/start-negotiation', {
-                        //   'load_id': id,
-                        //   'initial_offer': intialOfferController.text
-                        // });
-
-                        // if (response.statusCode == 200) {
-                        //   Map jsonResponse = jsonDecode(response.body);
-                        //   if (jsonResponse['success']) {
-                        //     Navigator.of(context).push(MaterialPageRoute(
-                        //       builder: (context) => NegotiationChat(
-                        //           jsonResponse['data']['negotiation_id']),
-                        //     ));
-                        //   }
-                        // }
                       },
                       label: const Text('Negociar'),
                       icon: const Icon(Icons.check))
@@ -180,27 +413,14 @@ class _VehiclesState extends State<Vehicles> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(
-      FutureBuilder(
-        future: getVehicles(widget.id),
-        initialData: const [],
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          } else if (snapshot.connectionState == ConnectionState.done) {
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: List.generate(
-                  vehicles.length,
-                  (index) => CarCard2(
-                        vehicles[index],
-                        onTap: () => onVehicleTap(vehicles[index].id, context),
-                      )),
-            );
-          }
-          return const CircularProgressIndicator();
-        },
-      ),
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: List.generate(
+          vehicles.length,
+          (index) => CarCard2(
+                vehicles[index],
+                onTap: () => onVehicleTap(vehicles[index].id, context),
+              )),
     );
   }
 }

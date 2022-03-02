@@ -29,6 +29,9 @@ PageController pageController = PageController();
 late AfletesGoogleMap originMap;
 late AfletesGoogleMap deliveryMap;
 
+TextStyle titleStyles =
+    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+
 //CONTROLADORES DE INPUTS
 TextEditingController ubicacionController = TextEditingController(),
     productController = TextEditingController(),
@@ -260,7 +263,33 @@ class DatosGenerales extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
-          const NextPageButton()
+          NextPageButton(
+            validator: (callback) {
+              if (productController.text == '') {
+                return false;
+              }
+              if (pesoController.text == '') {
+                return false;
+              }
+              if (volumenController.text == '') {
+                return false;
+              }
+              if (vehiculosController.text == '') {
+                return false;
+              }
+              if (ayudantesController.text == '') {
+                return false;
+              }
+              if (ofertaInicialController.text == '') {
+                return false;
+              }
+              if (descriptionController.text == '') {
+                return false;
+              }
+              callback();
+              return true;
+            },
+          )
         ],
       ),
     );
@@ -346,7 +375,10 @@ class _ImagesPickerState extends State<ImagesPicker> {
                 ],
               )
             : const Center(
-                child: Icon(Icons.add_a_photo),
+                child: Icon(
+                  Icons.add_a_photo,
+                  size: 50,
+                ),
               ),
       ),
     );
@@ -449,16 +481,25 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
 }
 
 //PAGINA DE UBICACION ORIGEN
-class DatosUbicacion extends StatelessWidget {
+class DatosUbicacion extends StatefulWidget {
   DatosUbicacion({Key? key}) : super(key: key);
 
+  @override
+  State<DatosUbicacion> createState() => _DatosUbicacionState();
+}
+
+class _DatosUbicacionState extends State<DatosUbicacion>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return ListView(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Dónde está tu carga?'),
+          Text(
+            'Dónde está tu carga?',
+            style: titleStyles,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -480,31 +521,63 @@ class DatosUbicacion extends StatelessWidget {
                   argument.longitude.toString();
             }),
           ),
-          SizedBox(
-            height: 0,
+          Visibility(
             child: LoadFormField(originCoordsController, 'Coordenadas'),
+            visible: false,
           ),
-          const ButtonBar(
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
             children: [
               PrevPageButton(),
-              NextPageButton(),
+              NextPageButton(
+                validator: (callback) {
+                  if (originStateController.text == '') {
+                    return false;
+                  }
+                  if (originCityController.text == '') {
+                    return false;
+                  }
+                  if (originAddressController.text == '') {
+                    return false;
+                  }
+                  if (originCoordsController.text == '') {
+                    return false;
+                  }
+                  callback();
+                  return true;
+                },
+              ),
             ],
           )
         ]);
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 //PAGINA DE UBICACION ENTREGA
-class DatosUbicacionDelivery extends StatelessWidget {
+
+class DatosUbicacionDelivery extends StatefulWidget {
   DatosUbicacionDelivery({Key? key}) : super(key: key);
 
+  @override
+  State<DatosUbicacionDelivery> createState() => _DatosUbicacionDeliveryState();
+}
+
+class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return ListView(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Dónde quieres llevarla?'),
+          Text(
+            'Dónde quieres llevarla?',
+            style: titleStyles,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -526,14 +599,36 @@ class DatosUbicacionDelivery extends StatelessWidget {
             height: 0,
             child: LoadFormField(destinCoordsController, 'Coordenadas'),
           ),
-          const ButtonBar(
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
             children: [
               PrevPageButton(),
-              NextPageButton(),
+              NextPageButton(
+                validator: (callback) {
+                  if (destinStateController.text == '') {
+                    return false;
+                  }
+                  if (destinCityController.text == '') {
+                    return false;
+                  }
+                  if (destinAddressController.text == '') {
+                    return false;
+                  }
+                  if (destinCoordsController.text == '') {
+                    return false;
+                  }
+                  callback();
+                  return true;
+                },
+              ),
             ],
           )
         ]);
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 class DepartamentoPicker extends StatefulWidget {
@@ -689,6 +784,7 @@ class PaginaFinal extends StatelessWidget {
         action: TextInputAction.next,
       ),
       ButtonBar(
+        alignment: MainAxisAlignment.center,
         children: [
           const PrevPageButton(),
           IconButton(
@@ -840,13 +936,18 @@ class Load_TimePickerState extends State<LoadTimePicker> {
 //COMPONENTES
 
 class NextPageButton extends StatelessWidget {
-  const NextPageButton({Key? key}) : super(key: key);
-
+  NextPageButton({validator, Key? key}) : super(key: key);
+  var validator;
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () => pageController.nextPage(
-            duration: const Duration(milliseconds: 100), curve: Curves.ease),
+        onPressed: () => (validator != null
+            ? validator(() => pageController.nextPage(
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.ease))
+            : pageController.nextPage(
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.ease)),
         icon: const Icon(Icons.navigate_next));
   }
 }

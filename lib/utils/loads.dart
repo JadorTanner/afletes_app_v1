@@ -100,21 +100,38 @@ class Load {
     imagenes.forEach((file) async {
       request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
     });
-
+    BuildContext loadingContext = context;
+    showDialog(
+      context: loadingContext,
+      barrierDismissible: false,
+      builder: (context) => const Dialog(
+        backgroundColor: Colors.transparent,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
     StreamedResponse response = await request.send();
-    print(request.finalized);
     if (response.statusCode == 200) {
       Map responseBody = jsonDecode(await response.stream.bytesToString());
-      print(responseBody);
+      Navigator.pop(loadingContext);
       if (responseBody['success']) {
         if (context != null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseBody['message']),
+            ),
+          );
           Future.delayed(
-              Duration(seconds: 1), () => {Navigator.of(context).pop()});
+              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
         }
         return true;
       } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseBody['message']),
+          ),
+        );
         return false;
       }
     }
