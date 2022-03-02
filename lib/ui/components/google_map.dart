@@ -58,7 +58,7 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
           infoWindow: InfoWindow(
               title: load.product != '' ? load.product : load.addressFrom,
               snippet: 'Oferta inicial: ' + load.initialOffer.toString()),
-          onTap: () => widget.onTapMarker(load.id),
+          onTap: () => widget.onTapMarker(load.id, context),
         ),
       );
     });

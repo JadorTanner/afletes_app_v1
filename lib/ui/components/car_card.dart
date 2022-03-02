@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CarCard2 extends StatelessWidget {
-  CarCard2(this.vehicle, {Key? key}) : super(key: key);
-
+  CarCard2(this.vehicle, {this.onTap, Key? key}) : super(key: key);
+  var onTap;
   Vehicle vehicle;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: onTap ?? () => {},
       // onTap: () => Navigator.of(context)
       //     .push(MaterialPageRoute(builder: (context) => VehicleInfo)),
       child: Container(

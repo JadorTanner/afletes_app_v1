@@ -98,17 +98,19 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
               ),
             );
           }
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              TextButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/create-load'),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar carga')),
-              ...items
-            ],
-          );
+          return RefreshIndicator(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  TextButton.icon(
+                      onPressed: () =>
+                          Navigator.of(context).pushNamed('/create-load'),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Agregar carga')),
+                  ...items
+                ],
+              ),
+              onRefresh: getMyLoads);
         },
       ),
       title: 'Mis cargas',

@@ -31,11 +31,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         elevation: 0,
         backgroundColor: const Color(0xFFED8232),
       ),
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      // resizeToAvoidBottomInset: false,
+      body: ListView(
+        // mainAxisSize: MainAxisSize.max,
+        // mainAxisAlignment: MainAxisAlignment.start,
+        // crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Align(
             alignment: const AlignmentDirectional(-1, -1),
@@ -70,11 +70,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 ),
                 TextFormField(
                   controller: textController1,
-                  obscureText: false,
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.emailAddress,
-                  onEditingComplete: () => {},
-                  onChanged: (value) => {print(value)},
+                  // onEditingComplete: () => {},
+                  // onChanged: (value) => {print(value)},
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Ejemplo@gmail.com',
@@ -124,7 +123,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ],
             ),
           ),
-          const Spacer(),
+          // const Spacer(),
           RichText(
               textAlign: TextAlign.center,
               text: TextSpan(children: [
@@ -142,7 +141,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                 ),
               ])),
-          const Spacer(),
+          // const Spacer(),
         ],
       ),
     );
@@ -229,7 +228,7 @@ class _PasswordFieldState extends State<PasswordField> {
     return TextFormField(
       controller: textController2,
       obscureText: !passwordVisibility,
-      onEditingComplete: () => {},
+      // onEditingComplete: () => {},
       decoration: InputDecoration(
         labelText: 'Contraseña',
         enabledBorder: OutlineInputBorder(

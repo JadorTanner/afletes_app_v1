@@ -17,6 +17,7 @@ import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -29,7 +30,7 @@ import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 late AndroidNotificationChannel channel;
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 PusherOptions options = PusherOptions(
   encrypted: false,
@@ -141,6 +142,25 @@ class _AfletesAppState extends State<AfletesApp> {
     }
   }
 
+  listenNotifications() {
+    NotificationsApi.onNotifications.stream.listen((event) {
+      Map data = jsonDecode(event!);
+      print(data);
+      if (data['route'] == 'chat') {
+        if (navigatorKey.currentState != null) {
+          navigatorKey.currentState!.push(MaterialPageRoute(
+            builder: (context) => NegotiationChat(data['id']),
+          ));
+        }
+        // Navigator.of(context).pushReplacement(
+        //   MaterialPageRoute(
+        //     builder: (context) => NegotiationChat(data['negotiation_id']),
+        //   ),
+        // );
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -154,26 +174,39 @@ class _AfletesAppState extends State<AfletesApp> {
       print("error: ${error!.message}");
     });
 
+    NotificationsApi.init();
+    listenNotifications();
+
 // Subscribe to a private channel
     Channel pusherChannel = pusher.subscribe("negotiation-chat");
 
 // Bind to listen for events called "order-status-updated" sent to "private-orders" channel
     pusherChannel.bind('App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
-      print(event);
-      print(event!.data);
-      Map jsonData = jsonDecode(event.data!);
-      print(jsonData);
-      ChatProvider chat = context.read<ChatProvider>();
-      User user = context.read<User>().user;
-      print(user.id);
-      if (user.id != jsonData['sender_id']) {
-        if (chat.negotiationId == jsonData['negotiation_id']) {
-          chat.addMessage(
-            jsonData['negotiation_id'],
-            ChatMessage(jsonData['message'], jsonData['sender_id'],
-                jsonData['negotiation_id']),
-          );
+      if (event != null) {
+        if (event.data != null) {
+          ChatProvider chat = context.read<ChatProvider>();
+          String data = event.data!;
+          Map jsonData = jsonDecode(data);
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
+          User user =
+              User(userData: jsonDecode(sharedPreferences.getString('user')!))
+                  .userFromArray();
+          if (user.id != jsonData['sender_id']) {
+            if (user.id == jsonData['user_id']) {
+              if (chat.negotiationId == jsonData['negotiation_id']) {
+                chat.addMessage(
+                  jsonData['negotiation_id'],
+                  ChatMessage(jsonData['message'], jsonData['sender_id'],
+                      jsonData['negotiation_id']),
+                );
+                if (jsonData['is_final_offer']) {
+                  context.read<ChatProvider>().setCanOffer(false);
+                }
+              }
+            }
+          }
         }
       }
     });
@@ -182,21 +215,47 @@ class _AfletesAppState extends State<AfletesApp> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
-      print(message);
+      Map data = message.data;
       if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              icon: 'launch_background',
-              channelDescription: channel.description,
-            ),
-          ),
-        );
+        if (context.read<ChatProvider>().negotiationId == 0) {
+          // flutterLocalNotificationsPlugin.show(
+          //   notification.hashCode,
+          //   notification.title,
+          //   notification.body,
+          //   NotificationDetails(
+          //     android: AndroidNotificationDetails(
+          //       channel.id,
+          //       channel.name,
+          //       icon: 'launch_background',
+          //       channelDescription: channel.description,
+          //     ),
+          //   ),
+          // );
+          NotificationsApi.showNotification(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            // NotificationDetails(
+            //   android: AndroidNotificationDetails(
+            //     channel.id,
+            //     channel.name,
+            //     icon: 'launch_background',
+            //     channelDescription: channel.description,
+            //   ),
+            // ),
+          );
+        } else {
+          if (context.read<ChatProvider>().negotiationId !=
+              data['negotiation_id']) {
+            NotificationsApi.showNotification(
+              id: notification.hashCode,
+              title: notification.title,
+              body: notification.body,
+              payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            );
+          }
+        }
       }
     });
   }
@@ -220,6 +279,7 @@ class _AfletesAppState extends State<AfletesApp> {
         '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),
       },
+      navigatorKey: navigatorKey,
     );
   }
 }

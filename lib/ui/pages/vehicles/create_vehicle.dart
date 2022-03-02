@@ -2,11 +2,14 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +41,8 @@ late XFile? dinatranBack;
 late XFile? senacsa;
 late XFile? senacsaBack;
 late XFile? seguro;
+
+late GlobalKey<_ImagesPickerState> imagePickerKey;
 
 //CONTROLADORES DE INPUTS
 TextEditingController chapaController = TextEditingController(),
@@ -96,29 +101,43 @@ class _CreateVehicleState extends State<CreateVehicle> {
     super.initState();
   }
 
+  setValues(args) async {
+    if (args != null) {
+      hasVehicleData = true;
+      vehicleId = args['id'];
+      chapaController.text = args['chapa'];
+      pesoController.text = args['peso'].toString();
+      modeloController.text = args['model'] ?? '';
+      marcaController.text = args['marca'].toString();
+      fabricacionController.text = args['fabricacion'].toString();
+      unidadMedidaController.text = args['unidadMedida'].toString();
+      vtoMunicipalController.text = args['vtoMunicipal'];
+      vtoDinatranController.text = args['vtoDinatran'];
+      vtoSenacsaController.text = args['vtoSenacsa'];
+      vtoSeguroController.text = args['vtoSeguro'];
+      imagenes.clear();
+      if (args['imgs'].isNotEmpty) {
+        List.generate(args['imgs'].length, (index) async {
+          Response image =
+              await get(Uri.parse(vehicleImgUrl + args['imgs'][index]['path']));
+          imagenes.add(XFile.fromData(image.bodyBytes,
+              mimeType: args['imgs'][index]['path'].split('.')[1]));
+          imagePickerKey.currentState != null
+              ? imagePickerKey.currentState!.setState(() {})
+              : null;
+        });
+      }
+    } else {
+      hasVehicleData = false;
+      vehicleId = 0;
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    setState(() {
-      arguments = ModalRoute.of(context)!.settings.arguments;
-      if (arguments != null) {
-        hasVehicleData = true;
-        vehicleId = arguments['id'];
-        chapaController.text = arguments['chapa'];
-        pesoController.text = arguments['peso'].toString();
-        modeloController.text = arguments['modelo'] ?? '';
-        marcaController.text = arguments['marca'].toString();
-        fabricacionController.text = arguments['fabricacion'].toString();
-        unidadMedidaController.text = arguments['unidadMedida'].toString();
-        vtoMunicipalController.text = arguments['vtoMunicipal'];
-        vtoDinatranController.text = arguments['vtoDinatran'];
-        vtoSenacsaController.text = arguments['vtoSenacsa'];
-        vtoSeguroController.text = arguments['vtoSeguro'];
-      } else {
-        hasVehicleData = false;
-        vehicleId = 0;
-      }
-    });
+    arguments = ModalRoute.of(context)!.settings.arguments;
+    setValues(arguments);
   }
 
   @override
@@ -169,7 +188,6 @@ class DatosGenerales extends StatelessWidget {
                 child: LoadFormField(
                   modeloController,
                   'Modelo *',
-                  type: const TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
             ],
@@ -211,13 +229,11 @@ class Documentos extends StatelessWidget {
     return ListView(padding: const EdgeInsets.all(20), children: [
       Row(
         children: [
-          ImageInput(
-              'Cédula verde (Frente)', (XFile img) => greenCard = img, 170),
+          ImageInput('Cédula verde (Frente)', greenCard, 170),
           const SizedBox(
             width: 20,
           ),
-          ImageInput(
-              'Cédula verde (Atras)', (XFile img) => greenCardBack = img, 170),
+          ImageInput('Cédula verde (Atras)', greenCardBack, 170),
         ],
       ),
       const SizedBox(
@@ -225,13 +241,11 @@ class Documentos extends StatelessWidget {
       ),
       Row(
         children: [
-          ImageInput(
-              'Habilitación Munic.', (XFile img) => municipal = img, 170),
+          ImageInput('Habilitación Munic.', municipal, 170),
           const SizedBox(
             width: 20,
           ),
-          ImageInput('Habilitación Munic. (Atras)',
-              (XFile img) => municipalBack = img, 170),
+          ImageInput('Habilitación Munic. (Atras)', municipalBack, 170),
         ],
       ),
       DatePicker(
@@ -241,13 +255,11 @@ class Documentos extends StatelessWidget {
       ),
       Row(
         children: [
-          ImageInput(
-              'Habilitación DINATRAN', (XFile img) => dinatran = img, 170),
+          ImageInput('Habilitación DINATRAN', dinatran, 170),
           const SizedBox(
             width: 20,
           ),
-          ImageInput('Habilitación DINATRAN (Atras)',
-              (XFile img) => dinatranBack = img, 170),
+          ImageInput('Habilitación DINATRAN (Atras)', dinatranBack, 170),
         ],
       ),
       DatePicker(vtoDinatranController, 'Fecha de vto. Habilitación DINATRAN'),
@@ -256,12 +268,11 @@ class Documentos extends StatelessWidget {
       ),
       Row(
         children: [
-          ImageInput('Habilitación SENACSA', (XFile img) => senacsa = img, 170),
+          ImageInput('Habilitación SENACSA', senacsa, 170),
           const SizedBox(
             width: 20,
           ),
-          ImageInput('Habilitación SENACSA (Atras)',
-              (XFile img) => senacsaBack = img, 170),
+          ImageInput('Habilitación SENACSA (Atras)', senacsaBack, 170),
         ],
       ),
       DatePicker(vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
@@ -270,7 +281,7 @@ class Documentos extends StatelessWidget {
       ),
       Row(
         children: [
-          ImageInput('Seguro', (XFile img) => seguro = img, 170),
+          ImageInput('Seguro', seguro, 170),
         ],
       ),
       DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
@@ -331,7 +342,7 @@ class ImageInput extends StatefulWidget {
   ImageInput(this.title, this.fileVariable, this.width, {Key? key})
       : super(key: key);
   String title;
-  var fileVariable;
+  XFile? fileVariable;
   double width;
   @override
   State<ImageInput> createState() => _ImageInputState();
@@ -346,7 +357,7 @@ class _ImageInputState extends State<ImageInput> {
         img = await _picker.pickImage(source: ImageSource.gallery);
         if (img != null) {
           setState(() {
-            widget.fileVariable(img!);
+            widget.fileVariable = img;
           });
         }
       },
@@ -361,7 +372,11 @@ class _ImageInputState extends State<ImageInput> {
                 ? Image.file(
                     File(img!.path),
                   )
-                : null,
+                : (widget.fileVariable != null
+                    ? Image.file(
+                        File(widget.fileVariable!.path),
+                      )
+                    : null),
           ),
         ],
       ),
@@ -381,9 +396,18 @@ class ImagesPicker extends StatefulWidget {
 class _ImagesPickerState extends State<ImagesPicker> {
   int currentImage = 0;
   PageController imagePageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    imagePickerKey = GlobalKey<_ImagesPickerState>();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('rendered');
     return GestureDetector(
+      key: imagePickerKey,
       onTap: () async {
         List<XFile>? imgs = await _picker.pickMultiImage();
         imagenes = imgs ?? [];

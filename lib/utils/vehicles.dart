@@ -120,8 +120,9 @@ class Vehicle {
     });
 
     StreamedResponse response = await request.send();
+    Map responseBody = jsonDecode(await response.stream.bytesToString());
+    print(responseBody);
     if (response.statusCode == 200) {
-      Map responseBody = jsonDecode(await response.stream.bytesToString());
       if (responseBody['success']) {
         if (context != null) {
           ScaffoldMessenger.of(context)
@@ -131,7 +132,20 @@ class Vehicle {
         }
         return true;
       } else {
+        if (context != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          Future.delayed(
+              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+        }
         return false;
+      }
+    } else {
+      if (context != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+        // Future.delayed(
+        //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
       }
     }
   }

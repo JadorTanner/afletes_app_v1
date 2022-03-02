@@ -25,7 +25,7 @@ class User extends ChangeNotifier {
   String longitude = '';
   String cellphone = '';
 
-  userFromArray() {
+  User userFromArray() {
     return User(
       id: userData['id'],
       fullName: userData['full_name'],

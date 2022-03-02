@@ -19,23 +19,27 @@ Future<List<Vehicle>> getMyVehicles() async {
     if (jsonResponse['success']) {
       var data = jsonResponse['data'];
       if (data.isNotEmpty) {
-        print(data[0]);
         data.asMap().forEach((key, vehicle) {
-          vehicles.add(Vehicle(
-            id: vehicle['id'],
-            licensePlate: vehicle['license_plate'],
-            yearOfProd: vehicle['year_of_production'] ?? 0,
-            model: vehicle['model'],
-            brand: vehicle['vehicle_brand_id'],
-            maxCapacity: double.parse(vehicle['max_capacity']),
-            measurementUnitId: vehicle['measurement_unit_id'],
-            vtoMunicipal:
-                vehicle['expiration_date_vehicle_authorization'] ?? '',
-            vtoDinatran:
-                vehicle['expiration_date_dinatran_authorization'] ?? '',
-            vtoSenacsa: vehicle['expiration_date_senacsa_authorization'] ?? '',
-            vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
-          ));
+          print(vehicle['model']);
+          vehicles.add(
+            Vehicle(
+              id: vehicle['id'],
+              licensePlate: vehicle['license_plate'],
+              yearOfProd: vehicle['year_of_production'] ?? 0,
+              model: vehicle['model'],
+              brand: vehicle['vehicle_brand_id'],
+              maxCapacity: double.parse(vehicle['max_capacity']),
+              measurementUnitId: vehicle['measurement_unit_id'],
+              vtoMunicipal:
+                  vehicle['expiration_date_vehicle_authorization'] ?? '',
+              vtoDinatran:
+                  vehicle['expiration_date_dinatran_authorization'] ?? '',
+              vtoSenacsa:
+                  vehicle['expiration_date_senacsa_authorization'] ?? '',
+              vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
+              imgs: vehicle['vehicleattachments'],
+            ),
+          );
         });
         return vehicles;
       } else {
@@ -86,16 +90,19 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               ),
             );
           }
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              TextButton.icon(
-                  onPressed: () => Navigator.of(context)
-                      .pushNamed('/create-vehicle', arguments: null),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar vehículo')),
-              ...items
-            ],
+          return RefreshIndicator(
+            onRefresh: getMyVehicles,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                TextButton.icon(
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed('/create-vehicle', arguments: null),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Agregar vehículo')),
+                ...items
+              ],
+            ),
           );
         },
       ),
@@ -129,6 +136,7 @@ class VehicleCard extends StatelessWidget {
                 'vtoDinatran': vehicles[index].vtoDinatran,
                 'vtoSenacsa': vehicles[index].vtoSenacsa,
                 'vtoSeguro': vehicles[index].vtoSeguro,
+                'imgs': vehicles[index].imgs
               })
           : null,
       child: Container(

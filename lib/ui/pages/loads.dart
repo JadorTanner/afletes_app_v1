@@ -7,10 +7,12 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/ui/pages/loads/load_info.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 
@@ -18,6 +20,214 @@ List<Load> loads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
 late PageController pageController;
+
+onLoadTap(int id, BuildContext context) async {
+  Api api = Api();
+
+  TextEditingController intialOfferController = TextEditingController();
+
+  Response response = await api.getData('load/load-info?id=' + id.toString());
+
+  Map jsonResponse = jsonDecode(response.body);
+  if (jsonResponse['success']) {
+    Map data = jsonResponse['data'];
+    List images = data['attachments'] ?? [];
+    List<Image> attachments = [];
+
+    TextStyle textoInformacion = const TextStyle(fontSize: 12);
+
+    intialOfferController.text = data['initial_offer'].toString();
+    if (images.isNotEmpty) {
+      for (var element in images) {
+        attachments.add(Image.network(imgUrl + element['filename']));
+      }
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 150,
+              child: ImageViewer(attachments),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Carga nro: ' + id.toString()),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Salida'),
+                    Text(
+                      'Departamento: ' +
+                          (data['state'] != null ? data['state']['name'] : ''),
+                      style: textoInformacion,
+                    ),
+                    Text(
+                      'Ciudad: ' +
+                          (data['city'] != null ? data['city']['name'] : ''),
+                      style: textoInformacion,
+                    ),
+                    Text(
+                      'Dirección: ' + (data['address'] ?? ''),
+                      style: textoInformacion,
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Entrega'),
+                    Text(
+                      'Departamento: ' + (data['destination_state_name'] ?? ''),
+                      style: textoInformacion,
+                    ),
+                    Text(
+                      'Ciudad: ' + (data['destination_city_name'] ?? ''),
+                      style: textoInformacion,
+                    ),
+                    Text(
+                      'Dirección: ' + (data['destination_address'] ?? ''),
+                      style: textoInformacion,
+                    ),
+                  ],
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            const Text('Oferta inicial'),
+            TextField(
+              controller: intialOfferController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                  helperText:
+                      'Puedes cambiarlo para ofertar un precio diferente *'),
+            ),
+            (data['load_state_id'] == 1
+                ? ButtonBar(
+                    children: [
+                      TextButton.icon(
+                          onPressed: () async {
+                            Api api = Api();
+                            Response response = await api.postData(
+                                'negotiation/start-negotiation', {
+                              'load_id': id,
+                              'initial_offer': intialOfferController.text
+                            });
+
+                            if (response.statusCode == 200) {
+                              Map jsonResponse = jsonDecode(response.body);
+                              if (jsonResponse['success']) {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => NegotiationChat(
+                                      jsonResponse['data']['negotiation_id']),
+                                ));
+                              }
+                            }
+                          },
+                          label: const Text('Negociar'),
+                          icon: const Icon(Icons.check))
+                    ],
+                  )
+                : const SizedBox.shrink())
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ImageViewer extends StatefulWidget {
+  ImageViewer(this.attachments, {Key? key}) : super(key: key);
+  List attachments;
+  @override
+  State<ImageViewer> createState() => _ImageViewerState();
+}
+
+class _ImageViewerState extends State<ImageViewer> {
+  int currentImage = 0;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        PageView(
+          onPageChanged: (value) => setState(() {
+            currentImage = value;
+          }),
+          children: List.generate(
+              widget.attachments.length,
+              (index) => GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: InteractiveViewer(
+                          panEnabled: true,
+                          minScale: 0.5,
+                          maxScale: 4,
+                          clipBehavior: Clip.none,
+                          child: widget.attachments[index],
+                        ),
+                      ),
+                    ),
+                    child: widget.attachments[index],
+                  )),
+        ),
+        Positioned(
+          bottom: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.attachments.length,
+              (index) => Container(
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                decoration: BoxDecoration(
+                  color: index == currentImage
+                      ? const Color(0xFF686868)
+                      : const Color(0xFFEEEEEE),
+                  border: Border.all(
+                    color: index == currentImage
+                        ? const Color(0xFF686868)
+                        : const Color(0xFFEEEEEE),
+                  ),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(20),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class Loads extends StatefulWidget {
   const Loads({Key? key}) : super(key: key);
@@ -159,228 +369,6 @@ class LoadsMap extends StatefulWidget {
 class _LoadsMapState extends State<LoadsMap> {
   late List<OverlayEntry> initialEntries;
 
-  onTapMarker(int id) async {
-    Api api = Api();
-
-    Response response = await api.getData('load/load-info?id=' + id.toString());
-
-    print(id);
-    print(response.body);
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      Map data = jsonResponse['data'];
-      List images = data['attachments'] ?? [];
-      List<Image> attachments = [];
-      if (images.isNotEmpty) {
-        for (var element in images) {
-          attachments.add(Image.network(imgUrl + element['filename']));
-        }
-      }
-      stackKey.currentState != null
-          ? showModalBottomSheet(
-              context: context,
-              builder: (context) => Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xAA4E4E4E),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ]),
-                child: ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    SizedBox(
-                      height: 50,
-                      child: PageView(
-                        children: List.generate(
-                            attachments.length,
-                            (index) => GestureDetector(
-                                  onTap: () => showDialog(
-                                    context: context,
-                                    builder: (context) => Dialog(
-                                      child: InteractiveViewer(
-                                        panEnabled: true,
-                                        minScale: 0.5,
-                                        maxScale: 4,
-                                        clipBehavior: Clip.none,
-                                        child: attachments[index],
-                                      ),
-                                    ),
-                                  ),
-                                  child: attachments[index],
-                                )),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Carga nro: ' + id.toString()),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Text('Oferta inicial: ' + data['initial_offer']),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Text('Salida'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Departamento: ' +
-                            (data['state'] != null
-                                ? data['state']['name']
-                                : '')),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Text('Ciudad: ' +
-                            (data['city'] != null ? data['city']['name'] : '')),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Text('Entrega'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Departamento: ' +
-                            (data['destinationState'] != null
-                                ? data['destinationState']['name']
-                                : '')),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Text('Ciudad: ' +
-                            (data['destinationCity'] != null
-                                ? data['destinationCity']['name']
-                                : '')),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            )
-          /* stackKey.currentState!.insert(
-              OverlayEntry(
-                builder: (context) => Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    height: 200,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0xAA4E4E4E),
-                            blurRadius: 5,
-                            offset: Offset(0, 3),
-                          ),
-                        ]),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 50,
-                            child: PageView(
-                              children: List.generate(
-                                  attachments.length,
-                                  (index) => GestureDetector(
-                                        onTap: () => showDialog(
-                                          context: context,
-                                          builder: (context) => Dialog(
-                                            child: InteractiveViewer(
-                                              panEnabled: true,
-                                              minScale: 0.5,
-                                              maxScale: 4,
-                                              clipBehavior: Clip.none,
-                                              child: attachments[index],
-                                            ),
-                                          ),
-                                        ),
-                                        child: attachments[index],
-                                      )),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Carga nro: ' + id.toString()),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              Text('Oferta inicial: ' + data['initial_offer']),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          const Text('Salida'),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Departamento: ' +
-                                  (data['state'] != null
-                                      ? data['state']['name']
-                                      : '')),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              Text('Ciudad: ' +
-                                  (data['city'] != null
-                                      ? data['city']['name']
-                                      : '')),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          const Text('Entrega'),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Departamento: ' +
-                                  (data['destinationState'] != null
-                                      ? data['destinationState']['name']
-                                      : '')),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              Text('Ciudad: ' +
-                                  (data['destinationCity'] != null
-                                      ? data['destinationCity']['name']
-                                      : '')),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-           */
-          : null;
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -388,14 +376,9 @@ class _LoadsMapState extends State<LoadsMap> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // ...initialEntries,
-        AfletesGoogleMap(
-          loads: loads,
-          onTapMarker: onTapMarker,
-        ),
-      ],
+    return AfletesGoogleMap(
+      loads: loads,
+      onTapMarker: onLoadTap,
     );
     // return Overlay(
     //   key: stackKey,
@@ -432,8 +415,9 @@ class LoadCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         elevation: 10,
         child: GestureDetector(
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => LoadInfo(load))),
+          // onTap: () => Navigator.of(context)
+          //     .push(MaterialPageRoute(builder: (context) => LoadInfo(load))),
+          onTap: () => onLoadTap(load.id, context),
           child: Container(
             padding: const EdgeInsets.all(10),
             width: double.infinity,

@@ -9,6 +9,12 @@ class ChatProvider extends ChangeNotifier {
   List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => _messages;
 
+  bool _canOffer = true;
+  bool get canOffer => _canOffer;
+
+  bool _toPay = true;
+  bool get toPay => _toPay;
+
   setNegotiationId(int id) {
     _negotiationId = id;
   }
@@ -16,7 +22,9 @@ class ChatProvider extends ChangeNotifier {
   addMessage(int id, ChatMessage message) {
     // if (id == negotiationId) {
     print(message.message);
-    _messages.insert(_messages.isNotEmpty ? _messages.length - 1 : 0, message);
+    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    message.message = message.message.replaceAll(exp, '');
+    _messages.insert(0, message);
     notifyListeners();
     // }
   }
@@ -32,6 +40,16 @@ class ChatProvider extends ChangeNotifier {
       print(message.message);
       _messages.insert(0, message);
     });
+    notifyListeners();
+  }
+
+  setCanOffer(bool can) {
+    _canOffer = can;
+    notifyListeners();
+  }
+
+  setToPay(bool to) {
+    _toPay = to;
     notifyListeners();
   }
 }

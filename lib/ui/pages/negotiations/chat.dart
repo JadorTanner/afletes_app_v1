@@ -5,6 +5,7 @@ import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -17,7 +18,7 @@ int receiverId = 0;
 User user = User();
 List<ChatMessage> messages = [];
 
-bool canOffer = true;
+late bool canOffer;
 
 userData() async {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -28,7 +29,15 @@ userData() async {
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   await userData();
   Api api = Api();
+
   context.read<ChatProvider>().clearMessages();
+  context.read<ChatProvider>().setNegotiationId(id);
+  // context.read<ChatProvider>().messages.forEach((element) {
+  //   globalKey.currentState != null
+  //       ? globalKey.currentState!
+  //           .removeItem(0, (context, animation) => const SizedBox.shrink())
+  //       : null;
+  // });
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
   if (response.statusCode == 200) {
@@ -42,17 +51,16 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
             id,
             ChatMessage(
                 message['message'], message['sender_id'], message['id']));
-        globalKey.currentState!.insertItem(
-            context.read<ChatProvider>().messages.length - 1,
-            duration: const Duration(milliseconds: 100));
+        // globalKey.currentState!
+        //     .insertItem(0, duration: const Duration(milliseconds: 100));
       });
     }
     receiverId = jsonResp['data']['negotiation']
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
     if (jsonResp['data']['negotiation_state']['id'] != 6) {
-      canOffer = false;
+      context.read<ChatProvider>().setCanOffer(false);
     } else {
-      canOffer = true;
+      context.read<ChatProvider>().setCanOffer(true);
     }
   }
   return [];
@@ -72,11 +80,13 @@ Future sendMessage(id, BuildContext context, ChatProvider chat) async {
     // chatMessages.insert(0, ChatMessage(jsonResp['data']['message'], user.id));
     // context.read<ChatProvider>().addMessage(id, jsonResp['data']['message']);
     chat.addMessage(id, ChatMessage(jsonResp['data']['message'], user.id, id));
-    globalKey.currentState!
-        .insertItem(0, duration: const Duration(milliseconds: 100));
+    // globalKey.currentState!
+    //     .insertItem(0, duration: const Duration(milliseconds: 100));
   } else {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(jsonResp['message'])));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(jsonResp['message']),
+      duration: const Duration(seconds: 3),
+    ));
   }
 }
 
@@ -87,6 +97,22 @@ Future cancelNegotiation(id) async {
   });
 
   print(response.body);
+}
+
+Future acceptNegotiation(id, context) async {
+  Api api = Api();
+  Response response = await api.postData('negotiation/accept', {
+    'id': id,
+  });
+
+  print(response.body);
+  if (response.statusCode == 200) {
+    if (user.isLoadGenerator) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => Payment(id),
+      ));
+    }
+  }
 }
 
 class NegotiationChat extends StatefulWidget {
@@ -118,46 +144,67 @@ class _NegotiationChatState extends State<NegotiationChat> {
               height: MediaQuery.of(context).size.height * 0.75,
               child: ChatPanel(),
             ),
-            Row(
-              children: canOffer
-                  ? [
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      Flexible(
-                          child: TextField(
-                        controller: oferta,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(hintText: 'Oferto'),
-                      )),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      IconButton(
-                        onPressed: () => {
-                          sendMessage(
-                              widget.id, context, context.read<ChatProvider>())
-                        },
-                        icon: const Icon(Icons.send),
-                        splashColor: Colors.red,
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                    ]
-                  : [],
-            ),
+            OfferInputSection(widget: widget),
             ButtonBar(
+              alignment: MainAxisAlignment.center,
               children: [
-                IconButton(onPressed: () => {}, icon: Icon(Icons.check)),
-                IconButton(
-                    onPressed: () => cancelNegotiation(widget.id),
-                    icon: Icon(Icons.cancel)),
+                TextButton.icon(
+                  onPressed: () => acceptNegotiation(widget.id, context),
+                  icon: const Icon(Icons.check),
+                  label: const Text('Aceptar'),
+                ),
+                TextButton.icon(
+                  onPressed: () => cancelNegotiation(widget.id),
+                  icon: const Icon(Icons.cancel),
+                  label: const Text('Rechazar'),
+                ),
               ],
             )
           ],
         ),
       ),
+    );
+  }
+}
+
+class OfferInputSection extends StatelessWidget {
+  const OfferInputSection({
+    Key? key,
+    required this.widget,
+  }) : super(key: key);
+
+  final NegotiationChat widget;
+
+  @override
+  Widget build(BuildContext context) {
+    canOffer = context.watch<ChatProvider>().canOffer;
+    return Row(
+      children: canOffer
+          ? [
+              const SizedBox(
+                width: 20,
+              ),
+              Flexible(
+                  child: TextField(
+                controller: oferta,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Oferto'),
+              )),
+              const SizedBox(
+                width: 20,
+              ),
+              IconButton(
+                onPressed: () => {
+                  sendMessage(widget.id, context, context.read<ChatProvider>())
+                },
+                icon: const Icon(Icons.send),
+                splashColor: Colors.red,
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+            ]
+          : [],
     );
   }
 }
@@ -172,22 +219,32 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   @override
   Widget build(BuildContext context) {
-    ChatProvider chat = context.watch<ChatProvider>();
-    return AnimatedList(
-      key: globalKey,
+    List<ChatMessage> chat = context.watch<ChatProvider>().messages;
+    return ListView(
       reverse: true,
-      padding: const EdgeInsets.all(20),
-      itemBuilder: (context, index, animation) {
-        return SizeTransition(
-          key: UniqueKey(),
-          sizeFactor: animation,
-          child: chat.messages[index].senderId != user.id
+      children: List.generate(
+          chat.length,
+          (index) => chat[index].senderId != user.id
               ? MessageBubbleReceived(
-                  chat.messages[index].message,
+                  chat[index].message,
                 )
-              : MessageBubbleSent(chat.messages[index].message),
-        );
-      },
+              : MessageBubbleSent(chat[index].message)),
     );
+    // return AnimatedList(
+    //   key: globalKey,
+    //   reverse: true,
+    //   padding: const EdgeInsets.all(20),
+    //   itemBuilder: (context, index, animation) {
+    //     return SizeTransition(
+    //       key: UniqueKey(),
+    //       sizeFactor: animation,
+    //       child: chat[index].senderId != user.id
+    //           ? MessageBubbleReceived(
+    //               chat[index].message,
+    //             )
+    //           : MessageBubbleSent(chat[index].message),
+    //     );
+    //   },
+    // );
   }
 }

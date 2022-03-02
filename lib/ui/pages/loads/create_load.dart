@@ -293,7 +293,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
       },
       child: Container(
         width: double.infinity,
-        height: 200,
+        height: MediaQuery.of(context).size.height * 0.4,
         color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
         child: imagenes.isNotEmpty
             ? Stack(
@@ -306,9 +306,14 @@ class _ImagesPickerState extends State<ImagesPicker> {
                     }),
                     children: List.generate(
                       imagenes.length,
-                      (index) => Image.file(
-                        File(imagenes[index].path),
-                      ),
+                      (index) => InteractiveViewer(
+                          panEnabled: true,
+                          minScale: 0.5,
+                          maxScale: 4,
+                          clipBehavior: Clip.none,
+                          child: Image.file(
+                            File(imagenes[index].path),
+                          )),
                     ),
                   ),
                   Positioned(
@@ -340,7 +345,9 @@ class _ImagesPickerState extends State<ImagesPicker> {
                   ),
                 ],
               )
-            : null,
+            : const Center(
+                child: Icon(Icons.add_a_photo),
+              ),
       ),
     );
   }
@@ -776,9 +783,9 @@ class _DatePickerState extends State<DatePicker> {
         selectedDate = picked;
         widget.controller.text = selectedDate.year.toString() +
             '-' +
-            selectedDate.day.toString() +
+            selectedDate.month.toString() +
             '-' +
-            selectedDate.month.toString();
+            selectedDate.day.toString();
       });
     }
   }

@@ -22,17 +22,20 @@ Future<List<Negotiation>> getNegotiations() async {
     if (jsonResponse['success']) {
       List data = jsonResponse['data'];
       data.asMap().forEach((key, negotiation) {
-        negotiations.add(Negotiation(
+        negotiations.add(
+          Negotiation(
             id: negotiation['id'],
             transportistId: negotiation['transportist_id'],
             generatorId: negotiation['generator_id'],
             vehicleId: negotiation['vehicle_id'],
             stateId: negotiation['negotiation_state_id'],
             fecha: negotiation['fecha'],
-            negotiationLoad: Load(
-                product: negotiation['negotiation_load'] != null
-                    ? negotiation['negotiation_load']['product']
-                    : '')));
+            // negotiationLoad: Load(
+            //     product: negotiation['negotiation_load'] != null
+            //         ? negotiation['negotiation_load']['product']
+            //         : ''),
+          ),
+        );
       });
     }
   }
@@ -58,23 +61,23 @@ class _MyNegotiationsState extends State<MyNegotiations> {
         initialData: const [],
         future: getNegotiations(),
         builder: (context, snapshot) {
-          List items = [];
-          if (snapshot.connectionState == ConnectionState.done) {
-            items = List.generate(
-                negotiations.length,
-                (index) => NegotiationCard(
-                      index,
-                      hasData: true,
-                    ));
-          } else {
-            items = List.generate(
-              5,
-              (index) => NegotiationCard(
-                index,
-                hasData: false,
-              ),
-            );
-          }
+          // List items = [];
+          // if (snapshot.connectionState == ConnectionState.done) {
+          //   items = List.generate(
+          //       negotiations.length,
+          //       (index) => NegotiationCard(
+          //             index,
+          //             hasData: true,
+          //           ));
+          // } else {
+          //   items = List.generate(
+          //     5,
+          //     (index) => NegotiationCard(
+          //       index,
+          //       hasData: false,
+          //     ),
+          //   );
+          // }
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -82,7 +85,77 @@ class _MyNegotiationsState extends State<MyNegotiations> {
                   onPressed: () => Navigator.of(context).pushNamed('/vehicles'),
                   icon: const Icon(Icons.add),
                   label: const Text('Buscar transportistas')),
-              ...items
+              ...List.generate(
+                negotiations.isNotEmpty ? negotiations.length : 5,
+                (index) => Card(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  elevation: 10,
+                  child: GestureDetector(
+                    onTap: negotiations.isNotEmpty
+                        ? () => {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    NegotiationChat(negotiations[index].id),
+                              ))
+                            }
+                        : () => {},
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            maxRadius: 50,
+                            minRadius: 50,
+                            backgroundColor: Colors.white,
+                            child: Text('PR'),
+                            // child: Text(negotiations.isNotEmpty
+                            //     ? (negotiations[index].negotiationLoad != null
+                            //         ? negotiations[index]
+                            //             .negotiationLoad!
+                            //             .product
+                            //         : '')
+                            //     : ''),
+                          ),
+                          Column(
+                            children: [
+                              negotiations.isNotEmpty
+                                  ? Text('producto')
+                                  // ? Text(negotiations[index]
+                                  //             .negotiationLoad!
+                                  //             .product !=
+                                  //         ''
+                                  //     ? negotiations[index]
+                                  //         .negotiationLoad!
+                                  //         .product
+                                  //     : 'Producto')
+                                  : CustomPaint(
+                                      painter: OpenPainter(100, 10, 10, -10),
+                                    ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  negotiations.isNotEmpty
+                                      ? Text('Algo')
+                                      : CustomPaint(
+                                          painter: OpenPainter(50, 10, 10, 20),
+                                        ),
+                                  negotiations.isNotEmpty
+                                      ? Text('Algo más')
+                                      : CustomPaint(
+                                          painter: OpenPainter(100, 10, 65, 20),
+                                        ),
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
             ],
           );
         }));
@@ -110,7 +183,7 @@ class NegotiationCard extends StatelessWidget {
                         NegotiationChat(negotiations[index].id),
                   ))
                 }
-            : null,
+            : () => {},
         child: Container(
           padding: const EdgeInsets.all(10),
           width: double.infinity,
