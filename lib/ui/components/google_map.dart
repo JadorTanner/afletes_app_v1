@@ -1,5 +1,6 @@
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -21,12 +22,21 @@ class AfletesGoogleMap extends StatefulWidget {
 
 class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
   late GoogleMapController mapController;
+  //ESTILOS DEL MAPA
+  String _darkMapStyle = '';
+
+  setMapStyles() async {
+    _darkMapStyle =
+        await rootBundle.loadString('assets/google_map_styles.json');
+    mapController.setMapStyle(_darkMapStyle);
+  }
 
   //coordenada inicial
   late Position position;
 
   List<Marker> markers = [];
 
+//OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
     position = await Geolocator.getCurrentPosition();
     mounted
@@ -40,13 +50,8 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
         : () => {};
   }
 
+  //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
   setMarkers(Position position) {
-    // markers.add(
-    //   Marker(
-    //       markerId: const MarkerId('user_location'),
-    //       position: LatLng(position.latitude, position.longitude),
-    //       infoWindow: const InfoWindow(title: 'Yo')),
-    // );
     widget.loads.asMap().forEach((key, load) {
       markers.add(
         Marker(
@@ -62,17 +67,12 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
         ),
       );
     });
-    // if (markers.isNotEmpty) {
-    //   setState(() {
-    //     mapController.animateCamera(CameraUpdate.newLatLngZoom(
-    //         LatLng(position.latitude, position.longitude), 6));
-    //   });
-    // }
   }
 
   void _onMapCreated(GoogleMapController controller) {
     print('created map');
     mapController = controller;
+    setMapStyles();
     // mapController.setMapStyle('');
     getPosition();
   }
@@ -84,7 +84,6 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.center);
     return GoogleMap(
       onMapCreated: _onMapCreated,
       onTap: (argument) => {widget.onTap(argument)},
