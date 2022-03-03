@@ -499,22 +499,10 @@ class _DatosUbicacionState extends State<DatosUbicacion>
             'Dirección *',
             action: TextInputAction.done,
           ),
-          SizedBox(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.4,
-              // child: AfletesGoogleMap(onTap: (LatLng argument) {
-              //   originCoordsController.text = argument.latitude.toString() +
-              //       ',' +
-              //       argument.longitude.toString();
-              // }),
-              child: AfletesGoogleMap(onTap: (LatLng argument) {
-                originCoordsController.text = argument.latitude.toString() +
-                    ',' +
-                    argument.longitude.toString();
-              })),
+          LoadMap(originCoordsController),
           Visibility(
             child: LoadFormField(originCoordsController, 'Coordenadas'),
-            visible: false,
+            visible: true,
           ),
           ButtonBar(
             alignment: MainAxisAlignment.center,
@@ -583,7 +571,6 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery>
           ),
           LoadMap(destinCoordsController),
           SizedBox(
-            height: 0,
             child: LoadFormField(destinCoordsController, 'Coordenadas'),
           ),
           ButtonBar(
@@ -645,26 +632,10 @@ class _LoadMapState extends State<LoadMap> {
 //OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
     position = await Geolocator.getCurrentPosition();
-    mounted
-        ? setState(() {
-            mapController.animateCamera(CameraUpdate.newLatLng(
-                LatLng(position.latitude, position.longitude)));
-            markers = [
-              Marker(
-                  markerId: MarkerId('load_location'),
-                  position: LatLng(
-                    position.latitude,
-                    position.longitude,
-                  ),
-                  draggable: true,
-                  onDragEnd: (LatLng newPosition) =>
-                      widget.textController.text =
-                          newPosition.latitude.toString() +
-                              ',' +
-                              newPosition.longitude.toString()),
-            ];
-          })
-        : () => {};
+    setState(() {
+      mapController.animateCamera(CameraUpdate.newLatLng(
+          LatLng(position.latitude, position.longitude)));
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -677,6 +648,12 @@ class _LoadMapState extends State<LoadMap> {
   @override
   void initState() {
     super.initState();
+    destinAddressController.addListener(() {
+      Future.delayed(const Duration(seconds: 1), () async {
+        //BUSCAR LA DIRECCION Y SETEAR EL MAPA
+        print(destinAddressController.text);
+      });
+    });
   }
 
   @override
@@ -686,6 +663,7 @@ class _LoadMapState extends State<LoadMap> {
       height: MediaQuery.of(context).size.height * 0.4,
       child: GoogleMap(
         onMapCreated: _onMapCreated,
+        myLocationEnabled: true,
         onTap: (argument) => setState(() {
           widget.textController.text = argument.latitude.toString() +
               ',' +
@@ -703,7 +681,6 @@ class _LoadMapState extends State<LoadMap> {
                         ',' +
                         newPosition.longitude.toString()),
           ];
-          print(markers);
         }),
         initialCameraPosition: const CameraPosition(
           target: LatLng(-25.27705190025039, -57.63737049639007),
@@ -1074,6 +1051,7 @@ class LoadFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       onTap: onFocus,
+      onEditingComplete: () => controller.notifyListeners(),
       showCursor: showCursor,
       readOnly: readOnly,
       autofocus: autofocus,
