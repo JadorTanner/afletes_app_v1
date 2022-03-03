@@ -66,89 +66,106 @@ class _MyNegotiationsState extends State<MyNegotiations> {
         initialData: const [],
         future: getNegotiations(),
         builder: (context, snapshot) {
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              TextButton.icon(
-                  onPressed: () => Navigator.of(context).pushNamed('/vehicles'),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Buscar transportistas')),
-              ...List.generate(
-                negotiations.isNotEmpty ? negotiations.length : 5,
-                (index) => Card(
-                  margin: const EdgeInsets.only(bottom: 15),
-                  elevation: 10,
-                  child: GestureDetector(
-                    onTap: negotiations.isNotEmpty
-                        ? () => {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    NegotiationChat(negotiations[index].id),
-                              ))
-                            }
-                        : () => {},
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      width: double.infinity,
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            maxRadius: 50,
-                            minRadius: 50,
-                            // backgroundColor: Colors.white,
-                            child: Text(negotiations.isNotEmpty
-                                ? (negotiations[index].negotiationLoad != null
-                                    ? negotiations[index]
-                                        .negotiationLoad!
-                                        .product
-                                    : '')
-                                : ''),
-                          ),
-                          SizedBox(
-                            width: 20,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              negotiations.isNotEmpty
-                                  ? Text(negotiations[index]
-                                              .negotiationLoad!
-                                              .product !=
-                                          ''
+          return RefreshIndicator(
+            onRefresh: getNegotiations,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                TextButton.icon(
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/vehicles'),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Buscar transportistas')),
+                ...List.generate(
+                  negotiations.isNotEmpty ? negotiations.length : 5,
+                  (index) => Card(
+                    margin: const EdgeInsets.only(bottom: 15),
+                    elevation: 10,
+                    child: GestureDetector(
+                      onTap: negotiations.isNotEmpty
+                          ? () => {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      NegotiationChat(negotiations[index].id),
+                                ))
+                              }
+                          : () => {},
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        width: double.infinity,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 100,
+                              height: 100,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(100),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color(0xcc000000),
+                                        blurRadius: 2),
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      spreadRadius: 5,
+                                      blurRadius: 6,
+                                    ),
+                                  ]),
+                              child: Text(negotiations.isNotEmpty
+                                  ? (negotiations[index].negotiationLoad != null
                                       ? negotiations[index]
                                           .negotiationLoad!
                                           .product
-                                      : 'Producto')
-                                  : CustomPaint(
-                                      painter: OpenPainter(50, 10, 10, -10),
-                                    ),
-                              negotiations.isNotEmpty
-                                  ? Text('Oferta inicial: ' +
-                                      negotiations[index]
-                                          .negotiationLoad!
-                                          .initialOffer
-                                          .toString())
-                                  : CustomPaint(
-                                      painter: OpenPainter(100, 10, 10, 5),
-                                    ),
-                              negotiations.isNotEmpty
-                                  ? Text('Peso: ' +
-                                      negotiations[index]
-                                          .negotiationLoad!
-                                          .weight
-                                          .toString())
-                                  : CustomPaint(
-                                      painter: OpenPainter(100, 10, 10, 20),
-                                    ),
-                            ],
-                          )
-                        ],
+                                      : '')
+                                  : ''),
+                            ),
+                            SizedBox(
+                              width: 20,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                negotiations.isNotEmpty
+                                    ? Text(negotiations[index]
+                                                .negotiationLoad!
+                                                .product !=
+                                            ''
+                                        ? negotiations[index]
+                                            .negotiationLoad!
+                                            .product
+                                        : 'Producto')
+                                    : CustomPaint(
+                                        painter: OpenPainter(50, 10, 10, -10),
+                                      ),
+                                negotiations.isNotEmpty
+                                    ? Text('Oferta inicial: ' +
+                                        negotiations[index]
+                                            .negotiationLoad!
+                                            .initialOffer
+                                            .toString())
+                                    : CustomPaint(
+                                        painter: OpenPainter(100, 10, 10, 5),
+                                      ),
+                                negotiations.isNotEmpty
+                                    ? Text('Peso: ' +
+                                        negotiations[index]
+                                            .negotiationLoad!
+                                            .weight
+                                            .toString())
+                                    : CustomPaint(
+                                        painter: OpenPainter(100, 10, 10, 20),
+                                      ),
+                              ],
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           );
         }));
   }

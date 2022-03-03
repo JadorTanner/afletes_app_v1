@@ -301,6 +301,138 @@ class _LoadsState extends State<Loads> {
     return BaseApp(
       FutureBuilder<List<Load>>(
           future: getLoads(),
+          builder: (context, snapshot) => snapshot.connectionState ==
+                  ConnectionState.done
+              ? Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    PageView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      controller: pageController,
+                      children: [
+                        RefreshIndicator(
+                            child: loads.length > 0
+                                ? AnimatedList(
+                                    key: animatedListKey,
+                                    initialItemCount: loads.length,
+                                    padding: const EdgeInsets.all(20),
+                                    itemBuilder: (context, index, animation) {
+                                      return SizeTransition(
+                                        key: UniqueKey(),
+                                        sizeFactor: animation,
+                                        child: LoadCard(loads[index]),
+                                      );
+                                    },
+                                  )
+                                : const Center(
+                                    child: Text('No hay cargas disponibles'),
+                                  ),
+                            // child: ListView.builder(
+                            //   padding: const EdgeInsets.all(20),
+                            //   itemBuilder: (context, index) => LoadCard(loads[index]),
+                            // ),
+                            onRefresh: () => getLoads()),
+                        snapshot.connectionState == ConnectionState.done
+                            ? const LoadsMap()
+                            : const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                      ],
+                    ),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            onPressed: () => {
+                                  pageController.previousPage(
+                                      duration:
+                                          const Duration(milliseconds: 100),
+                                      curve: Curves.bounceOut)
+                                },
+                            icon: const Icon(Icons.list)),
+                        IconButton(
+                            onPressed: () => {
+                                  pageController.nextPage(
+                                      duration:
+                                          const Duration(milliseconds: 100),
+                                      curve: Curves.bounceOut)
+                                },
+                            icon: const Icon(Icons.map)),
+                      ],
+                    ),
+                  ],
+                )
+              : const Center(child: CircularProgressIndicator())),
+    );
+  }
+}
+
+/* class _LoadsState extends State<Loads> {
+  TextEditingController textEditingController = TextEditingController();
+
+  Future<List<Load>> getLoads([refresh = false]) async {
+    Response response = await Api().getData('user/find-loads');
+
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      loads.forEach((element) {
+        animatedListKey.currentState != null
+            ? animatedListKey.currentState!
+                .removeItem(0, (context, animation) => const SizedBox.shrink())
+            : null;
+      });
+      loads.clear();
+      if (jsonResponse['success']) {
+        if (jsonResponse['data']['data'].length > 0) {
+          List data = jsonResponse['data']['data'];
+          data.asMap().forEach((key, load) {
+            loads.insert(
+              0,
+              Load(
+                id: load['id'],
+                addressFrom: load['address'],
+                cityFromId: load['city_id'],
+                stateFromId: load['state_id'],
+                initialOffer: int.parse(
+                    load['initial_offer'].toString().replaceAll('.00', '')),
+                longitudeFrom: load['longitude'],
+                latitudeFrom: load['latitude'],
+                destinLongitude: load['destination_longitude'],
+                destinLatitude: load['destination_latitude'],
+                destinAddress: load['destination_address'],
+                destinCityId: load['destination_city_id'],
+                destinStateId: load['destination_state_id'],
+                weight: double.parse(load['weight']),
+                product: load['product'] ?? '',
+                attachments: load['attachments'] ?? [],
+              ),
+            );
+            animatedListKey.currentState != null
+                ? animatedListKey.currentState!
+                    .insertItem(0, duration: const Duration(milliseconds: 100))
+                : null;
+          });
+        }
+      }
+    }
+
+    return loads;
+  }
+
+  // late User user;
+
+  @override
+  void initState() {
+    super.initState();
+    // constructUser();
+    pageController = PageController();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseApp(
+      FutureBuilder<List<Load>>(
+          future: getLoads(),
           builder: (context, snapshot) =>
               snapshot.connectionState == ConnectionState.done
                   ? Stack(
@@ -362,7 +494,7 @@ class _LoadsState extends State<Loads> {
     );
   }
 }
-
+ */
 class LoadsMap extends StatefulWidget {
   const LoadsMap({Key? key}) : super(key: key);
   @override

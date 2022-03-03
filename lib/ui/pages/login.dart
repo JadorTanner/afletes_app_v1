@@ -172,16 +172,14 @@ class _LoginButtonState extends State<LoginButton> {
                 setState(() {
                   isLoading = !isLoading;
                 });
-                Future.delayed(Duration(seconds: 1), () async {
-                  SharedPreferences sharedPreferences =
-                      await SharedPreferences.getInstance();
-                  Map user = jsonDecode(sharedPreferences.getString('user')!);
-                  if (user['is_carrier']) {
-                    Navigator.of(context).pushReplacementNamed('/loads');
-                  } else {
-                    Navigator.of(context).pushReplacementNamed('/vehicles');
-                  }
-                });
+                SharedPreferences sharedPreferences =
+                    await SharedPreferences.getInstance();
+                Map user = jsonDecode(sharedPreferences.getString('user')!);
+                if (user['is_carrier']) {
+                  Navigator.of(context).pushReplacementNamed('/loads');
+                } else {
+                  Navigator.of(context).pushReplacementNamed('/vehicles');
+                }
               } else {
                 setState(() {
                   isLoading = !isLoading;

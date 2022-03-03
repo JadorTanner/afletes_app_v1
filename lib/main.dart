@@ -3,12 +3,10 @@ import 'dart:convert';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
-import 'package:afletes_app_v1/ui/pages/home.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
-import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
@@ -30,6 +28,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
+late Position position;
 late AndroidNotificationChannel channel;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -75,6 +74,7 @@ Future _determinePosition() async {
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
+  position = await Geolocator.getCurrentPosition();
 }
 //PERMISOS DE LOCALIZACION
 
@@ -120,13 +120,13 @@ void main() async {
         ChangeNotifierProvider<ChatProvider>(
             create: (context) => ChatProvider()),
       ],
-      child: AfletesApp(),
+      child: const AfletesApp(),
     ),
   );
 }
 
 class AfletesApp extends StatefulWidget {
-  AfletesApp({Key? key}) : super(key: key);
+  const AfletesApp({Key? key}) : super(key: key);
 
   @override
   State<AfletesApp> createState() => _AfletesAppState();
@@ -189,19 +189,45 @@ class _AfletesAppState extends State<AfletesApp> {
           ChatProvider chat = context.read<ChatProvider>();
           String data = event.data!;
           Map jsonData = jsonDecode(data);
+          print(jsonData);
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
           User user =
               User(userData: jsonDecode(sharedPreferences.getString('user')!))
                   .userFromArray();
+          print(user.id);
           if (user.id != jsonData['sender_id']) {
             if (user.id == jsonData['user_id']) {
+              if (jsonData['ask_location'] == true) {
+                Map loc = {
+                  'coords': {
+                    'latitude': position.latitude,
+                    'longitude': position.longitude,
+                  }
+                };
+
+                Api api = Api();
+                Response response = await api.postData('user/send-location', {
+                  'negotiation_id': jsonData['negotiation_id'],
+                  'user_id': jsonData['sender_id'],
+                  'location': loc
+                });
+              }
               if (chat.negotiationId == jsonData['negotiation_id']) {
                 chat.addMessage(
                   jsonData['negotiation_id'],
-                  ChatMessage(jsonData['message'], jsonData['sender_id'],
-                      jsonData['negotiation_id']),
+                  ChatMessage(
+                    jsonData['message'],
+                    jsonData['sender_id'],
+                    jsonData['negotiation_id'],
+                    jsonData['is_location'] ?? false,
+                  ),
                 );
+                if (jsonData['negotiation_state'] != null) {
+                  context
+                      .read<ChatProvider>()
+                      .setLoadState(jsonData['negotiation_state']);
+                }
                 if (jsonData['is_final_offer'] == 'true') {
                   context.read<ChatProvider>().setCanOffer(false);
                 }
@@ -218,33 +244,13 @@ class _AfletesAppState extends State<AfletesApp> {
       AndroidNotification? android = message.notification?.android;
       Map data = message.data;
       if (notification != null && android != null) {
+        print(context.read<ChatProvider>().negotiationId);
         if (context.read<ChatProvider>().negotiationId == 0) {
-          // flutterLocalNotificationsPlugin.show(
-          //   notification.hashCode,
-          //   notification.title,
-          //   notification.body,
-          //   NotificationDetails(
-          //     android: AndroidNotificationDetails(
-          //       channel.id,
-          //       channel.name,
-          //       icon: 'launch_background',
-          //       channelDescription: channel.description,
-          //     ),
-          //   ),
-          // );
           NotificationsApi.showNotification(
             id: notification.hashCode,
             title: notification.title,
             body: notification.body,
             payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-            // NotificationDetails(
-            //   android: AndroidNotificationDetails(
-            //     channel.id,
-            //     channel.name,
-            //     icon: 'launch_background',
-            //     channelDescription: channel.description,
-            //   ),
-            // ),
           );
         } else {
           if (context.read<ChatProvider>().negotiationId !=
@@ -259,6 +265,18 @@ class _AfletesAppState extends State<AfletesApp> {
         }
       }
     });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new onMessageOpenedApp event was published!');
+      print(message.data);
+
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState!.push(MaterialPageRoute(
+          builder: (context) =>
+              NegotiationChat(int.parse(message.data['negotiation_id'])),
+        ));
+      }
+    });
   }
 
   @override
@@ -271,7 +289,6 @@ class _AfletesAppState extends State<AfletesApp> {
         '/splash_screen': (context) => SplashScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/home': (context) => const Home(),
         '/loads': (context) => const Loads(),
         '/vehicles': (context) => Vehicles(),
         '/my-loads': (context) => MyLoadsPage(),
@@ -280,7 +297,7 @@ class _AfletesAppState extends State<AfletesApp> {
         '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),
       },
-      // navigatorKey: navigatorKey,
+      navigatorKey: navigatorKey,
     );
   }
 }

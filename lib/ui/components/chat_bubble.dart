@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class MessageBubbleReceived extends StatelessWidget {
-  MessageBubbleReceived(this.message, {Key? key}) : super(key: key);
+  MessageBubbleReceived(this.message, {this.isImage = false, Key? key})
+      : super(key: key);
   String message;
+  bool isImage;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,10 +32,37 @@ class MessageBubbleReceived extends StatelessWidget {
                     bottomRight: Radius.circular(18),
                   ),
                 ),
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.black, fontSize: 14),
-                ),
+                child: isImage
+                    ? GestureDetector(
+                        onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                child: InteractiveViewer(
+                                    panEnabled: true,
+                                    minScale: 0.5,
+                                    maxScale: 4,
+                                    clipBehavior: Clip.none,
+                                    child: Image.network(message)))),
+                        child: Image.network(
+                          message,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return Center(
+                                child: Container(
+                              color: Colors.grey,
+                              width: 300,
+                              height: 200,
+                            ));
+                          },
+                        ))
+                    : Text(
+                        message,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 14),
+                      ),
               ),
             ),
           ]),
@@ -42,8 +71,10 @@ class MessageBubbleReceived extends StatelessWidget {
 }
 
 class MessageBubbleSent extends StatelessWidget {
-  MessageBubbleSent(this.message, {Key? key}) : super(key: key);
+  MessageBubbleSent(this.message, {this.isImage = false, Key? key})
+      : super(key: key);
   String message;
+  bool isImage;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -63,10 +94,36 @@ class MessageBubbleSent extends StatelessWidget {
                   bottomRight: Radius.circular(18),
                 ),
               ),
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
+              child: isImage
+                  ? GestureDetector(
+                      onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              child: InteractiveViewer(
+                                  panEnabled: true,
+                                  minScale: 0.5,
+                                  maxScale: 4,
+                                  clipBehavior: Clip.none,
+                                  child: Image.network(message)))),
+                      child: Image.network(
+                        message,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                              child: Container(
+                            color: Colors.grey,
+                            width: 300,
+                            height: 200,
+                          ));
+                        },
+                      ))
+                  : Text(
+                      message,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
             ),
           ),
           CustomPaint(painter: CustomShape(const Color(0xFF006064))),

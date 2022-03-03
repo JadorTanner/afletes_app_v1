@@ -33,7 +33,7 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
 
   //coordenada inicial
   late Position position;
-
+  //LISTA DE MARCADORES
   List<Marker> markers = [];
 
 //OBTIENE LA POSICIÓN DEL USUARIO
@@ -86,7 +86,7 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
   Widget build(BuildContext context) {
     return GoogleMap(
       onMapCreated: _onMapCreated,
-      onTap: (argument) => {widget.onTap(argument)},
+      onTap: (argument) => {widget.onTap(mapController, argument)},
       initialCameraPosition: CameraPosition(
         target: widget.center!,
         zoom: 11.0,

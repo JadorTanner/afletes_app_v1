@@ -29,8 +29,6 @@ class _VehiclesState extends State<Vehicles> {
         await Api().getData('user/find-vehicles?page=' + page.toString());
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
-      print(jsonResponse['data']['data'][0]['vehicleattachments']);
-      print(jsonResponse['data']['data'][0]['createdBy']);
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
           for (var vehicle in jsonResponse['data']['data']) {
@@ -415,12 +413,18 @@ class _VehiclesListState extends State<VehiclesList> {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(20),
-      children: List.generate(
-          vehicles.length,
-          (index) => CarCard2(
-                vehicles[index],
-                onTap: () => onVehicleTap(vehicles[index].id, context),
-              )),
+      children: vehicles.length > 0
+          ? List.generate(
+              vehicles.length,
+              (index) => CarCard2(
+                    vehicles[index],
+                    onTap: () => onVehicleTap(vehicles[index].id, context),
+                  ))
+          : [
+              Center(
+                child: Text('No hay vehículos disponibles'),
+              )
+            ],
     );
   }
 }

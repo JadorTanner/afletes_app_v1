@@ -26,8 +26,6 @@ List<Category> categories = [];
 List<StateModel> states = [];
 List<City> cities = [];
 PageController pageController = PageController();
-late AfletesGoogleMap originMap;
-late AfletesGoogleMap deliveryMap;
 
 TextStyle titleStyles =
     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
@@ -106,17 +104,6 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
   @override
   void initState() {
     super.initState();
-    //MAPA DE CARGA
-    originMap = AfletesGoogleMap(onTap: (LatLng argument) {
-      originCoordsController.text =
-          argument.latitude.toString() + ',' + argument.longitude.toString();
-    });
-
-    //MAPA DE ENTREGA
-    deliveryMap = AfletesGoogleMap(onTap: (LatLng argument) {
-      destinCoordsController.text =
-          argument.latitude.toString() + ',' + argument.longitude.toString();
-    });
   }
 
   @override
@@ -513,14 +500,18 @@ class _DatosUbicacionState extends State<DatosUbicacion>
             action: TextInputAction.done,
           ),
           SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: AfletesGoogleMap(onTap: (LatLng argument) {
-              originCoordsController.text = argument.latitude.toString() +
-                  ',' +
-                  argument.longitude.toString();
-            }),
-          ),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.4,
+              // child: AfletesGoogleMap(onTap: (LatLng argument) {
+              //   originCoordsController.text = argument.latitude.toString() +
+              //       ',' +
+              //       argument.longitude.toString();
+              // }),
+              child: AfletesGoogleMap(onTap: (LatLng argument) {
+                originCoordsController.text = argument.latitude.toString() +
+                    ',' +
+                    argument.longitude.toString();
+              })),
           Visibility(
             child: LoadFormField(originCoordsController, 'Coordenadas'),
             visible: false,
@@ -590,11 +581,7 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery>
             'Dirección *',
             action: TextInputAction.next,
           ),
-          SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: deliveryMap,
-          ),
+          LoadMap(destinCoordsController),
           SizedBox(
             height: 0,
             child: LoadFormField(destinCoordsController, 'Coordenadas'),
@@ -629,6 +616,103 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery>
   @override
   // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
+}
+
+class LoadMap extends StatefulWidget {
+  LoadMap(this.textController, {Key? key}) : super(key: key);
+  TextEditingController textController;
+
+  @override
+  State<LoadMap> createState() => _LoadMapState();
+}
+
+class _LoadMapState extends State<LoadMap> {
+  late GoogleMapController mapController;
+  //ESTILOS DEL MAPA
+  String _darkMapStyle = '';
+
+  setMapStyles() async {
+    _darkMapStyle =
+        await rootBundle.loadString('assets/google_map_styles.json');
+    mapController.setMapStyle(_darkMapStyle);
+  }
+
+  //coordenada inicial
+  late Position position;
+  //LISTA DE MARCADORES
+  List<Marker> markers = [];
+
+//OBTIENE LA POSICIÓN DEL USUARIO
+  getPosition() async {
+    position = await Geolocator.getCurrentPosition();
+    mounted
+        ? setState(() {
+            mapController.animateCamera(CameraUpdate.newLatLng(
+                LatLng(position.latitude, position.longitude)));
+            markers = [
+              Marker(
+                  markerId: MarkerId('load_location'),
+                  position: LatLng(
+                    position.latitude,
+                    position.longitude,
+                  ),
+                  draggable: true,
+                  onDragEnd: (LatLng newPosition) =>
+                      widget.textController.text =
+                          newPosition.latitude.toString() +
+                              ',' +
+                              newPosition.longitude.toString()),
+            ];
+          })
+        : () => {};
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    setMapStyles();
+    // mapController.setMapStyle('');
+    getPosition();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height * 0.4,
+      child: GoogleMap(
+        onMapCreated: _onMapCreated,
+        onTap: (argument) => setState(() {
+          widget.textController.text = argument.latitude.toString() +
+              ',' +
+              argument.longitude.toString();
+          markers = [
+            Marker(
+                markerId: MarkerId('delivery_location'),
+                position: LatLng(
+                  argument.latitude,
+                  argument.longitude,
+                ),
+                draggable: true,
+                onDragEnd: (LatLng newPosition) => widget.textController.text =
+                    newPosition.latitude.toString() +
+                        ',' +
+                        newPosition.longitude.toString()),
+          ];
+          print(markers);
+        }),
+        initialCameraPosition: const CameraPosition(
+          target: LatLng(-25.27705190025039, -57.63737049639007),
+          zoom: 11.0,
+        ),
+        markers: markers.map((e) => e).toSet(),
+      ),
+    );
+  }
 }
 
 class DepartamentoPicker extends StatefulWidget {
