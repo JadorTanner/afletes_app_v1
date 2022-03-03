@@ -19,6 +19,7 @@ import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
+import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -33,15 +34,9 @@ import 'package:provider/provider.dart';
 late AndroidNotificationChannel channel;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-PusherOptions options = PusherOptions(
-  encrypted: false,
-  cluster: 'us2',
-);
-PusherClient pusher =
-    PusherClient(pusherKey, options, autoConnect: true, enableLogging: true);
+PusherApi pusherApi = PusherApi();
 
 //PERMISOS DE LOCALIZACION
-
 Future _determinePosition() async {
   bool serviceEnabled;
   LocationPermission permission;
@@ -166,23 +161,14 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
     getToken();
-    pusher.onConnectionStateChange((state) {
-      print(
-          "previousState: ${state!.previousState}, currentState: ${state.currentState}");
-    });
-
-    pusher.onConnectionError((error) {
-      print("error: ${error!.message}");
-    });
 
     NotificationsApi.init();
     listenNotifications();
 
-// Subscribe to a private channel
-    Channel pusherChannel = pusher.subscribe("negotiation-chat");
+    pusherApi.init();
 
 // Bind to listen for events called "order-status-updated" sent to "private-orders" channel
-    pusherChannel.bind('App\\Events\\NegotiationChat',
+    pusherApi.bindEvent('App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
       if (event != null) {
         if (event.data != null) {
@@ -205,6 +191,14 @@ class _AfletesAppState extends State<AfletesApp> {
                 if (jsonData['is_final_offer'] == 'true') {
                   context.read<ChatProvider>().setCanOffer(false);
                 }
+              } else {
+                NotificationsApi.showNotification(
+                  id: 10,
+                  title: 'Tiene una nueva notificación',
+                  body: jsonData['message'],
+                  payload:
+                      '{"route": "chat", "id":${jsonData["negotiation_id"]}}',
+                );
               }
             }
           }
@@ -280,7 +274,7 @@ class _AfletesAppState extends State<AfletesApp> {
         '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),
       },
-      // navigatorKey: navigatorKey,
+      navigatorKey: navigatorKey,
     );
   }
 }
