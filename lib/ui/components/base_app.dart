@@ -4,13 +4,16 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseApp extends StatefulWidget {
-  BaseApp(this.body, {this.title = '', Key? key}) : super(key: key);
+  BaseApp(this.body, {this.title = '', this.floatingButton = null, Key? key})
+      : super(key: key);
   Widget body;
   String title;
+  FloatingActionButton? floatingButton;
   @override
   State<BaseApp> createState() => _BaseAppState();
 }
@@ -20,7 +23,45 @@ class _BaseAppState extends State<BaseApp> {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> _key = GlobalKey();
     return Scaffold(
+      key: _key,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: kBlack),
+        actionsIconTheme: IconThemeData(color: kBlack),
+        leading: Container(
+          width: 40,
+          height: 40,
+          margin: const EdgeInsets.only(top: 20, left: 20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white,
+          ),
+          child: IconButton(
+            onPressed: () => {_key.currentState!.openDrawer()},
+            icon: const Icon(Icons.menu, size: 20),
+          ),
+        ),
+        actions: [
+          Navigator.canPop(context)
+              ? Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(top: 20, right: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.white,
+                  ),
+                  child: IconButton(
+                      onPressed: () => {Navigator.of(context).pop()},
+                      icon: const Icon(Icons.chevron_left, size: 20)),
+                )
+              : const SizedBox.shrink()
+        ],
+      ),
+      extendBodyBehindAppBar: true,
       drawer: Drawer(
         child: FutureBuilder(
           future: Future(() async {
@@ -111,7 +152,15 @@ class _BaseAppState extends State<BaseApp> {
           },
         ),
       ),
-      body: widget.body,
+      body: Stack(
+        children: [
+          widget.body,
+          Positioned(
+              top: 40,
+              left: 20,
+              child: widget.floatingButton ?? const SizedBox.shrink())
+        ],
+      ),
     );
   }
 }

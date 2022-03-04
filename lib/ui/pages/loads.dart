@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
+import 'package:timelines/timelines.dart';
 
 List<Load> loads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
@@ -63,12 +65,14 @@ Future<List<Load>> getLoads([refresh = false]) async {
                     .insertItem(0, duration: const Duration(milliseconds: 100))
                 : null;
           });
+
+          return loads;
         }
       }
     }
 
     return loads;
-  } on TimeoutException catch (_) {
+  } catch (_) {
     return [];
   }
 }
@@ -92,148 +96,423 @@ onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
       intialOfferController.text = data['initial_offer'].toString();
       if (images.isNotEmpty) {
         for (var element in images) {
-          attachments.add(Image.network(imgUrl + element['filename']));
+          attachments.add(Image.network(
+            imgUrl + element['filename'],
+            fit: BoxFit.fitWidth,
+          ));
         }
       }
       Size size = MediaQuery.of(context).size;
-      await showBottomSheet(
+      await showModalBottomSheet(
         context: context,
-        // barrierColor: Colors.transparent,
+        barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         // enableDrag: true,
         constraints: BoxConstraints(
-            minHeight: size.height * 0.1, maxHeight: size.height * 0.5),
-        builder: (context) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          padding:
-              const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 40),
-          child: ListView(
-            // crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 150,
-                child: ImageViewer(attachments),
+            minHeight: size.height * 0.1, maxHeight: size.height * 0.7),
+        builder: (context) => Stack(
+          children: [
+            Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              child: ListView(
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Carga nro: ' + id.toString()),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Stack(
                     children: [
-                      const Text('Salida'),
-                      Text(
-                        'Departamento: ' +
-                            (data['state'] != null
-                                ? data['state']['name']
-                                : ''),
-                        style: textoInformacion,
+                      SizedBox(
+                        height: 400,
+                        child: ImageViewer(attachments),
                       ),
-                      Text(
-                        'Ciudad: ' +
-                            (data['city'] != null ? data['city']['name'] : ''),
-                        style: textoInformacion,
-                      ),
-                      Text(
-                        'Dirección: ' + (data['address'] ?? ''),
-                        style: textoInformacion,
+                      Positioned(
+                        bottom: -2,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          width: double.infinity,
+                          height: 100,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Color(0xFFFFFFFF)],
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Entrega'),
-                      Text(
-                        'Departamento: ' +
-                            (data['destination_state_name'] ?? ''),
-                        style: textoInformacion,
-                      ),
-                      Text(
-                        'Ciudad: ' + (data['destination_city_name'] ?? ''),
-                        style: textoInformacion,
-                      ),
-                      Text(
-                        'Dirección: ' + (data['destination_address'] ?? ''),
-                        style: textoInformacion,
-                      ),
-                    ],
-                  )
+                  Container(
+                    color: const Color(0xFFFFFFFF),
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 40,
+                    ),
+                    child: Text(data['description'] ?? ''),
+                  ),
+                  Container(
+                    color: const Color(0xFFFFFFFF),
+                    padding: const EdgeInsets.all(20),
+                    child: LoadInformation(
+                        data: data,
+                        id: id,
+                        textoInformacion: textoInformacion,
+                        intialOfferController: intialOfferController),
+                  ),
+                  Container(
+                    color: const Color(0xFFFFFFFF),
+                    padding:
+                        const EdgeInsets.only(left: 20, right: 20, bottom: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: TextField(
+                            controller: intialOfferController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFFBDBDBD),
+                                  width: 1,
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
+                              label: Text('Oferta Inicial'),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        (data['load_state_id'] == 1
+                            ? TextButton.icon(
+                                onPressed: () async {
+                                  try {
+                                    Api api = Api();
+                                    Response response = await api.postData(
+                                        'negotiation/start-negotiation', {
+                                      'load_id': id,
+                                      'initial_offer':
+                                          intialOfferController.text
+                                    });
+                                    if (response.statusCode == 200) {
+                                      Map jsonResponse =
+                                          jsonDecode(response.body);
+                                      if (jsonResponse['success']) {
+                                        Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                          builder: (context) => NegotiationChat(
+                                              jsonResponse['data']
+                                                  ['negotiation_id']),
+                                        ));
+                                      }
+                                    }
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Compruebe su conexión a internet')));
+                                  }
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          const Color(0xFF101010)),
+                                  foregroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          const Color(0xFFFFFFFF)),
+                                  padding:
+                                      MaterialStateProperty.all<EdgeInsets>(
+                                          const EdgeInsets.symmetric(
+                                              vertical: 18, horizontal: 10)),
+                                ),
+                                label: const Text('Negociar'),
+                                icon: const Icon(Icons.check),
+                              )
+                            : const SizedBox.shrink())
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(
-                height: 20,
+            ),
+            Positioned(
+              left: 160,
+              right: 160,
+              top: 10,
+              child: Container(
+                height: 5,
+                width: 2,
+                constraints: const BoxConstraints(maxWidth: 2),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  color: Color(0xFFC5C5C5),
+                ),
               ),
-              const Text('Oferta inicial'),
-              TextField(
-                controller: intialOfferController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    helperText:
-                        'Puedes cambiarlo para ofertar un precio diferente *'),
+            ),
+            Positioned(
+              right: 30,
+              top: 20,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close,
+                    size: 15,
+                  ),
+                ),
               ),
-              (data['load_state_id'] == 1
-                  ? ButtonBar(
-                      children: [
-                        TextButton.icon(
-                            onPressed: () async {
-                              try {
-                                Api api = Api();
-                                Response response = await api.postData(
-                                    'negotiation/start-negotiation', {
-                                  'load_id': id,
-                                  'initial_offer': intialOfferController.text
-                                });
-
-                                if (response.statusCode == 200) {
-                                  Map jsonResponse = jsonDecode(response.body);
-                                  if (jsonResponse['success']) {
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                      builder: (context) => NegotiationChat(
-                                          jsonResponse['data']
-                                              ['negotiation_id']),
-                                    ));
-                                  }
-                                }
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Compruebe su conexión a internet')));
-                              }
-                            },
-                            label: const Text('Negociar'),
-                            icon: const Icon(Icons.check))
-                      ],
-                    )
-                  : const SizedBox.shrink())
-            ],
-          ),
+            ),
+            data['is_urgent']
+                ? Positioned(
+                    left: 30,
+                    top: 20,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.horizontal(
+                          right: Radius.circular(10),
+                          left: Radius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'URGENTE',
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink()
+          ],
         ),
-      ).closed;
-      setLoadsMarkers();
+      ).whenComplete(() {
+        setLoadsMarkers();
+      });
+      ;
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Compruebe su conexión a internet')));
+  }
+}
+
+/* class LoadInformation extends StatelessWidget {
+  const LoadInformation({
+    Key? key,
+    required this.data,
+    required this.id,
+    required this.textoInformacion,
+    required this.intialOfferController,
+  }) : super(key: key);
+
+  final Map data;
+  final TextStyle textoInformacion;
+  final TextEditingController intialOfferController;
+  final int id;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Carga nro: ' + id.toString(),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Salida',
+                ),
+                Text(
+                  'Departamento: ' +
+                      (data['state'] != null ? data['state']['name'] : ''),
+                  style: textoInformacion,
+                ),
+                Text(
+                  'Ciudad: ' +
+                      (data['city'] != null ? data['city']['name'] : ''),
+                  style: textoInformacion,
+                ),
+                Text(
+                  'Dirección: ' + (data['address'] ?? ''),
+                  style: textoInformacion,
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Entrega'),
+                Text(
+                  'Departamento: ' + (data['destination_state_name'] ?? ''),
+                  style: textoInformacion,
+                ),
+                Text(
+                  'Ciudad: ' + (data['destination_city_name'] ?? ''),
+                  style: textoInformacion,
+                ),
+                Text(
+                  'Dirección: ' + (data['destination_address'] ?? ''),
+                  style: textoInformacion,
+                ),
+              ],
+            )
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        const Text('Oferta inicial'),
+        TextField(
+          controller: intialOfferController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+              helperText:
+                  'Puedes cambiarlo para ofertar un precio diferente *'),
+        ),
+        (data['load_state_id'] == 1
+            ? ButtonBar(
+                children: [
+                  TextButton.icon(
+                      onPressed: () async {
+                        try {
+                          Api api = Api();
+                          Response response = await api.postData(
+                              'negotiation/start-negotiation', {
+                            'load_id': id,
+                            'initial_offer': intialOfferController.text
+                          });
+
+                          if (response.statusCode == 200) {
+                            Map jsonResponse = jsonDecode(response.body);
+                            if (jsonResponse['success']) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => NegotiationChat(
+                                    jsonResponse['data']['negotiation_id']),
+                              ));
+                            }
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Compruebe su conexión a internet')));
+                        }
+                      },
+                      label: const Text('Negociar'),
+                      icon: const Icon(Icons.check))
+                ],
+              )
+            : const SizedBox.shrink())
+      ],
+    );
+  }
+} */
+
+class LoadInformation extends StatelessWidget {
+  const LoadInformation({
+    Key? key,
+    required this.data,
+    required this.id,
+    required this.textoInformacion,
+    required this.intialOfferController,
+  }) : super(key: key);
+
+  final Map data;
+  final TextStyle textoInformacion;
+  final TextEditingController intialOfferController;
+  final int id;
+
+  @override
+  Widget build(BuildContext context) {
+    return Timeline(
+      theme: TimelineThemeData(
+        color: Colors.grey[400],
+      ),
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      children: [
+        TimelineTile(
+          nodeAlign: TimelineNodeAlign.start,
+          crossAxisExtent: double.infinity,
+          mainAxisExtent: 60,
+          contents: Container(
+            padding: const EdgeInsets.only(left: 15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(data['address'] ?? ''),
+                Text((data['state']['name'] ?? '') +
+                    ' - ' +
+                    (data['city']['name'] ?? '')),
+              ],
+            ),
+          ),
+          node: const TimelineNode(
+            indicator: OutlinedDotIndicator(),
+            endConnector: DashedLineConnector(),
+          ),
+        ),
+        TimelineTile(
+          nodeAlign: TimelineNodeAlign.start,
+          crossAxisExtent: double.infinity,
+          mainAxisExtent: 60,
+          contents: Container(
+            padding: const EdgeInsets.only(left: 15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(data['destination_address'] ?? ''),
+                Text((data['destination_state_name'] ?? '') +
+                    ' - ' +
+                    (data['destination_city_name'] ?? '')),
+              ],
+            ),
+          ),
+          node: const TimelineNode(
+            indicator: DotIndicator(),
+            startConnector: DashedLineConnector(),
+          ),
+        ),
+        // DotIndicator(
+        //   color: Colors.red,
+        //   size: 20,
+        //   child: Text(data['address'] ?? ''),
+        // ),
+        // DotIndicator(
+        //   color: Colors.red,
+        //   size: 20,
+        //   child: Text(data['destination_address'] ?? ''),
+        // ),
+      ],
+    );
   }
 }
 
@@ -274,7 +553,7 @@ class _ImageViewerState extends State<ImageViewer> {
                   )),
         ),
         Positioned(
-          bottom: 0,
+          bottom: 70,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
@@ -442,7 +721,14 @@ class _LoadsMapState extends State<LoadsMap>
     setLoadsMarkers(position);
   } //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
 
-  setLoadsMarkers(Position position, [bool fromTap = false, bool pop = false]) {
+  setLoadsMarkers(Position position,
+      [bool fromTap = false, bool pop = false]) async {
+    // Uint8List bytes = (await AssetBundle(Uri.parse(imgurl))
+    //   .load(imgurl))
+    //   .buffer
+    //   .asUint8List();
+    BitmapDescriptor bitmapIcon = await BitmapDescriptor.fromAssetImage(
+        const ImageConfiguration(), 'assets/img/load-marker-icon.png');
     markers.clear();
     loads.asMap().forEach((key, load) {
       markers.add(
@@ -452,6 +738,7 @@ class _LoadsMapState extends State<LoadsMap>
             double.parse(load.latitudeFrom),
             double.parse(load.longitudeFrom),
           ),
+          icon: bitmapIcon,
           infoWindow: InfoWindow(
               title: load.product != '' ? load.product : load.addressFrom,
               snippet: 'Oferta inicial: ' + load.initialOffer.toString()),
@@ -558,12 +845,13 @@ class _LoadsMapState extends State<LoadsMap>
     return Stack(
       children: [
         GoogleMap(
+          myLocationButtonEnabled: false,
           polylines: _polylines,
           onMapCreated: _onMapCreated,
           myLocationEnabled: true,
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
-            zoom: 11.0,
+            zoom: 6,
           ),
           markers: markers.map((e) => e).toSet(),
           buildingsEnabled: false,
@@ -577,12 +865,33 @@ class _LoadsMapState extends State<LoadsMap>
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(50))),
             child: IconButton(
-              color: Colors.orange,
+              color: kBlack,
               onPressed: () async {
-                await getLoads();
-                setState(() {});
+                List<Load> loadsLoaded = await getLoads();
+                if (loadsLoaded.isNotEmpty) {
+                  setState(() {});
+                }
               },
               icon: const Icon(Icons.refresh),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 120,
+          right: 30,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(50))),
+            child: IconButton(
+              color: kBlack,
+              onPressed: () async {
+                mapController.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                      LatLng(position.latitude, position.longitude), 11),
+                );
+              },
+              icon: const Icon(Icons.location_searching_rounded),
             ),
           ),
         )

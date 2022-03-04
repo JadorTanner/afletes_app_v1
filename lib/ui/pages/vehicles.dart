@@ -55,7 +55,7 @@ class _VehiclesState extends State<Vehicles> {
       }
 
       return vehicles;
-    } on TimeoutException catch (e) {
+    } catch (e) {
       return [];
     }
   }

@@ -32,15 +32,15 @@ PageController pageController = PageController();
 late AfletesGoogleMap originMap;
 late AfletesGoogleMap deliveryMap;
 
-late XFile? greenCard;
-late XFile? greenCardBack;
-late XFile? municipal;
-late XFile? municipalBack;
-late XFile? dinatran;
-late XFile? dinatranBack;
-late XFile? senacsa;
-late XFile? senacsaBack;
-late XFile? seguro;
+late XFile? greenCard = null;
+late XFile? greenCardBack = null;
+late XFile? municipal = null;
+late XFile? municipalBack = null;
+late XFile? dinatran = null;
+late XFile? dinatranBack = null;
+late XFile? senacsa = null;
+late XFile? senacsaBack = null;
+late XFile? seguro = null;
 
 late GlobalKey<_ImagesPickerState> imagePickerKey;
 
