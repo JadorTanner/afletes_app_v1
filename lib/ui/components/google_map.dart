@@ -87,6 +87,8 @@ class Afletes_GoogleMapState extends State<AfletesGoogleMap> {
     return GoogleMap(
       onMapCreated: _onMapCreated,
       onTap: (argument) => {widget.onTap(mapController, argument)},
+      myLocationEnabled: true,
+      scrollGesturesEnabled: false,
       initialCameraPosition: CameraPosition(
         target: widget.center!,
         zoom: 11.0,

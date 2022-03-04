@@ -11,54 +11,58 @@ import 'package:http/http.dart';
 List<Load> loads = [];
 
 Future<List<Load>> getMyLoads() async {
-  Response response = await Api().getData('user/my-loads');
-  loads.clear();
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      var data = jsonResponse['data'];
-      if (data.isNotEmpty) {
-        data.asMap().forEach((key, load) {
-          loads.add(Load(
-              id: load['id'],
-              addressFrom: load['address'],
-              cityFromId: load['city_id'],
-              stateFromId: load['state_id'],
-              initialOffer: double.parse(load['initial_offer']).toInt(),
-              longitudeFrom: load['longitude'],
-              latitudeFrom: load['latitude'],
-              destinLongitude: load['destination_longitude'],
-              destinLatitude: load['destination_latitude'],
-              destinAddress: load['destination_address'],
-              destinCityId: load['destination_city_id'],
-              destinStateId: load['destination_state_id'],
-              product: load['product'] ?? '',
-              attachments: load['attachments'],
-              loadWait: load['wait_in_origin'].toString(),
-              deliveryWait: load['wait_in_destination'].toString(),
-              weight: double.parse(load['weight']),
-              volumen:
-                  load['volume'] != null ? double.parse(load['volume']) : 0,
-              description: load['description'] ?? '',
-              helpersQuantity: load['helpers_quantity'],
-              vehicleQuantity: load['vehicles_quantity'],
-              measurement: load['measurement_unit_id'].toString(),
-              pickUpDate: load['pickup_at'],
-              pickUpTime: load['pickup_time'],
-              observations: load['observations'] ?? '',
-              isUrgent: load['is_urgent'],
-              categoryId: load['product_category_id']));
-        });
-        return loads;
+  try {
+    Response response = await Api().getData('user/my-loads');
+    loads.clear();
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        var data = jsonResponse['data'];
+        if (data.isNotEmpty) {
+          data.asMap().forEach((key, load) {
+            loads.add(Load(
+                id: load['id'],
+                addressFrom: load['address'],
+                cityFromId: load['city_id'],
+                stateFromId: load['state_id'],
+                initialOffer: double.parse(load['initial_offer']).toInt(),
+                longitudeFrom: load['longitude'],
+                latitudeFrom: load['latitude'],
+                destinLongitude: load['destination_longitude'],
+                destinLatitude: load['destination_latitude'],
+                destinAddress: load['destination_address'],
+                destinCityId: load['destination_city_id'],
+                destinStateId: load['destination_state_id'],
+                product: load['product'] ?? '',
+                attachments: load['attachments'],
+                loadWait: load['wait_in_origin'].toString(),
+                deliveryWait: load['wait_in_destination'].toString(),
+                weight: double.parse(load['weight']),
+                volumen:
+                    load['volume'] != null ? double.parse(load['volume']) : 0,
+                description: load['description'] ?? '',
+                helpersQuantity: load['helpers_quantity'],
+                vehicleQuantity: load['vehicles_quantity'],
+                measurement: load['measurement_unit_id'].toString(),
+                pickUpDate: load['pickup_at'],
+                pickUpTime: load['pickup_time'],
+                observations: load['observations'] ?? '',
+                isUrgent: load['is_urgent'],
+                categoryId: load['product_category_id']));
+          });
+          return loads;
+        } else {
+          loads = [];
+        }
       } else {
         loads = [];
       }
-    } else {
-      loads = [];
     }
-  }
 
-  return loads;
+    return loads;
+  } catch (e) {
+    return [];
+  }
 }
 
 class MyLoadsPage extends StatefulWidget {

@@ -80,60 +80,67 @@ class Load {
 
   Future createLoad(Map body, List<XFile> imagenes,
       {context = null, update = false, loadId = 0}) async {
-    Api api = Api();
-    if (update) {
-      body.addEntries([MapEntry('id', loadId)]);
-    }
+    try {
+      Api api = Api();
+      if (update) {
+        body.addEntries([MapEntry('id', loadId)]);
+      }
 
-    var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
+      var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
 
-    String token = await api.getToken();
-    MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
-    Map headers = api.setHeaders();
-    headers.forEach((key, value) {
-      request.headers[key] = value;
-    });
-    body.forEach((key, value) {
-      request.fields[key] = value.toString();
-    });
+      String token = await api.getToken();
+      MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
+      Map headers = api.setHeaders();
+      headers.forEach((key, value) {
+        request.headers[key] = value;
+      });
+      body.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
 
-    imagenes.forEach((file) async {
-      request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
-    });
-    BuildContext loadingContext = context;
-    showDialog(
-      context: loadingContext,
-      barrierDismissible: false,
-      builder: (context) => const Dialog(
-        backgroundColor: Colors.transparent,
-        child: Center(
-          child: CircularProgressIndicator(),
+      imagenes.forEach((file) async {
+        request.files
+            .add(await MultipartFile.fromPath('imagenes[]', file.path));
+      });
+      BuildContext loadingContext = context;
+      showDialog(
+        context: loadingContext,
+        barrierDismissible: false,
+        builder: (context) => const Dialog(
+          backgroundColor: Colors.transparent,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
-      ),
-    );
-    StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      Map responseBody = jsonDecode(await response.stream.bytesToString());
-      Navigator.pop(loadingContext);
-      if (responseBody['success']) {
-        if (context != null) {
+      );
+      StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
+        Map responseBody = jsonDecode(await response.stream.bytesToString());
+        Navigator.pop(loadingContext);
+        if (responseBody['success']) {
+          if (context != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(responseBody['message']),
+              ),
+            );
+            Future.delayed(const Duration(seconds: 1),
+                () => {Navigator.of(context).pop()});
+          }
+          return true;
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(responseBody['message']),
             ),
           );
-          Future.delayed(
-              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+          return false;
         }
-        return true;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseBody['message']),
-          ),
-        );
-        return false;
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Compruebe su conexión a internet')));
+      return false;
     }
   }
 

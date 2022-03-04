@@ -42,119 +42,135 @@ userData() async {
 }
 
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
-  await userData();
-  Api api = Api();
+  try {
+    await userData();
+    Api api = Api();
 
-  context.read<ChatProvider>().clearMessages();
-  context.read<ChatProvider>().setNegotiationId(id);
-  FocusManager.instance.primaryFocus?.unfocus();
+    context.read<ChatProvider>().clearMessages();
+    context.read<ChatProvider>().setNegotiationId(id);
+    FocusManager.instance.primaryFocus?.unfocus();
 
-  Response response = await api.getData('negotiation/?id=' + id.toString());
-  if (response.statusCode == 200) {
-    Map jsonResp = jsonDecode(response.body);
-    List listMessages = jsonResp['data']['messages'];
-    if (listMessages.isNotEmpty) {
-      listMessages.asMap().forEach((key, message) {
-        context.read<ChatProvider>().addMessage(
-            id,
-            ChatMessage(
-                message['img_url'] ?? message['message'],
-                message['sender_id'],
-                message['id'],
-                message['img_url'] != null));
-      });
-    }
-    receiverId = jsonResp['data']['negotiation']
-        [user.isCarrier ? 'generator_id' : 'transportist_id'];
-    //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
-    switch (jsonResp['data']['negotiation_state']['id']) {
-      case 1:
-        context.read<ChatProvider>().setCanOffer(true);
-        break;
-      case 2:
-        context.read<ChatProvider>().setCanOffer(false);
-        context.read<ChatProvider>().setToPay(true);
-        context.read<ChatProvider>().setCanVote(false);
-        context.read<ChatProvider>().setShowDefaultMessages(false);
-        if (user.isLoadGenerator) {
+    Response response = await api.getData('negotiation/?id=' + id.toString());
+    if (response.statusCode == 200) {
+      Map jsonResp = jsonDecode(response.body);
+      List listMessages = jsonResp['data']['messages'];
+      if (listMessages.isNotEmpty) {
+        listMessages.asMap().forEach((key, message) {
+          context.read<ChatProvider>().addMessage(
+              id,
+              ChatMessage(
+                  message['img_url'] ?? message['message'],
+                  message['sender_id'],
+                  message['id'],
+                  message['img_url'] != null));
+        });
+      }
+      receiverId = jsonResp['data']['negotiation']
+          [user.isCarrier ? 'generator_id' : 'transportist_id'];
+      //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
+      switch (jsonResp['data']['negotiation_state']['id']) {
+        case 1:
+          context.read<ChatProvider>().setCanOffer(true);
+          break;
+        case 2:
+          context.read<ChatProvider>().setCanOffer(false);
           context.read<ChatProvider>().setToPay(true);
-        }
-        break;
-      case 6:
-        context.read<ChatProvider>().setCanOffer(true);
-        context.read<ChatProvider>().setPaid(false);
-        context.read<ChatProvider>().setToPay(false);
-        break;
-      case 8:
-        context.read<ChatProvider>().setCanOffer(false);
-        context.read<ChatProvider>().setPaid(true);
-        context.read<ChatProvider>().setShowDefaultMessages(true);
-        break;
-      default:
-        context.read<ChatProvider>().setCanOffer(false);
+          context.read<ChatProvider>().setCanVote(false);
+          context.read<ChatProvider>().setShowDefaultMessages(false);
+          if (user.isLoadGenerator) {
+            context.read<ChatProvider>().setToPay(true);
+          }
+          break;
+        case 6:
+          context.read<ChatProvider>().setCanOffer(true);
+          context.read<ChatProvider>().setPaid(false);
+          context.read<ChatProvider>().setToPay(false);
+          break;
+        case 8:
+          context.read<ChatProvider>().setCanOffer(false);
+          context.read<ChatProvider>().setPaid(true);
+          context.read<ChatProvider>().setShowDefaultMessages(true);
+          break;
+        default:
+          context.read<ChatProvider>().setCanOffer(false);
+      }
+      // if (context.read<ChatProvider>().paid) {
+      //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
+      // }
+      context
+          .read<ChatProvider>()
+          .setLoadState(jsonResp['data']['load_state']['id']);
+      if (jsonResp['data']['load_state']['id'] == 13) {
+        context.read<ChatProvider>().setShowDefaultMessages(false);
+      }
+      context.read<ChatProvider>().setLoadId(jsonResp['data']['load']['id']);
     }
-    // if (context.read<ChatProvider>().paid) {
-    //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
-    // }
-    context
-        .read<ChatProvider>()
-        .setLoadState(jsonResp['data']['load_state']['id']);
-    if (jsonResp['data']['load_state']['id'] == 13) {
-      context.read<ChatProvider>().setShowDefaultMessages(false);
-    }
-    context.read<ChatProvider>().setLoadId(jsonResp['data']['load']['id']);
+    return [];
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compruebe su conexión a internet')));
+    return [];
   }
-  return [];
 }
 
 Future sendMessage(id, BuildContext context, ChatProvider chat,
     [bool isDefaultMessage = false,
     String message = '',
     bool isLocation = false]) async {
-  FocusManager.instance.primaryFocus?.unfocus();
-  String offer = oferta.text;
-  oferta.text = '';
-  Position? location;
-  String mapImgUrl = "";
-  if (isLocation) {
-    location = await Geolocator.getCurrentPosition();
-    mapImgUrl =
-        "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs";
-    message =
-        """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="${mapImgUrl}" ><br>Mi ubicación</a>""";
-  }
-  Api api = Api();
-  Response response = await api.postData('negotiation/send-message', {
-    'negotiation_id': id,
-    'message': isDefaultMessage ? message : offer,
-    'is_final_offer': false,
-    'is_default': isDefaultMessage,
-    'is_location': isLocation,
-    'img_url': isLocation ? mapImgUrl : null,
-    'user_id': receiverId
-  });
+  try {
+    FocusManager.instance.primaryFocus?.unfocus();
+    String offer = oferta.text;
+    oferta.text = '';
+    Position? location;
+    String mapImgUrl = "";
+    if (isLocation) {
+      location = await Geolocator.getCurrentPosition();
+      mapImgUrl =
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs";
+      message =
+          """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="${mapImgUrl}" ><br>Mi ubicación</a>""";
+    }
+    Api api = Api();
+    Response response = await api.postData('negotiation/send-message', {
+      'negotiation_id': id,
+      'message': isDefaultMessage ? message : offer,
+      'is_final_offer': false,
+      'is_default': isDefaultMessage,
+      'is_location': isLocation,
+      'img_url': isLocation ? mapImgUrl : null,
+      'user_id': receiverId
+    });
 
-  Map jsonResp = jsonDecode(response.body);
-  if (jsonResp['success']) {
-    chat.addMessage(
-        id,
-        ChatMessage(isLocation ? mapImgUrl : jsonResp['data']['message'],
-            user.id, id, isLocation));
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(jsonResp['message']),
-      duration: const Duration(seconds: 3),
-    ));
+    Map jsonResp = jsonDecode(response.body);
+    if (jsonResp['success']) {
+      chat.addMessage(
+          id,
+          ChatMessage(isLocation ? mapImgUrl : jsonResp['data']['message'],
+              user.id, id, isLocation));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(jsonResp['message']),
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compruebe su conexión a internet')));
   }
 }
 
 Future cancelNegotiation(id, context) async {
-  Api api = Api();
-  Response response = await api.postData('negotiation/reject', {
-    'id': id,
-  });
-  if (response.statusCode == 200) {
-    context.read<ChatProvider>().setCanOffer(false);
+  try {
+    Api api = Api();
+    Response response = await api.postData('negotiation/reject', {
+      'id': id,
+    });
+    if (response.statusCode == 200) {
+      context.read<ChatProvider>().setCanOffer(false);
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compruebe su conexión a internet')));
   }
 }
 
@@ -162,23 +178,28 @@ Future setLoadState(int negotiationId, int loadId, int state,
     BuildContext context, ChatProvider chat) async {
   FocusManager.instance.primaryFocus?.unfocus();
   oferta.text = '';
-  Api api = Api();
-  Response response = await api.postData('load/estado-carga', {
-    'id': loadId,
-    'negotiation_id': negotiationId,
-    'state': state,
-  });
+  try {
+    Api api = Api();
+    Response response = await api.postData('load/estado-carga', {
+      'id': loadId,
+      'negotiation_id': negotiationId,
+      'state': state,
+    });
 
-  Map jsonResp = jsonDecode(response.body);
-  if (jsonResp['success']) {
-    chat.addMessage(negotiationId,
-        ChatMessage(jsonResp['data']['message'], user.id, negotiationId));
-    chat.setLoadState(state);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(jsonResp['message']),
-      duration: const Duration(seconds: 3),
-    ));
+    Map jsonResp = jsonDecode(response.body);
+    if (jsonResp['success']) {
+      chat.addMessage(negotiationId,
+          ChatMessage(jsonResp['data']['message'], user.id, negotiationId));
+      chat.setLoadState(state);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(jsonResp['message']),
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compruebe su conexión a internet')));
   }
 }
 
@@ -190,19 +211,24 @@ Future acceptNegotiation(id, context) async {
       actions: [
         IconButton(
           onPressed: () async {
-            Api api = Api();
-            Response response = await api.postData('negotiation/accept', {
-              'id': id,
-            });
-            if (response.statusCode == 200) {
-              context.read<ChatProvider>().setCanOffer(false);
-              context.read<ChatProvider>().setToPay(true);
-              Navigator.pop(context);
-              if (user.isLoadGenerator) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => Payment(id),
-                ));
+            try {
+              Api api = Api();
+              Response response = await api.postData('negotiation/accept', {
+                'id': id,
+              });
+              if (response.statusCode == 200) {
+                context.read<ChatProvider>().setCanOffer(false);
+                context.read<ChatProvider>().setToPay(true);
+                Navigator.pop(context);
+                if (user.isLoadGenerator) {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => Payment(id),
+                  ));
+                }
               }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Compruebe su conexión a internet')));
             }
           },
           icon: const Icon(Icons.check),
@@ -389,17 +415,24 @@ class ButtonsSection extends StatelessWidget {
                                   ),
                                   TextButton(
                                     onPressed: () async {
-                                      Api api = Api();
-                                      Response response =
-                                          await api.postData('user/vote', {
-                                        'negotiation_id': widget.id,
-                                        'score': voteStars,
-                                        'comment': commentController.text,
-                                      });
-                                      context
-                                          .read<ChatProvider>()
-                                          .setCanVote(false);
-                                      Navigator.pop(context);
+                                      try {
+                                        Api api = Api();
+                                        Response response =
+                                            await api.postData('user/vote', {
+                                          'negotiation_id': widget.id,
+                                          'score': voteStars,
+                                          'comment': commentController.text,
+                                        });
+                                        context
+                                            .read<ChatProvider>()
+                                            .setCanVote(false);
+                                        Navigator.pop(context);
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                                content: Text(
+                                                    'Compruebe su conexión a internet')));
+                                      }
                                     },
                                     child: const Text('Votar'),
                                   )

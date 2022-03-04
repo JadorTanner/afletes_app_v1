@@ -59,36 +59,43 @@ TextEditingController ubicacionController = TextEditingController(),
 // Key latLngInput = Key('Ubicación');
 
 Future getCategories() async {
-  Api api = Api();
-  Response response = await api.getData('create-load-data');
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      Map data = jsonResponse['data'];
-      if (data['categories'].isNotEmpty) {
-        categories.clear();
-        data['categories'].asMap().forEach((key, category) {
-          categories.add(Category(id: category['id'], name: category['name']));
-        });
+  try {
+    Api api = Api();
+    Response response = await api.getData('create-load-data');
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        Map data = jsonResponse['data'];
+        if (data['categories'].isNotEmpty) {
+          categories.clear();
+          data['categories'].asMap().forEach((key, category) {
+            categories
+                .add(Category(id: category['id'], name: category['name']));
+          });
+        }
+        if (data['states'].isNotEmpty) {
+          states.clear();
+          data['states'].asMap().forEach((key, category) {
+            states.add(StateModel(id: category['id'], name: category['name']));
+          });
+        }
+        if (data['cities'].isNotEmpty) {
+          cities.clear();
+          data['cities'].asMap().forEach((key, city) {
+            cities.add(City(
+                id: city['id'],
+                name: city['name'],
+                state_id: city['state_id']));
+          });
+          return cities;
+        }
+        return true;
       }
-      if (data['states'].isNotEmpty) {
-        states.clear();
-        data['states'].asMap().forEach((key, category) {
-          states.add(StateModel(id: category['id'], name: category['name']));
-        });
-      }
-      if (data['cities'].isNotEmpty) {
-        cities.clear();
-        data['cities'].asMap().forEach((key, city) {
-          cities.add(City(
-              id: city['id'], name: city['name'], state_id: city['state_id']));
-        });
-        return cities;
-      }
-      return true;
     }
+    return true;
+  } catch (e) {
+    return false;
   }
-  return true;
 }
 
 class CreateLoadPage extends StatefulWidget {

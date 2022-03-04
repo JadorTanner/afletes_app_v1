@@ -12,39 +12,44 @@ import 'package:http/http.dart';
 List<Negotiation> negotiations = [];
 
 Future<List<Negotiation>> getNegotiations() async {
-  Api api = Api();
-  negotiations.clear();
+  try {
+    Api api = Api();
+    negotiations.clear();
 
-  Response response = await api.getData('user/my-negotiations');
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      List data = jsonResponse['data'];
-      data.asMap().forEach((key, negotiation) {
-        negotiations.add(
-          Negotiation(
-            id: negotiation['id'],
-            transportistId: negotiation['transportist_id'],
-            generatorId: negotiation['generator_id'],
-            vehicleId: negotiation['vehicle_id'],
-            stateId: negotiation['negotiation_state_id'],
-            fecha: negotiation['fecha'],
-            negotiationLoad: Load(
-              id: negotiation['negotiation_load']['id'],
-              product: negotiation['negotiation_load']['product'] ?? '',
-              description: negotiation['negotiation_load']['description'] ?? '',
-              weight: double.parse(negotiation['negotiation_load']['weight']
-                  .replaceAll('.00', '')),
-              initialOffer: int.parse(negotiation['negotiation_load']
-                      ['initial_offer']
-                  .replaceAll('.00', '')),
+    Response response = await api.getData('user/my-negotiations');
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        List data = jsonResponse['data'];
+        data.asMap().forEach((key, negotiation) {
+          negotiations.add(
+            Negotiation(
+              id: negotiation['id'],
+              transportistId: negotiation['transportist_id'],
+              generatorId: negotiation['generator_id'],
+              vehicleId: negotiation['vehicle_id'],
+              stateId: negotiation['negotiation_state_id'],
+              fecha: negotiation['fecha'],
+              negotiationLoad: Load(
+                id: negotiation['negotiation_load']['id'],
+                product: negotiation['negotiation_load']['product'] ?? '',
+                description:
+                    negotiation['negotiation_load']['description'] ?? '',
+                weight: double.parse(negotiation['negotiation_load']['weight']
+                    .replaceAll('.00', '')),
+                initialOffer: int.parse(negotiation['negotiation_load']
+                        ['initial_offer']
+                    .replaceAll('.00', '')),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        });
+      }
     }
+    return negotiations;
+  } catch (e) {
+    return [];
   }
-  return negotiations;
 }
 
 class MyNegotiations extends StatefulWidget {

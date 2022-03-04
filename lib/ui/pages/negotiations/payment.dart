@@ -22,11 +22,17 @@ class Payment extends StatefulWidget {
 
 class _PaymentState extends State<Payment> {
   Future<Map> getPaymentData() async {
-    Api api = Api();
+    try {
+      Api api = Api();
 
-    Response response = await api
-        .getData('negotiation/payment?negotiation_id=' + widget.id.toString());
-    return jsonDecode(response.body);
+      Response response = await api.getData(
+          'negotiation/payment?negotiation_id=' + widget.id.toString());
+      return jsonDecode(response.body);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Compruebe su conexión a internet')));
+      return {};
+    }
   }
 
   @override
@@ -120,38 +126,45 @@ class _PaymentState extends State<Payment> {
                 children: [
                   TextButton.icon(
                       onPressed: () async {
-                        Api api = Api();
+                        try {
+                          Api api = Api();
 
-                        Response response =
-                            await api.postData('negotiation/pay-negotiation', {
-                          'amount': data['data']['load']['final_offer']
-                              .toString()
-                              .replaceAll('.00', ''),
-                          'negotiation_id': widget.id
-                        });
-                        print(response.body);
+                          Response response = await api
+                              .postData('negotiation/pay-negotiation', {
+                            'amount': data['data']['load']['final_offer']
+                                .toString()
+                                .replaceAll('.00', ''),
+                            'negotiation_id': widget.id
+                          });
+                          print(response.body);
 
-                        Map jsonResponse = jsonDecode(response.body);
-                        if (response.statusCode == 200) {
-                          if (jsonResponse['process_id'] != '') {
-                            showDialog(
-                                context: context,
-                                builder: (context) => Dialog(
-                                      child: SizedBox(
-                                        child: WebView(
-                                          initialUrl: apiUrl +
-                                              'bancard-view?process_id=' +
-                                              jsonResponse['data']
-                                                  ['process_id'],
-                                          javascriptMode:
-                                              JavascriptMode.unrestricted,
+                          Map jsonResponse = jsonDecode(response.body);
+                          if (response.statusCode == 200) {
+                            if (jsonResponse['process_id'] != '') {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => Dialog(
+                                        child: SizedBox(
+                                          child: WebView(
+                                            initialUrl: apiUrl +
+                                                'bancard-view?process_id=' +
+                                                jsonResponse['data']
+                                                    ['process_id'],
+                                            javascriptMode:
+                                                JavascriptMode.unrestricted,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                barrierDismissible: false);
+                                  barrierDismissible: false);
+                            }
+                          } else {
+                            print(response.body);
                           }
-                        } else {
-                          print(response.body);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Compruebe su conexión a internet')));
                         }
                       },
                       icon: Icon(Icons.attach_money),

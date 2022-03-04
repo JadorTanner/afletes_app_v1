@@ -57,7 +57,7 @@ class _CarCard2State extends State<CarCard2> {
                     ? Image.network(
                         vehicleImgUrl + widget.vehicle.imgs[0]['path'])
                     : const Image(
-                        image: AssetImage('assets/img/image 121.png'),
+                        image: AssetImage('assets/img/noimage.png'),
                       ),
               ),
             ),

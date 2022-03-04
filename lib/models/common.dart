@@ -53,12 +53,16 @@ class Negotiation {
   // 1 - Mensaje de oferta
   sendMessage(int negotiationId, int message,
       [int type = 1, bool isFinal = false]) async {
-    Api api = Api();
-    return await api.postData('negotiation/send-message', {
-      'message': message,
-      'negotiation_id': negotiationId,
-      'is_final_offer': isFinal
-    });
+    try {
+      Api api = Api();
+      return await api.postData('negotiation/send-message', {
+        'message': message,
+        'negotiation_id': negotiationId,
+        'is_final_offer': isFinal
+      });
+    } catch (e) {
+      return Future(() => {});
+    }
   }
 }
 

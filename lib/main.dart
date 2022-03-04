@@ -15,12 +15,12 @@ import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
@@ -78,7 +78,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('Handling a background message ${message.messageId}');
 }
 
 void main() async {
@@ -133,15 +132,18 @@ class _AfletesAppState extends State<AfletesApp> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     if (user != null) {
-      Response response = await Api().postData('user/set-device-token',
-          {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
+      try {
+        await Api().postData('user/set-device-token',
+            {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
+      } catch (e) {
+        return false;
+      }
     }
   }
 
   listenNotifications() {
     NotificationsApi.onNotifications.stream.listen((event) {
       Map data = jsonDecode(event!);
-      print(data);
       if (data['route'] == 'chat') {
         if (navigatorKey.currentState != null) {
           navigatorKey.currentState!.push(MaterialPageRoute(
@@ -160,6 +162,7 @@ class _AfletesAppState extends State<AfletesApp> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     getToken();
 
     NotificationsApi.init();
@@ -175,13 +178,11 @@ class _AfletesAppState extends State<AfletesApp> {
           ChatProvider chat = context.read<ChatProvider>();
           String data = event.data!;
           Map jsonData = jsonDecode(data);
-          print(jsonData);
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
           User user =
               User(userData: jsonDecode(sharedPreferences.getString('user')!))
                   .userFromArray();
-          print(user.id);
           if (user.id != jsonData['sender_id']) {
             if (user.id == jsonData['user_id']) {
               if (jsonData['ask_location'] == true) {
@@ -192,12 +193,18 @@ class _AfletesAppState extends State<AfletesApp> {
                   }
                 };
 
-                Api api = Api();
-                Response response = await api.postData('user/send-location', {
-                  'negotiation_id': jsonData['negotiation_id'],
-                  'user_id': jsonData['sender_id'],
-                  'location': loc
-                });
+                try {
+                  Api api = Api();
+                  await api.postData('user/send-location', {
+                    'negotiation_id': jsonData['negotiation_id'],
+                    'user_id': jsonData['sender_id'],
+                    'location': loc
+                  });
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text(
+                          'Ha ocurrido un error. Compruebe su conexión a internet')));
+                }
               }
               if (chat.negotiationId == jsonData['negotiation_id']) {
                 chat.addMessage(
@@ -238,7 +245,6 @@ class _AfletesAppState extends State<AfletesApp> {
       AndroidNotification? android = message.notification?.android;
       Map data = message.data;
       if (notification != null && android != null) {
-        print(context.read<ChatProvider>().negotiationId);
         if (context.read<ChatProvider>().negotiationId == 0) {
           NotificationsApi.showNotification(
             id: notification.hashCode,
@@ -261,9 +267,6 @@ class _AfletesAppState extends State<AfletesApp> {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessageOpenedApp event was published!');
-      print(message.data);
-
       if (navigatorKey.currentState != null) {
         navigatorKey.currentState!.push(MaterialPageRoute(
           builder: (context) =>

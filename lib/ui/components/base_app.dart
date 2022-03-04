@@ -1,11 +1,11 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
-import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 
 class BaseApp extends StatefulWidget {
   BaseApp(this.body, {this.title = '', Key? key}) : super(key: key);
@@ -21,14 +21,6 @@ class _BaseAppState extends State<BaseApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton.small(
-          onPressed: () => {
-                context.read<PusherApi>().pusherChannel.trigger(
-                    'message', jsonEncode({'message': 'Mensaje de prueba'}))
-              }),
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
       drawer: Drawer(
         child: FutureBuilder(
           future: Future(() async {
@@ -44,7 +36,7 @@ class _BaseAppState extends State<BaseApp> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return SafeArea(
-                  minimum: EdgeInsets.all(15),
+                  minimum: const EdgeInsets.all(15),
                   child: Column(
                     children: [
                       const SizedBox(
@@ -74,13 +66,13 @@ class _BaseAppState extends State<BaseApp> {
                             builder: (context) => MyProfilePage(user),
                           ))
                         },
-                        icon: CircleAvatar(
+                        icon: const CircleAvatar(
                           child: Icon(Icons.person),
                         ),
                         label: Container(
                           padding: const EdgeInsets.all(15),
                           width: double.infinity,
-                          child: Text('Mi perfil'),
+                          child: const Text('Mi perfil'),
                         ),
                       ),
                       const SizedBox(

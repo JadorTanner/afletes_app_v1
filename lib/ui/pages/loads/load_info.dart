@@ -9,15 +9,20 @@ import 'package:http/http.dart';
 TextEditingController controller = TextEditingController();
 
 startNegotiation(Load load, context) async {
-  Api api = Api();
+  try {
+    Api api = Api();
 
-  Response response = await api.postData('negotiation/start-negotiation',
-      {'load_id': load.id, 'initial_offer': controller.text});
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) =>
-            NegotiationChat(jsonResponse['data']['negotiation_id'])));
+    Response response = await api.postData('negotiation/start-negotiation',
+        {'load_id': load.id, 'initial_offer': controller.text});
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) =>
+              NegotiationChat(jsonResponse['data']['negotiation_id'])));
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compruebe su conexión a internet')));
   }
 }
 

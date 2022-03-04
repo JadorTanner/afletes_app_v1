@@ -62,94 +62,101 @@ class Vehicle {
     XFile? senacsaBack,
     XFile? insurance,
   }) async {
-    Api api = Api();
-    if (update) {
-      body.addEntries([MapEntry('id', vehicleId)]);
-    }
+    try {
+      Api api = Api();
+      if (update) {
+        body.addEntries([MapEntry('id', vehicleId)]);
+      }
 
-    var fullUrl =
-        apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
+      var fullUrl = apiUrl +
+          (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
-    String token = await api.getToken();
-    MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
-    Map headers = api.setHeaders();
-    headers.forEach((key, value) {
-      request.headers[key] = value;
-    });
-    body.forEach((key, value) {
-      request.fields[key] = value.toString();
-    });
+      String token = await api.getToken();
+      MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
+      Map headers = api.setHeaders();
+      headers.forEach((key, value) {
+        request.headers[key] = value;
+      });
+      body.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
 
-    //DOCUMENTOS
-    if (greenCard != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_attachment', greenCard.path));
-    }
-    if (greenCardBack != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_back_attachment', greenCardBack.path));
-    }
-    if (municipal != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_attachment', municipal.path));
-    }
-    if (municipalBack != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_back_attachment', municipalBack.path));
-    }
-    if (dinatran != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_attachment', dinatran.path));
-    }
-    if (dinatranBack != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_back_attachment', dinatranBack.path));
-    }
-    if (senacsa != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_attachment', senacsa.path));
-    }
-    if (senacsaBack != null) {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_back_attachment', senacsaBack.path));
-    }
-    if (insurance != null) {
-      request.files.add(
-          await MultipartFile.fromPath('insurance_attachment', insurance.path));
-    }
+      //DOCUMENTOS
+      if (greenCard != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_attachment', greenCard.path));
+      }
+      if (greenCardBack != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_back_attachment', greenCardBack.path));
+      }
+      if (municipal != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_attachment', municipal.path));
+      }
+      if (municipalBack != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_back_attachment', municipalBack.path));
+      }
+      if (dinatran != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_attachment', dinatran.path));
+      }
+      if (dinatranBack != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_back_attachment', dinatranBack.path));
+      }
+      if (senacsa != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_attachment', senacsa.path));
+      }
+      if (senacsaBack != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_back_attachment', senacsaBack.path));
+      }
+      if (insurance != null) {
+        request.files.add(await MultipartFile.fromPath(
+            'insurance_attachment', insurance.path));
+      }
 
-    imagenes.forEach((file) async {
-      request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
-    });
+      imagenes.forEach((file) async {
+        request.files
+            .add(await MultipartFile.fromPath('imagenes[]', file.path));
+      });
 
-    StreamedResponse response = await request.send();
-    Map responseBody = jsonDecode(await response.stream.bytesToString());
-    print(responseBody);
-    if (response.statusCode == 200) {
-      if (responseBody['success']) {
-        if (context != null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-          Future.delayed(
-              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+      StreamedResponse response = await request.send();
+      Map responseBody = jsonDecode(await response.stream.bytesToString());
+      print(responseBody);
+      if (response.statusCode == 200) {
+        if (responseBody['success']) {
+          if (context != null) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+            Future.delayed(const Duration(seconds: 1),
+                () => {Navigator.of(context).pop()});
+          }
+          return true;
+        } else {
+          if (context != null) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+            Future.delayed(const Duration(seconds: 1),
+                () => {Navigator.of(context).pop()});
+          }
+          return false;
         }
-        return true;
       } else {
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-          Future.delayed(
-              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+          // Future.delayed(
+          //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
         }
-        return false;
       }
-    } else {
-      if (context != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-        // Future.delayed(
-        //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
-      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Compruebe su conexión a internet')));
+      return false;
     }
   }
 }

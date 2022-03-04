@@ -59,31 +59,35 @@ TextEditingController chapaController = TextEditingController(),
 // Key latLngInput = Key('Ubicación');
 
 Future getBrands() async {
-  Api api = Api();
-  Response response = await api.getData('get-brands');
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      List data = jsonResponse['data'];
-      if (data.isNotEmpty) {
-        brands.clear();
-        data.asMap().forEach((key, brand) {
-          brands.add({'name': brand['name'], 'id': brand['id']});
-        });
-        brandsSelectList = List.generate(
-          brands.length,
-          (index) {
-            return DropdownMenuItem(
-              child: Text(brands[index]['name']),
-              value: brands[index]['id'].toString(),
-            );
-          },
-        );
+  try {
+    Api api = Api();
+    Response response = await api.getData('get-brands');
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        List data = jsonResponse['data'];
+        if (data.isNotEmpty) {
+          brands.clear();
+          data.asMap().forEach((key, brand) {
+            brands.add({'name': brand['name'], 'id': brand['id']});
+          });
+          brandsSelectList = List.generate(
+            brands.length,
+            (index) {
+              return DropdownMenuItem(
+                child: Text(brands[index]['name']),
+                value: brands[index]['id'].toString(),
+              );
+            },
+          );
+        }
+        return true;
       }
-      return true;
     }
+    return true;
+  } catch (e) {
+    return false;
   }
-  return true;
 }
 
 class CreateVehicle extends StatefulWidget {

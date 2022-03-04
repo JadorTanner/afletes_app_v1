@@ -13,14 +13,17 @@ class Negotiation {
       this.state = ''});
 
   startNegotiation() async {
-    Api api = Api();
+    try {
+      Api api = Api();
 
-    Response response = await api.postData('negotiation/start-negotiation', {
-      'load_id': 4,
-      'vehicle_id': 1,
-      'initial_offer': 1200000,
-    });
-    print(response.body);
+      Response response = await api.postData('negotiation/start-negotiation', {
+        'load_id': 4,
+        'vehicle_id': 1,
+        'initial_offer': 1200000,
+      });
+    } catch (e) {
+      return false;
+    }
   }
 
   acceptNegotiation() {}

@@ -80,27 +80,31 @@ class User extends ChangeNotifier {
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
           .hasMatch(email);
       if (emailValid) {
-        Api api = Api();
+        try {
+          Api api = Api();
 
-        Response response = await api.auth({
-          'email': email,
-          'password': password,
-        }, 'login');
-        print(response.body);
-        if (response.statusCode == 200) {
-          Map responseBody = jsonDecode(response.body);
-          if (responseBody['success']) {
-            Map userJson = responseBody['data']['user'];
-            setUser(User(userData: userJson).userFromArray());
-            localStorage.setString(
-                'user', jsonEncode(responseBody['data']['user']));
-            localStorage.setString('token', responseBody['data']['token']);
-            return true;
-          } else {
-            return false;
+          Response response = await api.auth({
+            'email': email,
+            'password': password,
+          }, 'login');
+          print(response.body);
+          if (response.statusCode == 200) {
+            Map responseBody = jsonDecode(response.body);
+            if (responseBody['success']) {
+              Map userJson = responseBody['data']['user'];
+              setUser(User(userData: userJson).userFromArray());
+              localStorage.setString(
+                  'user', jsonEncode(responseBody['data']['user']));
+              localStorage.setString('token', responseBody['data']['token']);
+              return true;
+            } else {
+              return false;
+            }
           }
+          return false;
+        } catch (e) {
+          return false;
         }
-        return false;
       } else {
         // ScaffoldMessenger.of(context).showSnackBar(
         //   const SnackBar(
@@ -186,43 +190,51 @@ class User extends ChangeNotifier {
     if (body.ciPictureBac) {
       return false;
     }
-    Response response = await api.postData('register', body);
+    try {
+      Response response = await api.postData('register', body);
 
-    if (response.statusCode == 200) {
-      Map responseBody = jsonDecode(response.body);
-      if (responseBody['success']) {
-        SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
-        sharedPreferences.setString(
-            'user', jsonEncode(responseBody['data']['user']));
-        sharedPreferences.setString('token', responseBody['data']['token']);
-        setUser(User(userData: responseBody['data']['user']).userFromArray());
-        return true;
+      if (response.statusCode == 200) {
+        Map responseBody = jsonDecode(response.body);
+        if (responseBody['success']) {
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
+          sharedPreferences.setString(
+              'user', jsonEncode(responseBody['data']['user']));
+          sharedPreferences.setString('token', responseBody['data']['token']);
+          setUser(User(userData: responseBody['data']['user']).userFromArray());
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
       return false;
     }
   }
 
   Future logout(context) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    Response response = await Api().getData('logout');
-    print(response.body);
-    sharedPreferences.clear();
-    if (response.statusCode == 200) {
-      if (jsonDecode(response.body)['success']) {
-        sharedPreferences.remove('user');
-        sharedPreferences.remove('token');
-        print(sharedPreferences.get('user'));
-        print(sharedPreferences.get('token'));
-        Navigator.of(context).pushReplacementNamed('/login');
-        return true;
+    try {
+      Response response = await Api().getData('logout');
+      print(response.body);
+      sharedPreferences.clear();
+      if (response.statusCode == 200) {
+        if (jsonDecode(response.body)['success']) {
+          sharedPreferences.remove('user');
+          sharedPreferences.remove('token');
+          print(sharedPreferences.get('user'));
+          print(sharedPreferences.get('token'));
+          Navigator.of(context).pushReplacementNamed('/login');
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
       return false;
     }
   }

@@ -11,32 +11,40 @@ List states = [];
 List cities = [];
 
 Future<List> getStates() async {
-  Api api = Api();
+  try {
+    Api api = Api();
 
-  Response response = await api.getData('get-states');
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    states = jsonResponse['data'];
+    Response response = await api.getData('get-states');
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      states = jsonResponse['data'];
+      return states;
+    } else {
+      states = [];
+    }
     return states;
-  } else {
-    states = [];
+  } catch (e) {
+    return [];
   }
-  return states;
 }
 
 Future<List> getCities([String stateId = '']) async {
-  Api api = Api();
+  try {
+    Api api = Api();
 
-  Response response = await api
-      .getData('get-cities' + (stateId != '' ? '?state_id=' + stateId : ''));
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    cities = jsonResponse['data'];
+    Response response = await api
+        .getData('get-cities' + (stateId != '' ? '?state_id=' + stateId : ''));
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      cities = jsonResponse['data'];
+      return cities;
+    } else {
+      cities = [];
+    }
     return cities;
-  } else {
-    cities = [];
+  } catch (e) {
+    return [];
   }
-  return cities;
 }
 
 class RegisterPage extends StatefulWidget {

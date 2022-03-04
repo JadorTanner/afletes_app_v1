@@ -12,45 +12,49 @@ import 'package:http/http.dart';
 List<Vehicle> vehicles = [];
 
 Future<List<Vehicle>> getMyVehicles() async {
-  Response response = await Api().getData('user/my-vehicles');
-  vehicles.clear();
-  if (response.statusCode == 200) {
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      var data = jsonResponse['data'];
-      if (data.isNotEmpty) {
-        data.asMap().forEach((key, vehicle) {
-          print(vehicle['model']);
-          vehicles.add(
-            Vehicle(
-              id: vehicle['id'],
-              licensePlate: vehicle['license_plate'],
-              yearOfProd: vehicle['year_of_production'] ?? 0,
-              model: vehicle['model'],
-              brand: vehicle['vehicle_brand_id'],
-              maxCapacity: double.parse(vehicle['max_capacity']),
-              measurementUnitId: vehicle['measurement_unit_id'],
-              vtoMunicipal:
-                  vehicle['expiration_date_vehicle_authorization'] ?? '',
-              vtoDinatran:
-                  vehicle['expiration_date_dinatran_authorization'] ?? '',
-              vtoSenacsa:
-                  vehicle['expiration_date_senacsa_authorization'] ?? '',
-              vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
-              imgs: vehicle['vehicleattachments'],
-            ),
-          );
-        });
-        return vehicles;
+  try {
+    Response response = await Api().getData('user/my-vehicles');
+    vehicles.clear();
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        var data = jsonResponse['data'];
+        if (data.isNotEmpty) {
+          data.asMap().forEach((key, vehicle) {
+            print(vehicle['model']);
+            vehicles.add(
+              Vehicle(
+                id: vehicle['id'],
+                licensePlate: vehicle['license_plate'],
+                yearOfProd: vehicle['year_of_production'] ?? 0,
+                model: vehicle['model'],
+                brand: vehicle['vehicle_brand_id'],
+                maxCapacity: double.parse(vehicle['max_capacity']),
+                measurementUnitId: vehicle['measurement_unit_id'],
+                vtoMunicipal:
+                    vehicle['expiration_date_vehicle_authorization'] ?? '',
+                vtoDinatran:
+                    vehicle['expiration_date_dinatran_authorization'] ?? '',
+                vtoSenacsa:
+                    vehicle['expiration_date_senacsa_authorization'] ?? '',
+                vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
+                imgs: vehicle['vehicleattachments'],
+              ),
+            );
+          });
+          return vehicles;
+        } else {
+          vehicles = [];
+        }
       } else {
         vehicles = [];
       }
-    } else {
-      vehicles = [];
     }
-  }
 
-  return vehicles;
+    return vehicles;
+  } catch (e) {
+    return [];
+  }
 }
 
 class MyVehiclesPage extends StatefulWidget {
