@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 color: Color(0xFFED8232),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(0),
+                  bottomRight: Radius.circular(50),
                   topLeft: Radius.circular(0),
                   topRight: Radius.circular(0),
                 ),

@@ -22,7 +22,7 @@ GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
 late PageController pageController;
 
-Future<List<Load>> getLoads([refresh = false]) async {
+Future<List<Load>> getLoads([callback = null]) async {
   try {
     Response response = await Api().getData('user/find-loads');
 
@@ -65,6 +65,10 @@ Future<List<Load>> getLoads([refresh = false]) async {
                     .insertItem(0, duration: const Duration(milliseconds: 100))
                 : null;
           });
+
+          if (callback != null) {
+            callback();
+          }
 
           return loads;
         }
@@ -867,10 +871,7 @@ class _LoadsMapState extends State<LoadsMap>
             child: IconButton(
               color: kBlack,
               onPressed: () async {
-                List<Load> loadsLoaded = await getLoads();
-                if (loadsLoaded.isNotEmpty) {
-                  setState(() {});
-                }
+                setState(() {});
               },
               icon: const Icon(Icons.refresh),
             ),

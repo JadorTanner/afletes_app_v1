@@ -29,6 +29,7 @@ class _VehiclesState extends State<Vehicles> {
       vehicles.clear();
       Response response =
           await Api().getData('user/find-vehicles?page=' + page.toString());
+      print(response.body);
       if (response.statusCode == 200) {
         Map jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success']) {
@@ -38,16 +39,15 @@ class _VehiclesState extends State<Vehicles> {
                   id: vehicle['id'],
                   licensePlate: vehicle['license_plate'],
                   senacsa:
-                      vehicle['senacsa_authorization_attachment_id'] != null
-                          ? true
-                          : false,
+                      vehicle['senacsa_authorization_attachment_id'] != null,
                   dinatran:
-                      vehicle['dinatran_authorization_attachment_id'] != null
-                          ? true
-                          : false,
-                  // owner: vehicle['owner_name'] != null
-                  //     ? User(fullName: vehicle['owner_name'])
-                  //     : null,
+                      vehicle['dinatran_authorization_attachment_id'] != null,
+                  model: vehicle['model'],
+                  score: vehicle['score'],
+                  owner: vehicle['created_by'] != null
+                      ? User(fullName: vehicle['created_by']['full_name'])
+                      : null,
+                  seguro: vehicle['insurance_attachment_id'] != null,
                   imgs: vehicle['vehicleattachments'] ?? ''));
             }
           }
@@ -71,7 +71,11 @@ class _VehiclesState extends State<Vehicles> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.connectionState == ConnectionState.done) {
             return RefreshIndicator(
-                child: VehiclesList(), onRefresh: getVehicles);
+                child: VehiclesList(),
+                onRefresh: () async {
+                  // await getVehicles();
+                  setState(() {});
+                });
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -255,6 +259,17 @@ class _VehiclesListState extends State<VehiclesList> {
                                             const SizedBox(
                                               height: 30,
                                             ),
+                                            (snapshot.data!['data'].length > 0
+                                                ? const SizedBox.shrink()
+                                                : TextButton.icon(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pushNamed(
+                                                                '/create-load'),
+                                                    icon: const Icon(Icons.add),
+                                                    label: const Text(
+                                                        'Agregar carga'),
+                                                  )),
                                             ...List.generate(
                                                 snapshot.data!['data'].length,
                                                 (index) {
@@ -346,20 +361,7 @@ class _VehiclesListState extends State<VehiclesList> {
                                                         onPressed: () async {
                                                           try {
                                                             Api api = Api();
-                                                            loadingContext =
-                                                                context;
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) =>
-                                                                        const Dialog(
-                                                                          child:
-                                                                              Center(
-                                                                            child:
-                                                                                CircularProgressIndicator(),
-                                                                          ),
-                                                                        ));
+
                                                             Response response =
                                                                 await api.postData(
                                                                     'negotiation/start-negotiation',
@@ -371,6 +373,26 @@ class _VehiclesListState extends State<VehiclesList> {
                                                                   'vehicle_id':
                                                                       id
                                                                 });
+                                                            print(
+                                                                response.body);
+                                                            loadingContext =
+                                                                context;
+                                                            // showDialog(
+                                                            //     context:
+                                                            //         context,
+                                                            //     barrierColor: Colors
+                                                            //         .transparent,
+                                                            //     builder:
+                                                            //         (context) =>
+                                                            //             const Dialog(
+                                                            //               backgroundColor:
+                                                            //                   Colors.transparent,
+                                                            //               child:
+                                                            //                   Center(
+                                                            //                 child:
+                                                            //                     CircularProgressIndicator(),
+                                                            //               ),
+                                                            //             ));
 
                                                             if (response
                                                                     .statusCode ==
@@ -456,8 +478,8 @@ class _VehiclesListState extends State<VehiclesList> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
-      children: vehicles.length > 0
+      padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
+      children: vehicles.isNotEmpty
           ? List.generate(
               vehicles.length,
               (index) => CarCard2(

@@ -2,21 +2,15 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
-import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
-import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -156,6 +150,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
             children: [
               DatosGenerales(),
               const Documentos(),
+              const Documentos2(),
             ],
           );
         } else {
@@ -173,11 +168,23 @@ class DatosGenerales extends StatelessWidget {
   Widget build(BuildContext context) {
     return FocusScope(
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(
+          top: 60,
+          left: 20,
+          right: 20,
+          bottom: 20,
+        ),
         children: [
           const ImagesPicker(),
+          const Text('Imágenes del vehículo'),
+          const SizedBox(
+            height: 20,
+          ),
           //chapa
-          LoadFormField(chapaController, 'Dominio o chapa *'),
+          VehicleFormField(chapaController, 'Dominio o chapa *'),
+          const SizedBox(
+            height: 20,
+          ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,22 +196,26 @@ class DatosGenerales extends StatelessWidget {
               ),
               //Modelo
               Flexible(
-                child: LoadFormField(
+                child: VehicleFormField(
                   modeloController,
                   'Modelo *',
                 ),
               ),
             ],
           ),
+
+          const SizedBox(
+            height: 20,
+          ),
           Row(
             children: [
               MeasurementUnit(),
               const SizedBox(
-                width: 20,
+                width: 40,
               ),
               //Peso
               Flexible(
-                child: LoadFormField(
+                child: VehicleFormField(
                   pesoController,
                   'Peso *',
                   type: const TextInputType.numberWithOptions(decimal: true),
@@ -212,11 +223,17 @@ class DatosGenerales extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(
+            height: 20,
+          ),
 
-          LoadFormField(
+          VehicleFormField(
             fabricacionController,
             'Año de producción *',
             type: const TextInputType.numberWithOptions(decimal: true),
+          ),
+          const SizedBox(
+            height: 40,
           ),
           const NextPageButton()
         ],
@@ -230,115 +247,150 @@ class Documentos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(padding: const EdgeInsets.all(20), children: [
-      Row(
+    return ListView(
+        padding: const EdgeInsets.only(
+          top: 60,
+          left: 20,
+          right: 20,
+          bottom: 20,
+        ),
         children: [
-          ImageInput('Cédula verde (Frente)', greenCard, 170),
-          const SizedBox(
-            width: 20,
+          Row(
+            children: [
+              ImageInput('Cédula verde (Frente)\n', greenCard, 170),
+              const SizedBox(
+                width: 20,
+              ),
+              ImageInput('Cédula verde (Atras)\n', greenCardBack, 170),
+            ],
           ),
-          ImageInput('Cédula verde (Atras)', greenCardBack, 170),
-        ],
-      ),
-      const SizedBox(
-        height: 20,
-      ),
-      Row(
-        children: [
-          ImageInput('Habilitación Munic.', municipal, 170),
           const SizedBox(
-            width: 20,
+            height: 20,
           ),
-          ImageInput('Habilitación Munic. (Atras)', municipalBack, 170),
-        ],
-      ),
-      DatePicker(
-          vtoMunicipalController, 'Fecha de vto. Habilitación Municipal'),
-      const SizedBox(
-        height: 20,
-      ),
-      Row(
-        children: [
-          ImageInput('Habilitación DINATRAN', dinatran, 170),
+          Row(
+            children: [
+              ImageInput('Habilitación Munic.\n', municipal, 170),
+              const SizedBox(
+                width: 20,
+              ),
+              ImageInput('Habilitación Munic.\n(Atras)', municipalBack, 170),
+            ],
+          ),
+          DatePicker(
+              vtoMunicipalController, 'Fecha de vto. Habilitación Municipal'),
           const SizedBox(
-            width: 20,
+            height: 40,
           ),
-          ImageInput('Habilitación DINATRAN (Atras)', dinatranBack, 170),
-        ],
-      ),
-      DatePicker(vtoDinatranController, 'Fecha de vto. Habilitación DINATRAN'),
-      const SizedBox(
-        height: 20,
-      ),
-      Row(
+          const ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              PrevPageButton(),
+              NextPageButton(),
+            ],
+          )
+        ]);
+  }
+}
+
+class Documentos2 extends StatelessWidget {
+  const Documentos2({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+        padding: const EdgeInsets.only(
+          bottom: 20,
+          top: 60,
+          left: 20,
+          right: 20,
+        ),
         children: [
-          ImageInput('Habilitación SENACSA', senacsa, 170),
+          Row(
+            children: [
+              ImageInput('Habilitación DINATRAN\n', dinatran, 170),
+              const SizedBox(
+                width: 20,
+              ),
+              ImageInput('Habilitación DINATRAN\n(Atras)', dinatranBack, 170),
+            ],
+          ),
+          DatePicker(
+              vtoDinatranController, 'Fecha de vto. Habilitación DINATRAN'),
           const SizedBox(
-            width: 20,
+            height: 20,
           ),
-          ImageInput('Habilitación SENACSA (Atras)', senacsaBack, 170),
-        ],
-      ),
-      DatePicker(vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
-      const SizedBox(
-        height: 20,
-      ),
-      Row(
-        children: [
-          ImageInput('Seguro', seguro, 170),
-        ],
-      ),
-      DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
-      ButtonBar(
-        children: [
-          const PrevPageButton(),
-          IconButton(
-              onPressed: () async {
-                Vehicle vehicle = Vehicle();
-                vehicle.createVehicle(
-                  {
-                    'license_plate': chapaController.text,
-                    'vehicle_brand_id': marcaController.text,
-                    'year_of_production': fabricacionController.text,
-                    'max_capacity': pesoController.text,
-                    'measurement_unit_id': unidadMedidaController.text,
-                    'model': modeloController.text,
-                    'expiration_date_vehicle_authorization':
-                        vtoMunicipalController.text != ''
-                            ? vtoMunicipalController.text
-                            : null,
-                    'expiration_date_dinatran_authorization':
-                        vtoDinatranController.text != ''
-                            ? vtoDinatranController.text
-                            : null,
-                    'expiration_date_senacsa_authorization':
-                        vtoSenacsaController.text != ''
-                            ? vtoSenacsaController.text
-                            : null,
-                    'expiration_date_insurance': vtoSeguroController.text != ''
-                        ? vtoSeguroController.text
-                        : null,
-                    'vehicleId': vehicleId,
+          Row(
+            children: [
+              ImageInput('Habilitación SENACSA\n', senacsa, 170),
+              const SizedBox(
+                width: 20,
+              ),
+              ImageInput('Habilitación SENACSA\n(Atras)', senacsaBack, 170),
+            ],
+          ),
+          DatePicker(
+              vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
+          const SizedBox(
+            height: 20,
+          ),
+          Row(
+            children: [
+              ImageInput('Seguro\n', seguro, 170),
+            ],
+          ),
+          DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              const PrevPageButton(),
+              IconButton(
+                  onPressed: () async {
+                    Vehicle vehicle = Vehicle();
+                    vehicle.createVehicle(
+                      {
+                        'license_plate': chapaController.text,
+                        'vehicle_brand_id': marcaController.text,
+                        'year_of_production': fabricacionController.text,
+                        'max_capacity': pesoController.text,
+                        'measurement_unit_id': unidadMedidaController.text,
+                        'model': modeloController.text,
+                        'expiration_date_vehicle_authorization':
+                            vtoMunicipalController.text != ''
+                                ? vtoMunicipalController.text
+                                : null,
+                        'expiration_date_dinatran_authorization':
+                            vtoDinatranController.text != ''
+                                ? vtoDinatranController.text
+                                : null,
+                        'expiration_date_senacsa_authorization':
+                            vtoSenacsaController.text != ''
+                                ? vtoSenacsaController.text
+                                : null,
+                        'expiration_date_insurance':
+                            vtoSeguroController.text != ''
+                                ? vtoSeguroController.text
+                                : null,
+                        'vehicleId': vehicleId,
+                      },
+                      imagenes,
+                      context: context,
+                      update: hasVehicleData,
+                      vehicleId: vehicleId,
+                      greenCard: greenCard,
+                      greenCardBack: greenCardBack,
+                      municipal: municipal,
+                      municipalBack: municipalBack,
+                      senacsa: senacsa,
+                      senacsaBack: senacsaBack,
+                      dinatran: dinatran,
+                      dinatranBack: dinatranBack,
+                      insurance: seguro,
+                    );
                   },
-                  imagenes,
-                  context: context,
-                  update: hasVehicleData,
-                  vehicleId: vehicleId,
-                  greenCard: greenCard,
-                  greenCardBack: greenCardBack,
-                  municipal: municipal,
-                  municipalBack: municipalBack,
-                  senacsa: senacsa,
-                  senacsaBack: senacsaBack,
-                  dinatran: dinatran,
-                  dinatranBack: dinatranBack,
-                  insurance: seguro,
-                );
-              },
-              icon: const Icon(Icons.upload))
-        ],
-      )
-    ]);
+                  icon: const Icon(Icons.upload))
+            ],
+          )
+        ]);
   }
 }
 
@@ -370,6 +422,7 @@ class _ImageInputState extends State<ImageInput> {
           Text(widget.title),
           Container(
             width: widget.width,
+            margin: const EdgeInsets.only(bottom: 20),
             height: 200,
             color: img != null ? Colors.transparent : Colors.grey[200],
             child: img != null
@@ -409,16 +462,17 @@ class _ImagesPickerState extends State<ImagesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    print('rendered');
     return GestureDetector(
       key: imagePickerKey,
       onTap: () async {
         List<XFile>? imgs = await _picker.pickMultiImage();
         imagenes = imgs ?? [];
         if (imagenes.isNotEmpty) {
-          setState(() {
-            // imagePageController.jumpToPage(0);
-          });
+          if (mounted) {
+            setState(() {
+              // imagePageController.jumpToPage(0);
+            });
+          }
         }
       },
       child: Container(
@@ -470,7 +524,12 @@ class _ImagesPickerState extends State<ImagesPicker> {
                   ),
                 ],
               )
-            : null,
+            : const Center(
+                child: Icon(
+                  Icons.add_a_photo,
+                  size: 50,
+                ),
+              ),
       ),
     );
   }
@@ -510,7 +569,7 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
               DropdownMenuItem(
                 child: Text('Kilo'),
                 value: '1',
-              )
+              ),
             ])
       ],
     );
@@ -595,7 +654,7 @@ class _DatePickerState extends State<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return LoadFormField(
+    return VehicleFormField(
       widget.controller,
       widget.title,
       onFocus: () => _selectDate(context),
@@ -630,7 +689,7 @@ class Load_TimePickerState extends State<LoadTimePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return LoadFormField(
+    return VehicleFormField(
       widget.controller,
       widget.title,
       onFocus: () => _selectTime(context),
@@ -666,8 +725,8 @@ class PrevPageButton extends StatelessWidget {
   }
 }
 
-class LoadFormField extends StatelessWidget {
-  LoadFormField(this.controller, this.label,
+class VehicleFormField extends StatelessWidget {
+  VehicleFormField(this.controller, this.label,
       {this.maxLength = 255,
       this.type = TextInputType.text,
       this.autofocus = false,
@@ -698,7 +757,15 @@ class LoadFormField extends StatelessWidget {
       controller: controller,
       keyboardType: type,
       maxLength: maxLength != 255 ? maxLength : null,
-      decoration: InputDecoration(prefixIcon: icon, label: Text(label)),
+      textInputAction: action,
+      decoration: InputDecoration(
+        prefixIcon: icon,
+        label: Text(label),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 5,
+          horizontal: 20,
+        ),
+      ),
     );
   }
 }

@@ -97,7 +97,12 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           return RefreshIndicator(
             onRefresh: getMyVehicles,
             child: ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 40,
+                bottom: 20,
+              ),
               children: [
                 TextButton.icon(
                     onPressed: () => Navigator.of(context)
@@ -125,29 +130,31 @@ class VehicleCard extends StatelessWidget {
   bool hasData;
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: hasData
-          ? () =>
-              Navigator.of(context).pushNamed('/create-vehicle', arguments: {
-                'id': vehicles[index].id,
-                'chapa': vehicles[index].licensePlate,
-                'fabricacion': vehicles[index].yearOfProd,
-                'model': vehicles[index].model,
-                'marca': vehicles[index].brand,
-                'peso': vehicles[index].maxCapacity,
-                'unidadMedida': vehicles[index].measurementUnit,
-                'vtoMunicipal': vehicles[index].vtoMunicipal,
-                'vtoDinatran': vehicles[index].vtoDinatran,
-                'vtoSenacsa': vehicles[index].vtoSenacsa,
-                'vtoSeguro': vehicles[index].vtoSeguro,
-                'imgs': vehicles[index].imgs
-              })
+    return Container(
+      padding: const EdgeInsets.all(10),
+      width: double.infinity,
+      child: hasData
+          ? CarCard2(
+              vehicles[index],
+              onTap: () {
+                print('push a vehicles');
+                Navigator.of(context).pushNamed('/create-vehicle', arguments: {
+                  'id': vehicles[index].id,
+                  'chapa': vehicles[index].licensePlate,
+                  'fabricacion': vehicles[index].yearOfProd,
+                  'model': vehicles[index].model,
+                  'marca': vehicles[index].brand,
+                  'peso': vehicles[index].maxCapacity,
+                  'unidadMedida': vehicles[index].measurementUnit,
+                  'vtoMunicipal': vehicles[index].vtoMunicipal,
+                  'vtoDinatran': vehicles[index].vtoDinatran,
+                  'vtoSenacsa': vehicles[index].vtoSenacsa,
+                  'vtoSeguro': vehicles[index].vtoSeguro,
+                  'imgs': vehicles[index].imgs
+                });
+              },
+            )
           : null,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        width: double.infinity,
-        child: hasData ? CarCard2(vehicles[index]) : null,
-      ),
     );
   }
 }

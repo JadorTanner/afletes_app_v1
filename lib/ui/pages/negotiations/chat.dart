@@ -7,6 +7,7 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
@@ -67,6 +68,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
       }
       receiverId = jsonResp['data']['negotiation']
           [user.isCarrier ? 'generator_id' : 'transportist_id'];
+      print(jsonResp['data']['negotiation_state']['id']);
       //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
       switch (jsonResp['data']['negotiation_state']['id']) {
         case 1:
@@ -74,7 +76,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
           break;
         case 2:
           context.read<ChatProvider>().setCanOffer(false);
-          context.read<ChatProvider>().setToPay(true);
+          context.read<ChatProvider>().setPaid(false);
           context.read<ChatProvider>().setCanVote(false);
           context.read<ChatProvider>().setShowDefaultMessages(false);
           if (user.isLoadGenerator) {
@@ -126,7 +128,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     if (isLocation) {
       location = await Geolocator.getCurrentPosition();
       mapImgUrl =
-          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs";
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$googleMapKey";
       message =
           """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="${mapImgUrl}" ><br>Mi ubicación</a>""";
     }
@@ -266,10 +268,10 @@ class _NegotiationChatState extends State<NegotiationChat> {
         child: FutureBuilder(
           future: getNegotiationChat(widget.id, context),
           builder: (context, snapshot) => BaseApp(
-            ListView(
+            Column(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.75,
+                Expanded(
+                  // height: MediaQuery.of(context).size.height * 0.75,
                   child: ChatPanel(),
                 ),
                 OfferInputSection(widget: widget),
@@ -453,9 +455,12 @@ class ButtonsSection extends StatelessWidget {
       }
     } else {
       //Si la negociación no está pagada
+      print('Es generador de carga');
       if (toPay) {
         //Si la negociación está para pago
+        print('Es generador de carga');
         if (user.isLoadGenerator) {
+          print('Es generador de carga');
           children = [
             TextButton.icon(
               onPressed: () => Navigator.of(context).push(
@@ -513,7 +518,11 @@ class OfferInputSection extends StatelessWidget {
                   child: TextField(
                 controller: oferta,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(hintText: 'Oferto'),
+                decoration: const InputDecoration(
+                  hintText: 'Oferto',
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                ),
               )),
               const SizedBox(
                 width: 20,

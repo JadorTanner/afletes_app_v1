@@ -8,7 +8,7 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 
 class Vehicle {
-  int id, ownerId, yearOfProd, brand, measurementUnitId;
+  int id, ownerId, yearOfProd, brand, measurementUnitId, score;
   double maxCapacity;
   String observation,
       licensePlate,
@@ -24,6 +24,7 @@ class Vehicle {
 
   Vehicle({
     this.id = 0,
+    this.score = 5,
     this.measurementUnitId = 0,
     this.brand = 0,
     this.ownerId = 0,
@@ -124,16 +125,30 @@ class Vehicle {
             .add(await MultipartFile.fromPath('imagenes[]', file.path));
       });
 
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Dialog(
+          backgroundColor: Colors.transparent,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
       StreamedResponse response = await request.send();
       Map responseBody = jsonDecode(await response.stream.bytesToString());
-      print(responseBody);
+
       if (response.statusCode == 200) {
+        Navigator.pop(context);
         if (responseBody['success']) {
           if (context != null) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-            Future.delayed(const Duration(seconds: 1),
-                () => {Navigator.of(context).pop()});
+            Future.delayed(
+                const Duration(seconds: 1),
+                () => {
+                      Navigator.of(context).pushReplacementNamed('/my-vehicles')
+                    });
           }
           return true;
         } else {
@@ -146,6 +161,7 @@ class Vehicle {
           return false;
         }
       } else {
+        Navigator.pop(context);
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));

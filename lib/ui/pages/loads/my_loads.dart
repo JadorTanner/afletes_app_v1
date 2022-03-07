@@ -104,7 +104,12 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
           }
           return RefreshIndicator(
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.only(
+                  top: 60,
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                ),
                 children: [
                   TextButton.icon(
                       onPressed: () =>

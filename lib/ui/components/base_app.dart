@@ -21,12 +21,15 @@ class BaseApp extends StatefulWidget {
 class _BaseAppState extends State<BaseApp> {
   late User user;
 
+  late ThemeData theme;
+
   @override
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> _key = GlobalKey();
+    theme = Theme.of(context);
     return Scaffold(
       key: _key,
-      appBar: AppBar(
+      /* appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: kBlack),
@@ -60,7 +63,7 @@ class _BaseAppState extends State<BaseApp> {
                 )
               : const SizedBox.shrink()
         ],
-      ),
+      ), */
       extendBodyBehindAppBar: true,
       drawer: Drawer(
         child: FutureBuilder(
@@ -84,13 +87,17 @@ class _BaseAppState extends State<BaseApp> {
                         height: 20,
                       ),
                       CircleAvatar(
+                        backgroundColor: theme.backgroundColor,
                         minRadius: 60,
                         child: Text(
                           user.fullName
                               .split(' ')
                               .map((e) => e.length > 2 ? e.substring(0, 1) : '')
                               .join(''),
-                          style: const TextStyle(fontSize: 32),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -101,19 +108,34 @@ class _BaseAppState extends State<BaseApp> {
                       const SizedBox(
                         height: 25,
                       ),
+                      Container(
+                        width: double.infinity,
+                        height: 1,
+                        color: theme.dividerColor,
+                      ),
+                      const SizedBox(
+                        height: 25,
+                      ),
                       TextButton.icon(
                         onPressed: () => {
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => MyProfilePage(user),
                           ))
                         },
-                        icon: const CircleAvatar(
-                          child: Icon(Icons.person),
+                        icon: CircleAvatar(
+                          backgroundColor: theme.backgroundColor,
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                          ),
                         ),
                         label: Container(
                           padding: const EdgeInsets.all(15),
                           width: double.infinity,
-                          child: const Text('Mi perfil'),
+                          child: Text(
+                            'Mi perfil',
+                            style: theme.textTheme.bodyText1,
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -140,8 +162,14 @@ class _BaseAppState extends State<BaseApp> {
                       ),
                       const Spacer(),
                       TextButton(
-                          onPressed: () => {user.logout(context)},
-                          child: const Text('Cerrar sesión')),
+                        onPressed: () => {user.logout(context)},
+                        child: const Text(
+                          'Cerrar sesión',
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
                       const SizedBox(
                         height: 20,
                       ),
@@ -156,9 +184,42 @@ class _BaseAppState extends State<BaseApp> {
         children: [
           widget.body,
           Positioned(
-              top: 40,
-              left: 20,
-              child: widget.floatingButton ?? const SizedBox.shrink())
+            top: 40,
+            left: 20,
+            child: widget.floatingButton ?? const SizedBox.shrink(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                margin: const EdgeInsets.only(top: 20, left: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: Colors.white,
+                ),
+                child: IconButton(
+                  onPressed: () => {_key.currentState!.openDrawer()},
+                  icon: const Icon(Icons.menu, size: 20),
+                ),
+              ),
+              Navigator.canPop(context)
+                  ? Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(top: 20, right: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        color: Colors.white,
+                      ),
+                      child: IconButton(
+                          onPressed: () => {Navigator.of(context).pop()},
+                          icon: const Icon(Icons.chevron_left, size: 20)),
+                    )
+                  : const SizedBox.shrink()
+            ],
+          ),
         ],
       ),
     );
@@ -176,12 +237,19 @@ class DrawerItem extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => {Navigator.of(context).pushNamed(routeName)},
       icon: CircleAvatar(
-        child: Icon(icon),
+        backgroundColor: Theme.of(context).backgroundColor,
+        child: Icon(
+          icon,
+          color: Colors.white,
+        ),
       ),
       label: Container(
         padding: const EdgeInsets.all(15),
         width: double.infinity,
-        child: Text(title),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyText1,
+        ),
       ),
     );
   }

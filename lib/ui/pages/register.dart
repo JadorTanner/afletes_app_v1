@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
@@ -9,6 +11,13 @@ import 'package:lottie/lottie.dart';
 const double separacion = 15;
 List states = [];
 List cities = [];
+
+Future getData() async {
+  await getStates();
+  await getCities();
+
+  return true;
+}
 
 Future<List> getStates() async {
   try {
@@ -48,7 +57,7 @@ Future<List> getCities([String stateId = '']) async {
 }
 
 class RegisterPage extends StatefulWidget {
-  RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -58,7 +67,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    getStates();
   }
 
   @override
@@ -68,46 +76,53 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: const Color(0xFFed8d23),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.3,
-            decoration: const BoxDecoration(
-              color: Color(0xFFED8232),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(50),
-                bottomRight: Radius.circular(0),
-                topLeft: Radius.circular(0),
-                topRight: Radius.circular(0),
-              ),
-              shape: BoxShape.rectangle,
-            ),
-            child: Hero(
-              tag: 'splash-screen-loading',
-              child: Lottie.asset('assets/lottie/camion.json'),
-            ),
-          ),
-          // Hero(
-          //   tag: 'splash-screen-loading',
-          //   child: Lottie.asset('assets/lottie/camion.json'),
-          // ),
-          RegisterPagePage()
-        ],
+      body: FutureBuilder(
+        future: getData(),
+        builder: (context, AsyncSnapshot snapshot) =>
+            (snapshot.connectionState == ConnectionState.done
+                ? Column(
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFED8232),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(50),
+                            bottomRight: Radius.circular(0),
+                            topLeft: Radius.circular(0),
+                            topRight: Radius.circular(0),
+                          ),
+                          shape: BoxShape.rectangle,
+                        ),
+                        child: Hero(
+                          tag: 'splash-screen-loading',
+                          child: Lottie.asset('assets/lottie/camion.json'),
+                        ),
+                      ),
+                      // Hero(
+                      //   tag: 'splash-screen-loading',
+                      //   child: Lottie.asset('assets/lottie/camion.json'),
+                      // ),
+                      const RegisterPagePage()
+                    ],
+                  )
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  )),
       ),
     );
-    ;
   }
 }
 
 class RegisterPagePage extends StatefulWidget {
-  RegisterPagePage({Key? key}) : super(key: key);
+  const RegisterPagePage({Key? key}) : super(key: key);
 
   @override
-  State<RegisterPagePage> createState() => S_RegisterPageState();
+  State<RegisterPagePage> createState() => RegisterPageState();
 }
 
-class S_RegisterPageState extends State<RegisterPagePage> {
+class RegisterPageState extends State<RegisterPagePage> {
   bool passwordVisibility = false;
   PageController pageController = PageController();
   // static const double separacion = 15;
@@ -269,30 +284,52 @@ class PrimeraParte extends StatelessWidget {
             ),
             RegisterFormField(
               'Cédula o RUC *',
+              Icons.article,
               hint: '9888777',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Razón social',
+              Icons.person,
               hint: 'José',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Nombre',
+              Icons.person,
               hint: 'José',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Apellido',
+              Icons.person,
               hint: 'Gonzalez',
             ),
             const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Celular',
-              hint: '0981222333',
+            Row(
+              children: [
+                Flexible(
+                    child: RegisterFormField(
+                  'Celular',
+                  Icons.phone_android,
+                  hint: '0981222333',
+                )),
+                const SizedBox(
+                  width: 20,
+                ),
+                Flexible(
+                  child: RegisterFormField(
+                    'Teléfono fijo:',
+                    Icons.phone,
+                    hint: '021444666',
+                    action: TextInputAction.done,
+                  ),
+                )
+              ],
             ),
             const SizedBox(width: 100, height: separacion),
             ButtonBar(
+              alignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                     onPressed: () => pageController.nextPage(
@@ -330,35 +367,51 @@ class SegundaParte extends StatelessWidget {
               width: 100,
               height: 10,
             ),
-            RegisterFormField(
-              'Teléfono fijo:',
-              hint: '021444666',
-            ),
             const SizedBox(width: 100, height: separacion),
-            //TODO: UBICACION
-            UbicacionPicker(),
-            // RegisterFormField(
-            //   'Ubicación',
-            //   hint: 'José',
-            // ),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Nombre',
-              hint: 'José',
-            ),
+            const UbicacionPicker(),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Calle Principal *',
+              Icons.home,
               hint: 'Avda Mcal López',
             ),
             const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Calle Secundaria',
-              hint: 'esq. #',
+            Row(
+              children: [
+                Flexible(
+                  child: RegisterFormField(
+                    'Calle Secundaria',
+                    Icons.home,
+                    hint: 'esq. #',
+                    action: TextInputAction.done,
+                  ),
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                Flexible(
+                  child: RegisterFormField(
+                    'Nro.',
+                    Icons.home,
+                    hint: '1234',
+                    action: TextInputAction.done,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 100, height: separacion),
+            PassField('Contraseña', TextInputAction.next),
+            const SizedBox(width: 100, height: separacion),
+            PassField('Confirmar contraseña', TextInputAction.done),
+            const SizedBox(width: 100, height: separacion),
             ButtonBar(
+              alignment: MainAxisAlignment.center,
               children: [
+                IconButton(
+                    onPressed: () => pageController.previousPage(
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.ease),
+                    icon: const Icon(Icons.navigate_before)),
                 IconButton(
                     onPressed: () => pageController.nextPage(
                         duration: const Duration(milliseconds: 100),
@@ -374,7 +427,7 @@ class SegundaParte extends StatelessWidget {
 }
 
 class UbicacionPicker extends StatefulWidget {
-  UbicacionPicker({Key? key}) : super(key: key);
+  const UbicacionPicker({Key? key}) : super(key: key);
 
   @override
   State<UbicacionPicker> createState() => _UbicacionPickerState();
@@ -382,10 +435,11 @@ class UbicacionPicker extends StatefulWidget {
 
 class _UbicacionPickerState extends State<UbicacionPicker> {
   String stateId = '';
-  changeState(newVal) {
-    setState(() {
-      stateId = newVal;
-    });
+
+  @override
+  void initState() {
+    super.initState();
+    stateId = states[0]['id'].toString();
   }
 
   @override
@@ -393,13 +447,17 @@ class _UbicacionPickerState extends State<UbicacionPicker> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        StatePicker(changeState),
-        FutureBuilder(
-          future: getCities(stateId),
-          builder: (context, snapshot) {
-            return CitiesPicker(stateId);
-          },
-        )
+        StatePicker(
+          (newVal) => setState(
+            () {
+              stateId = newVal;
+            },
+          ),
+        ),
+        const SizedBox(
+          width: 20,
+        ),
+        Flexible(child: CitiesPicker(stateId)),
       ],
     );
   }
@@ -426,38 +484,28 @@ class _StatePickerState extends State<StatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getStates(),
-      builder: (context, snapshot) {
-        return DropdownButton(
-            value: value,
-            icon: const Icon(Icons.arrow_downward),
-            elevation: 16,
-            style: const TextStyle(color: Colors.deepPurple),
-            underline: Container(
-              height: 2,
-              color: Colors.deepPurpleAccent,
-            ),
-            onChanged: (String? newValue) {
-              setState(() {
-                value = newValue!;
-              });
-              widget.callBack(newValue!);
-            },
-            items: snapshot.connectionState == ConnectionState.done
-                ? List.generate(
-                    states.length,
-                    (index) => DropdownMenuItem(
-                          value: states[index]['id'].toString(),
-                          child: Text(states[index]['name']),
-                        ))
-                : [
-                    DropdownMenuItem(
-                      value: value,
-                      child: Text('Dpto'),
-                    )
-                  ]);
+    return DropdownButton(
+      value: value,
+      icon: const Icon(Icons.arrow_downward),
+      elevation: 16,
+      style: const TextStyle(color: Colors.deepPurple),
+      underline: Container(
+        height: 2,
+        color: Colors.deepPurpleAccent,
+      ),
+      onChanged: (String? newValue) {
+        setState(() {
+          value = newValue!;
+        });
+        widget.callBack(newValue!);
       },
+      items: List.generate(
+        states.length,
+        (index) => DropdownMenuItem(
+          value: states[index]['id'].toString(),
+          child: Text(states[index]['name']),
+        ),
+      ),
     );
   }
 }
@@ -473,6 +521,7 @@ class CitiesPicker extends StatefulWidget {
 class _CitiesPickerState extends State<CitiesPicker> {
   String value = '0';
 
+  List newCities = cities;
   @override
   void initState() {
     super.initState();
@@ -480,7 +529,14 @@ class _CitiesPickerState extends State<CitiesPicker> {
 
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      newCities = cities.where((city) {
+        return city['state_id'].toString() == widget.stateId;
+      }).toList();
+      value = newCities[0]['id'].toString();
+    });
     return DropdownButton(
+        value: value,
         icon: const Icon(Icons.arrow_downward),
         elevation: 16,
         style: const TextStyle(color: Colors.deepPurple),
@@ -494,17 +550,17 @@ class _CitiesPickerState extends State<CitiesPicker> {
           });
         },
         items: List.generate(
-          cities.length,
+          newCities.length,
           (index) => DropdownMenuItem(
-            value: cities[index]['id'].toString(),
-            child: Text(cities[index]['name']),
+            value: newCities[index]['id'].toString(),
+            child: Text(newCities[index]['name']),
           ),
         ));
   }
 }
 
 class TransportistForm extends StatefulWidget {
-  TransportistForm({Key? key}) : super(key: key);
+  const TransportistForm({Key? key}) : super(key: key);
 
   @override
   State<TransportistForm> createState() => _TransportistFormState();
@@ -513,6 +569,58 @@ class TransportistForm extends StatefulWidget {
 class _TransportistFormState extends State<TransportistForm> {
   @override
   Widget build(BuildContext context) {
-    return Text('formulario transportista');
+    return const Text('formulario transportista');
+  }
+}
+
+class PassField extends StatefulWidget {
+  PassField(this.title, this.action, {Key? key}) : super(key: key);
+  String title;
+  TextInputAction action;
+  @override
+  State<PassField> createState() => _PassFieldState();
+}
+
+class _PassFieldState extends State<PassField> {
+  bool locked = true;
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      obscureText: locked,
+      textInputAction: widget.action,
+      decoration: InputDecoration(
+        labelText: widget.title,
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Color(0xFFED8232),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Color(0xFFED8232),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        prefixIcon: GestureDetector(
+          onTap: () => setState(() {
+            locked = !locked;
+          }),
+          child: Icon(
+            locked ? Icons.lock : Icons.lock_open,
+            color: const Color(0xFFED8232),
+          ),
+        ),
+      ),
+      validator: (val) {
+        if (val!.isEmpty) {
+          return 'Ingresa un valor';
+        }
+
+        return null;
+      },
+    );
   }
 }

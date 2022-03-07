@@ -106,6 +106,7 @@ class Load {
       showDialog(
         context: loadingContext,
         barrierDismissible: false,
+        barrierColor: Colors.transparent,
         builder: (context) => const Dialog(
           backgroundColor: Colors.transparent,
           child: Center(

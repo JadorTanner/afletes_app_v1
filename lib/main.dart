@@ -224,6 +224,10 @@ class _AfletesAppState extends State<AfletesApp> {
                 if (jsonData['is_final_offer'] == 'true') {
                   context.read<ChatProvider>().setCanOffer(false);
                 }
+                if (jsonData['accepted'] != null) {
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(true);
+                }
               } else {
                 NotificationsApi.showNotification(
                   id: 10,
@@ -280,6 +284,26 @@ class _AfletesAppState extends State<AfletesApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Afletes',
+      theme: ThemeData(
+        dividerColor: const Color(0xBBF58633),
+        primaryColor: const Color(0xFFF58633),
+        backgroundColor: const Color(0xFFF58633),
+        textTheme: const TextTheme(
+          bodyText1: TextStyle(color: Color(0xFF101010)),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(50),
+            ),
+            borderSide: BorderSide(
+              color: Color(0xFFBDBDBD),
+              width: 1,
+              style: BorderStyle.solid,
+            ),
+          ),
+        ),
+      ),
       initialRoute: '/splash_screen',
       debugShowCheckedModeBanner: false,
       routes: {
