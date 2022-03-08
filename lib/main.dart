@@ -157,18 +157,9 @@ class _AfletesAppState extends State<AfletesApp> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-
-    NotificationsApi.init();
-    listenNotifications();
-
-    pusherApi.init();
-
-// Bind to listen for events called "order-status-updated" sent to "private-orders" channel
-    pusherApi.bindEvent('App\\Events\\NegotiationChat',
+  initPusher() async {
+    PusherApi pusherapi = await pusherApi.init();
+    pusherapi.bindEvent('App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
       if (event != null) {
         if (event.data != null) {
@@ -239,6 +230,16 @@ class _AfletesAppState extends State<AfletesApp> {
         }
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initPusher();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+
+    NotificationsApi.init();
+    listenNotifications();
 
     _determinePosition();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
