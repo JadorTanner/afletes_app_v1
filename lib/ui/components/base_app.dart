@@ -29,41 +29,7 @@ class _BaseAppState extends State<BaseApp> {
     theme = Theme.of(context);
     return Scaffold(
       key: _key,
-      /* appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: kBlack),
-        actionsIconTheme: IconThemeData(color: kBlack),
-        leading: Container(
-          width: 40,
-          height: 40,
-          margin: const EdgeInsets.only(top: 20, left: 20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            color: Colors.white,
-          ),
-          child: IconButton(
-            onPressed: () => {_key.currentState!.openDrawer()},
-            icon: const Icon(Icons.menu, size: 20),
-          ),
-        ),
-        actions: [
-          Navigator.canPop(context)
-              ? Container(
-                  width: 40,
-                  height: 40,
-                  margin: const EdgeInsets.only(top: 20, right: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.white,
-                  ),
-                  child: IconButton(
-                      onPressed: () => {Navigator.of(context).pop()},
-                      icon: const Icon(Icons.chevron_left, size: 20)),
-                )
-              : const SizedBox.shrink()
-        ],
-      ), */
+      backgroundColor: const Color(0xFFEBE3CD),
       extendBodyBehindAppBar: true,
       drawer: Drawer(
         child: FutureBuilder(

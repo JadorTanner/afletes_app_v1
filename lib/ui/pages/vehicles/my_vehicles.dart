@@ -2,9 +2,7 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
-import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -95,7 +93,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
             );
           }
           return RefreshIndicator(
-            onRefresh: getMyVehicles,
+            onRefresh: () async => setState(() {}),
             child: ListView(
               padding: const EdgeInsets.only(
                 left: 20,

@@ -103,20 +103,19 @@ class Load {
             .add(await MultipartFile.fromPath('imagenes[]', file.path));
       });
       BuildContext loadingContext = context;
-      showDialog(
-        context: loadingContext,
-        barrierDismissible: false,
-        barrierColor: Colors.transparent,
-        builder: (context) => const Dialog(
-          backgroundColor: Colors.transparent,
-          child: Center(
+      StreamedResponse response = await request.send();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Center(
             child: CircularProgressIndicator(),
           ),
         ),
       );
-      StreamedResponse response = await request.send();
+      String stringResponse = await response.stream.bytesToString();
+      print(stringResponse);
       if (response.statusCode == 200) {
-        Map responseBody = jsonDecode(await response.stream.bytesToString());
+        ScaffoldMessenger.of(context).clearSnackBars();
+        Map responseBody = jsonDecode(stringResponse);
         Navigator.pop(loadingContext);
         if (responseBody['success']) {
           if (context != null) {

@@ -26,15 +26,15 @@ PageController pageController = PageController();
 late AfletesGoogleMap originMap;
 late AfletesGoogleMap deliveryMap;
 
-late XFile? greenCard = null;
-late XFile? greenCardBack = null;
-late XFile? municipal = null;
-late XFile? municipalBack = null;
-late XFile? dinatran = null;
-late XFile? dinatranBack = null;
-late XFile? senacsa = null;
-late XFile? senacsaBack = null;
-late XFile? seguro = null;
+late String greenCard = '';
+late String greenCardBack = '';
+late String municipal = '';
+late String municipalBack = '';
+late String dinatran = '';
+late String dinatranBack = '';
+late String senacsa = '';
+late String senacsaBack = '';
+late String seguro = '';
 
 late GlobalKey<_ImagesPickerState> imagePickerKey;
 
@@ -140,7 +140,16 @@ class _CreateVehicleState extends State<CreateVehicle> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(FutureBuilder(
+    return BaseApp(RegisterVehicleForm());
+  }
+}
+
+class RegisterVehicleForm extends StatelessWidget {
+  const RegisterVehicleForm({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
       future: getBrands(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
@@ -157,7 +166,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
           return const SizedBox.shrink();
         }
       },
-    ));
+    );
   }
 }
 
@@ -256,24 +265,30 @@ class Documentos extends StatelessWidget {
         ),
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ImageInput('Cédula verde (Frente)\n', greenCard, 170),
+              ImageInput('Cédula verde (Frente)\n', greenCard,
+                  (newVal) => greenCard = newVal, 170),
               const SizedBox(
                 width: 20,
               ),
-              ImageInput('Cédula verde (Atras)\n', greenCardBack, 170),
+              ImageInput('Cédula verde (Atras)\n', greenCardBack,
+                  (newVal) => greenCardBack = newVal, 170),
             ],
           ),
           const SizedBox(
             height: 20,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ImageInput('Habilitación Munic.\n', municipal, 170),
+              ImageInput('Habilitación Munic.\n', municipal,
+                  (newVal) => municipal = newVal, 170),
               const SizedBox(
                 width: 20,
               ),
-              ImageInput('Habilitación Munic.\n(Atras)', municipalBack, 170),
+              ImageInput('Habilitación Munic.\n(Atras)', municipalBack,
+                  (newVal) => municipalBack = newVal, 170),
             ],
           ),
           DatePicker(
@@ -306,12 +321,15 @@ class Documentos2 extends StatelessWidget {
         ),
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ImageInput('Habilitación DINATRAN\n', dinatran, 170),
+              ImageInput('Habilitación DINATRAN\n', dinatran,
+                  (newVal) => dinatran = newVal, 170),
               const SizedBox(
                 width: 20,
               ),
-              ImageInput('Habilitación DINATRAN\n(Atras)', dinatranBack, 170),
+              ImageInput('Habilitación DINATRAN\n(Atras)', dinatranBack,
+                  (newVal) => dinatranBack = newVal, 170),
             ],
           ),
           DatePicker(
@@ -320,12 +338,15 @@ class Documentos2 extends StatelessWidget {
             height: 20,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ImageInput('Habilitación SENACSA\n', senacsa, 170),
+              ImageInput('Habilitación SENACSA\n', senacsa,
+                  (newVal) => senacsa = newVal, 170),
               const SizedBox(
                 width: 20,
               ),
-              ImageInput('Habilitación SENACSA\n(Atras)', senacsaBack, 170),
+              ImageInput('Habilitación SENACSA\n(Atras)', senacsaBack,
+                  (newVal) => senacsaBack = newVal, 170),
             ],
           ),
           DatePicker(
@@ -334,8 +355,9 @@ class Documentos2 extends StatelessWidget {
             height: 20,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ImageInput('Seguro\n', seguro, 170),
+              ImageInput('Seguro\n', seguro, (newVal) => seguro = newVal, 170),
             ],
           ),
           DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
@@ -376,15 +398,15 @@ class Documentos2 extends StatelessWidget {
                       context: context,
                       update: hasVehicleData,
                       vehicleId: vehicleId,
-                      greenCard: greenCard,
-                      greenCardBack: greenCardBack,
-                      municipal: municipal,
-                      municipalBack: municipalBack,
-                      senacsa: senacsa,
-                      senacsaBack: senacsaBack,
-                      dinatran: dinatran,
-                      dinatranBack: dinatranBack,
-                      insurance: seguro,
+                      greenCard: XFile(greenCard),
+                      greenCardBack: XFile(greenCardBack),
+                      municipal: XFile(municipal),
+                      municipalBack: XFile(municipalBack),
+                      senacsa: XFile(senacsa),
+                      senacsaBack: XFile(senacsaBack),
+                      dinatran: XFile(dinatran),
+                      dinatranBack: XFile(dinatranBack),
+                      insurance: XFile(seguro),
                     );
                   },
                   icon: const Icon(Icons.upload))
@@ -395,11 +417,13 @@ class Documentos2 extends StatelessWidget {
 }
 
 class ImageInput extends StatefulWidget {
-  ImageInput(this.title, this.fileVariable, this.width, {Key? key})
+  ImageInput(this.title, this.fileVariable, this.onChange, this.width,
+      {Key? key})
       : super(key: key);
   String title;
-  XFile? fileVariable;
+  String? fileVariable;
   double width;
+  var onChange;
   @override
   State<ImageInput> createState() => _ImageInputState();
 }
@@ -413,8 +437,9 @@ class _ImageInputState extends State<ImageInput> {
         img = await _picker.pickImage(source: ImageSource.gallery);
         if (img != null) {
           setState(() {
-            widget.fileVariable = img;
+            widget.fileVariable = img!.path;
           });
+          widget.onChange(img!.path);
         }
       },
       child: Column(
@@ -429,11 +454,13 @@ class _ImageInputState extends State<ImageInput> {
                 ? Image.file(
                     File(img!.path),
                   )
-                : (widget.fileVariable != null
+                : (widget.fileVariable != null && widget.fileVariable != ''
                     ? Image.file(
-                        File(widget.fileVariable!.path),
+                        File(widget.fileVariable!),
                       )
-                    : null),
+                    : const Center(
+                        child: Icon(Icons.camera_alt),
+                      )),
           ),
         ],
       ),
@@ -545,6 +572,13 @@ class MeasurementUnit extends StatefulWidget {
 class _MeasurementUnitState extends State<MeasurementUnit> {
   String value = '1';
   @override
+  void initState() {
+    super.initState();
+
+    unidadMedidaController.text = value;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,6 +626,7 @@ class _MarcaSelectState extends State<MarcaSelect> {
     value = marcaController.text != ''
         ? marcaController.text
         : brands[0]['id'].toString();
+    marcaController.text = value;
   }
 
   @override

@@ -24,12 +24,10 @@ class Vehicles extends StatefulWidget {
 }
 
 class _VehiclesState extends State<Vehicles> {
-  Future<List> getVehicles([int? id = null]) async {
+  Future<List> getVehicles(String url, [int? id = null]) async {
     try {
       vehicles.clear();
-      Response response =
-          await Api().getData('user/find-vehicles?page=' + page.toString());
-      print(response.body);
+      Response response = await Api().getData(url + 'page=' + page.toString());
       if (response.statusCode == 200) {
         Map jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success']) {
@@ -64,13 +62,15 @@ class _VehiclesState extends State<Vehicles> {
   Widget build(BuildContext context) {
     return BaseApp(
       FutureBuilder(
-        future: getVehicles(widget.id),
+        future: getVehicles('user/find-vehicles?', widget.id),
         initialData: const [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.connectionState == ConnectionState.done) {
             return RefreshIndicator(
+                backgroundColor: const Color(0xFFEBE3CD),
+                color: Colors.white,
                 child: VehiclesList(),
                 onRefresh: () async {
                   // await getVehicles();
@@ -97,16 +97,6 @@ class _VehiclesListState extends State<VehiclesList> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // listViewController.addListener(() {
-    //   final position = listViewController.offset /
-    //       listViewController.position.maxScrollExtent;
-    //   if (position >= 0.8) {
-    //     print('final');
-    //     setState(() {
-    //       page += 1;
-    //     });
-    //   }
-    // });
   }
 
   onVehicleTap(int id, BuildContext context) async {
@@ -328,10 +318,13 @@ class _VehiclesListState extends State<VehiclesList> {
                                                           const SizedBox(
                                                             height: 10,
                                                           ),
-                                                          Text('Desde: ' +
-                                                              data['data']
-                                                                      [index]
-                                                                  ['address']),
+                                                          SizedBox(
+                                                            width: 200,
+                                                            child: Text('Desde: ' +
+                                                                data['data']
+                                                                        [index][
+                                                                    'address']),
+                                                          ),
                                                           const SizedBox(
                                                             height: 10,
                                                           ),

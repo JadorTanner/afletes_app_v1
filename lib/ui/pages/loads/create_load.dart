@@ -146,6 +146,34 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         esperaDescargaController.text = arguments['esperaDescarga'].toString();
         observacionesController.text = arguments['observaciones'];
         isUrgentController.text = arguments['isUrgent'].toString();
+      } else {
+        loadId = 0;
+        imagenes.clear();
+        hasLoadData = false;
+        ubicacionController.text = '';
+        productController.text = '';
+        descriptionController.text = '';
+        categoriaController.text = '';
+        unidadMedidaController.text = '';
+        pesoController.text = '';
+        ofertaInicialController.text = '';
+        vehiculosController.text = '';
+        ayudantesController.text = '';
+        volumenController.text = '';
+        originAddressController.text = '';
+        originCityController.text = '';
+        originStateController.text = '';
+        originCoordsController.text = '';
+        destinAddressController.text = '';
+        destinCityController.text = '';
+        destinStateController.text = '';
+        destinCoordsController.text = '';
+        loadDateController.text = '';
+        loadHourController.text = '';
+        esperaCargaController.text = '';
+        esperaDescargaController.text = '';
+        observacionesController.text = '';
+        isUrgentController.text = '';
       }
     });
   }
@@ -241,7 +269,7 @@ class DatosGenerales extends StatelessWidget {
               Flexible(
                 child: LoadFormField(
                   vehiculosController,
-                  'Vehículos requeridos',
+                  'Vehículos requeridos *',
                   type: TextInputType.number,
                 ),
               ),
@@ -252,7 +280,7 @@ class DatosGenerales extends StatelessWidget {
               Flexible(
                 child: LoadFormField(
                   ayudantesController,
-                  'Ayudantes requeridos',
+                  'Ayudantes requeridos *',
                   type: TextInputType.number,
                 ),
               ),
@@ -264,7 +292,7 @@ class DatosGenerales extends StatelessWidget {
           //Precio
           LoadFormField(
             ofertaInicialController,
-            'Oferta inicial',
+            'Oferta inicial *',
             type: TextInputType.number,
           ),
           const SizedBox(
@@ -273,7 +301,7 @@ class DatosGenerales extends StatelessWidget {
           //Descripción
           LoadFormField(
             descriptionController,
-            'Descripción',
+            'Descripción *',
             type: TextInputType.multiline,
             action: TextInputAction.next,
           ),
@@ -616,19 +644,21 @@ class _SearchPlaceState extends State<SearchPlace>
   setMarker(LatLng argument) {
     widget.coordsController.text =
         argument.latitude.toString() + ',' + argument.longitude.toString();
-    markers = [
-      Marker(
-          markerId: MarkerId(argument.latitude.toString() + '_location'),
-          position: LatLng(
-            argument.latitude,
-            argument.longitude,
-          ),
-          draggable: true,
-          onDragEnd: (LatLng newPosition) => widget.coordsController.text =
-              newPosition.latitude.toString() +
-                  ',' +
-                  newPosition.longitude.toString()),
-    ];
+    setState(() {
+      markers = [
+        Marker(
+            markerId: MarkerId(argument.latitude.toString() + '_location'),
+            position: LatLng(
+              argument.latitude,
+              argument.longitude,
+            ),
+            draggable: true,
+            onDragEnd: (LatLng newPosition) => widget.coordsController.text =
+                newPosition.latitude.toString() +
+                    ',' +
+                    newPosition.longitude.toString()),
+      ];
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -636,8 +666,13 @@ class _SearchPlaceState extends State<SearchPlace>
     setMapStyles();
     // mapController.setMapStyle('');
     getPosition();
+    if (widget.coordsController.text != '') {
+      setMarker(LatLng(double.parse(widget.coordsController.text.split(',')[0]),
+          double.parse(widget.coordsController.text.split(',')[1])));
+    }
   }
 
+  bool loading = false;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -668,16 +703,34 @@ class _SearchPlaceState extends State<SearchPlace>
         SizedBox(
           width: double.infinity,
           height: MediaQuery.of(context).size.height * 0.4,
-          child: GoogleMap(
-            key: widget.key,
-            onMapCreated: _onMapCreated,
-            myLocationEnabled: true,
-            onTap: (argument) => setMarker(argument),
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(-25.27705190025039, -57.63737049639007),
-              zoom: 11.0,
-            ),
-            markers: markers.map((e) => e).toSet(),
+          child: Stack(
+            children: [
+              GoogleMap(
+                key: widget.key,
+                onMapCreated: _onMapCreated,
+                myLocationEnabled: true,
+                onTap: (argument) => setMarker(argument),
+                initialCameraPosition: CameraPosition(
+                  // target: LatLng(-25.27705190025039, -57.63737049639007),
+                  target: LatLng(
+                      (widget.coordsController.text != ''
+                          ? double.parse(
+                              widget.coordsController.text.split(',')[0])
+                          : -25.27705190025039),
+                      (widget.coordsController.text != ''
+                          ? double.parse(
+                              widget.coordsController.text.split(',')[1])
+                          : -57.63737049639007)),
+                  zoom: 11.0,
+                ),
+                markers: markers.map((e) => e).toSet(),
+              ),
+              loading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : const SizedBox.shrink()
+            ],
           ),
         ),
       ],
@@ -697,20 +750,30 @@ class StateAndCityPicker extends StatefulWidget {
 
 class _StateAndCityPickerState extends State<StateAndCityPicker> {
   String departamentoId = states[0].id.toString();
+  List<City> newCities = cities;
+  late String value;
   @override
   Widget build(BuildContext context) {
+    value = newCities[0].id.toString();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DepartamentoPicker(originStateController, (newVal) {
           setState(() {
             departamentoId = newVal;
+
+            newCities = cities.where((element) {
+              return element.state_id.toString() == departamentoId;
+            }).toList();
+            value = newCities[0].id.toString();
           });
         }),
         const SizedBox(
           width: 10,
         ),
-        CityPicker(originCityController, departamentoId)
+        Flexible(
+          child: CityPicker(originCityController, value, newCities),
+        )
       ],
     );
   }
@@ -797,20 +860,30 @@ class DestinStateAndCityPicker extends StatefulWidget {
 
 class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
   String departamentoId = states[0].id.toString();
+  List<City> newCities = cities;
+  late String value;
   @override
   Widget build(BuildContext context) {
+    value = newCities[0].id.toString();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DepartamentoPicker(destinStateController, (newVal) {
           setState(() {
             departamentoId = newVal;
+
+            newCities = cities.where((element) {
+              return element.state_id.toString() == departamentoId;
+            }).toList();
+            value = newCities[0].id.toString();
           });
         }),
         const SizedBox(
           width: 10,
         ),
-        CityPicker(destinCityController, departamentoId)
+        Flexible(
+          child: CityPicker(destinCityController, value, newCities),
+        ),
       ],
     );
   }
@@ -868,16 +941,17 @@ class _DepartamentoPickerState extends State<DepartamentoPicker> {
 }
 
 class CityPicker extends StatefulWidget {
-  CityPicker(this.controller, this.stateId, {Key? key}) : super(key: key);
+  CityPicker(this.controller, this.value, this.newCities, {Key? key})
+      : super(key: key);
+  List<City> newCities;
   TextEditingController controller;
-  String stateId;
+  String value;
   @override
   State<CityPicker> createState() => CityPickerState();
 }
 
 class CityPickerState extends State<CityPicker> {
-  List<City> newCities = cities;
-  late String value = newCities[0].id.toString();
+  late List<City> newCities;
   @override
   void initState() {
     super.initState();
@@ -885,22 +959,13 @@ class CityPickerState extends State<CityPicker> {
 
   @override
   Widget build(BuildContext context) {
-    newCities = cities.where((element) {
-      return element.state_id.toString() == widget.stateId;
-    }).toList();
-    value = newCities[0].id.toString();
-    widget.controller.text = value;
-    setState(() {});
+    newCities = widget.newCities;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Ciudad'),
         DropdownButton(
-          value: widget.controller.text != ''
-              ? widget.controller.text
-              : (newCities.isNotEmpty
-                  ? newCities[0].id.toString()
-                  : newCities[0].id.toString()),
+          value: widget.value,
           icon: const Icon(Icons.arrow_downward),
           elevation: 16,
           style: const TextStyle(color: Colors.deepPurple),
@@ -910,7 +975,7 @@ class CityPickerState extends State<CityPicker> {
           ),
           onChanged: (String? newValue) {
             setState(() {
-              value = newValue!;
+              widget.value = newValue!;
               widget.controller.text = newValue;
             });
             // print(newValue);
@@ -944,10 +1009,20 @@ class PaginaFinal extends StatelessWidget {
           right: 20,
         ),
         children: [
+          Text(
+            'Cuándo debe ser recogida?',
+            style: titleStyles,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           Row(
             children: [
               Flexible(
                 child: DatePicker(loadDateController, 'Fecha de carga'),
+              ),
+              const SizedBox(
+                width: 20,
               ),
               Flexible(
                 child: LoadTimePicker(loadHourController, 'Hora de carga'),
@@ -965,6 +1040,9 @@ class PaginaFinal extends StatelessWidget {
                   'Espera en carga',
                   type: TextInputType.number,
                 ),
+              ),
+              const SizedBox(
+                width: 20,
               ),
               Flexible(
                 child: LoadFormField(
@@ -991,6 +1069,10 @@ class PaginaFinal extends StatelessWidget {
               // ))
             ],
           ),
+          Text(
+            'Danos más detalles de tu carga',
+            style: titleStyles,
+          ),
           const SizedBox(
             height: 20,
           ),
@@ -1013,6 +1095,7 @@ class PaginaFinal extends StatelessWidget {
                   onPressed: () async {
                     Load load = Load();
                     load.createLoad({
+                      'description': descriptionController.text,
                       'vehicle_type_id': 1,
                       'product_category_id': categoriaController.text,
                       'product': productController.text,
@@ -1040,6 +1123,8 @@ class PaginaFinal extends StatelessWidget {
                       'payment_term_after_delivery': 1,
                       'wait_in_origin': esperaCargaController.text,
                       'wait_in_destination': esperaDescargaController.text,
+                      'observatios': observacionesController.text,
+                      'is_urgent': isUrgentController.text == '1',
                       'loadId': loadId
                     }, imagenes,
                         context: context, update: hasLoadData, loadId: loadId);
@@ -1224,7 +1309,7 @@ class LoadFormField extends StatelessWidget {
           label: Text(label),
           contentPadding: const EdgeInsets.symmetric(
             vertical: 5,
-            horizontal: 10,
+            horizontal: 20,
           )),
     );
   }

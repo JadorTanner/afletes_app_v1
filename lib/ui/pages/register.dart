@@ -2,19 +2,61 @@
 
 import 'dart:convert';
 
-import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
+import 'package:afletes_app_v1/ui/components/images_picker.dart';
+import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
+import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const double separacion = 15;
+const double separacion = 20;
 List states = [];
 List cities = [];
 
-Future getData() async {
+String cedulaFrente = '';
+String cedulaAtras = '';
+
+TextEditingController userType = TextEditingController();
+TextEditingController firstName = TextEditingController();
+TextEditingController lastName = TextEditingController();
+TextEditingController legalName = TextEditingController();
+TextEditingController documentNumber = TextEditingController();
+TextEditingController cellphone = TextEditingController();
+TextEditingController phone = TextEditingController();
+TextEditingController email = TextEditingController();
+TextEditingController street1 = TextEditingController();
+TextEditingController street2 = TextEditingController();
+TextEditingController houseNumber = TextEditingController();
+TextEditingController cityId = TextEditingController();
+TextEditingController lastLoginType = TextEditingController();
+TextEditingController password = TextEditingController();
+TextEditingController passwordConfirmation = TextEditingController();
+
+Future getData(context) async {
   await getStates();
   await getCities();
+
+  showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: const Text('Cómo quieres registrarte?'),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    {userType.text = 'load_generator', Navigator.pop(context)},
+                child: const Text('Generador de carga'),
+              ),
+              TextButton(
+                onPressed: () =>
+                    {userType.text = 'carrier', Navigator.pop(context)},
+                child: const Text('Transportista'),
+              ),
+            ],
+          ));
 
   return true;
 }
@@ -70,6 +112,11 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -77,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
         elevation: 0,
       ),
       body: FutureBuilder(
-        future: getData(),
+        future: getData(context),
         builder: (context, AsyncSnapshot snapshot) =>
             (snapshot.connectionState == ConnectionState.done
                 ? Column(
@@ -89,7 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: Color(0xFFED8232),
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(50),
-                            bottomRight: Radius.circular(0),
+                            bottomRight: Radius.circular(50),
                             topLeft: Radius.circular(0),
                             topRight: Radius.circular(0),
                           ),
@@ -142,94 +189,42 @@ class RegisterPageState extends State<RegisterPagePage> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(
-                    width: 100,
-                    height: 40,
+                  Row(
+                    children: [
+                      SingleImagePicker(
+                        'Cédula (frente)',
+                        cedulaFrente,
+                        150,
+                        onChange: (path) => setState(() {
+                          cedulaFrente = path;
+                        }),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      SingleImagePicker(
+                        'Cédula (atrás)',
+                        cedulaAtras,
+                        150,
+                        onChange: (path) => setState(() {
+                          cedulaAtras = path;
+                        }),
+                      ),
+                    ],
                   ),
-                  TextFormField(
-                    obscureText: false,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Ejemplo@gmail.com',
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Color(0xFFED8232),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(100),
+                  ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                          onPressed: () => pageController.previousPage(
+                              duration: const Duration(milliseconds: 100),
+                              curve: Curves.ease),
+                          icon: const Icon(Icons.navigate_before)),
+                      RegisterButton(
+                        text: 'Registrarse',
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Color(0xFFED8232),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.alternate_email,
-                        color: Color(0xFFED8232),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val!.isEmpty) {
-                        return 'Ingresa un email';
-                      }
-
-                      return null;
-                    },
+                    ],
                   ),
-                  const SizedBox(
-                    width: 100,
-                    height: 40,
-                  ),
-                  TextFormField(
-                    obscureText: !passwordVisibility,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Color(0xFFED8232),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Color(0xFFED8232),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock,
-                        color: Color(0xFFED8232),
-                      ),
-                      suffixIcon: InkWell(
-                        onTap: () => setState(
-                          () => passwordVisibility = !passwordVisibility,
-                        ),
-                        child: Icon(
-                          passwordVisibility
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: const Color(0xFFED8232),
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 100,
-                    height: 40,
-                  ),
-                  RegisterButton(
-                    Future<bool>.delayed(
-                        const Duration(seconds: 3), () => true),
-                    text: 'Registrarse',
-                  ),
-                  const SizedBox(width: 100, height: separacion),
-                  const Text('He olvidado mi contraseña',
-                      textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -285,25 +280,36 @@ class PrimeraParte extends StatelessWidget {
             RegisterFormField(
               'Cédula o RUC *',
               Icons.article,
+              documentNumber,
               hint: '9888777',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Razón social',
               Icons.person,
-              hint: 'José',
+              legalName,
+              hint: 'Empresa s.a.',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Nombre',
               Icons.person,
+              firstName,
               hint: 'José',
             ),
             const SizedBox(width: 100, height: separacion),
             RegisterFormField(
               'Apellido',
               Icons.person,
+              lastName,
               hint: 'Gonzalez',
+            ),
+            const SizedBox(width: 100, height: separacion),
+            RegisterFormField(
+              'Email',
+              Icons.alternate_email,
+              email,
+              hint: 'ejemplo@gmail.com',
             ),
             const SizedBox(width: 100, height: separacion),
             Row(
@@ -312,6 +318,7 @@ class PrimeraParte extends StatelessWidget {
                     child: RegisterFormField(
                   'Celular',
                   Icons.phone_android,
+                  cellphone,
                   hint: '0981222333',
                 )),
                 const SizedBox(
@@ -321,6 +328,7 @@ class PrimeraParte extends StatelessWidget {
                   child: RegisterFormField(
                     'Teléfono fijo:',
                     Icons.phone,
+                    phone,
                     hint: '021444666',
                     action: TextInputAction.done,
                   ),
@@ -373,6 +381,7 @@ class SegundaParte extends StatelessWidget {
             RegisterFormField(
               'Calle Principal *',
               Icons.home,
+              street1,
               hint: 'Avda Mcal López',
             ),
             const SizedBox(width: 100, height: separacion),
@@ -382,6 +391,7 @@ class SegundaParte extends StatelessWidget {
                   child: RegisterFormField(
                     'Calle Secundaria',
                     Icons.home,
+                    street2,
                     hint: 'esq. #',
                     action: TextInputAction.done,
                   ),
@@ -393,6 +403,7 @@ class SegundaParte extends StatelessWidget {
                   child: RegisterFormField(
                     'Nro.',
                     Icons.home,
+                    houseNumber,
                     hint: '1234',
                     action: TextInputAction.done,
                   ),
@@ -400,9 +411,10 @@ class SegundaParte extends StatelessWidget {
               ],
             ),
             const SizedBox(width: 100, height: separacion),
-            PassField('Contraseña', TextInputAction.next),
+            PassField('Contraseña', TextInputAction.next, password),
             const SizedBox(width: 100, height: separacion),
-            PassField('Confirmar contraseña', TextInputAction.done),
+            PassField('Confirmar contraseña', TextInputAction.done,
+                passwordConfirmation),
             const SizedBox(width: 100, height: separacion),
             ButtonBar(
               alignment: MainAxisAlignment.center,
@@ -548,6 +560,7 @@ class _CitiesPickerState extends State<CitiesPicker> {
           setState(() {
             value = newValue!;
           });
+          cityId.text = newValue!;
         },
         items: List.generate(
           newCities.length,
@@ -574,9 +587,11 @@ class _TransportistFormState extends State<TransportistForm> {
 }
 
 class PassField extends StatefulWidget {
-  PassField(this.title, this.action, {Key? key}) : super(key: key);
+  PassField(this.title, this.action, this.controller, {Key? key})
+      : super(key: key);
   String title;
   TextInputAction action;
+  TextEditingController controller;
   @override
   State<PassField> createState() => _PassFieldState();
 }
@@ -586,10 +601,12 @@ class _PassFieldState extends State<PassField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: widget.controller,
       obscureText: locked,
       textInputAction: widget.action,
       decoration: InputDecoration(
         labelText: widget.title,
+        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(
             color: Color(0xFFED8232),
@@ -621,6 +638,192 @@ class _PassFieldState extends State<PassField> {
 
         return null;
       },
+    );
+  }
+}
+
+class RegisterFormField extends StatelessWidget {
+  RegisterFormField(this.label, this.icon, this.controller,
+      {this.hint = '', this.action = TextInputAction.next, Key? key})
+      : super(key: key);
+
+  String label = '';
+  String hint = '';
+  IconData icon;
+  TextInputAction action;
+  TextEditingController controller;
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      textInputAction: action,
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+        labelText: label,
+        hintText: hint,
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Color(0xFFED8232),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Color(0xFFED8232),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xFFED8232),
+        ),
+      ),
+      validator: (val) {
+        if (val!.isEmpty) {
+          return 'Ingresa un valor';
+        }
+
+        return null;
+      },
+    );
+  }
+}
+
+class RegisterButton extends StatefulWidget {
+  RegisterButton({this.text = 'Iniciar Sesión', Key? key}) : super(key: key);
+  String text;
+  @override
+  State<RegisterButton> createState() => RegisterButtonState();
+}
+
+class RegisterButtonState extends State<RegisterButton> {
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      child: !isLoading
+          ? TextButton(
+              style: ButtonStyle(
+                backgroundColor:
+                    MaterialStateProperty.all(const Color(0xFFED8232)),
+                padding: MaterialStateProperty.all(const EdgeInsets.all(15)),
+                shape: MaterialStateProperty.all(
+                  const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(100),
+                    ),
+                  ),
+                ),
+              ),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      setState(() => {
+                            isLoading = !isLoading,
+                          });
+                      try {
+                        Api api = Api();
+
+                        var fullUrl = apiUrl + 'register';
+
+                        String token = await api.getToken();
+                        MultipartRequest request =
+                            MultipartRequest('POST', Uri.parse(fullUrl));
+                        Map headers = api.setHeaders();
+                        headers.forEach((key, value) {
+                          request.headers[key] = value;
+                        });
+
+                        request.fields['user_type'] = userType.text;
+                        request.fields['first_name'] = firstName.text;
+                        request.fields['last_name'] = lastName.text;
+                        request.fields['legal_name'] = legalName.text;
+                        request.fields['document_number'] = documentNumber.text;
+                        request.fields['cellphone'] = cellphone.text;
+                        request.fields['phone'] = phone.text;
+                        request.fields['email'] = email.text;
+                        request.fields['street1'] = street1.text;
+                        request.fields['street2'] = street2.text;
+                        request.fields['house_number'] = houseNumber.text;
+                        request.fields['city_id'] = cityId.text;
+                        request.fields['password'] = password.text;
+                        request.fields['password_confirmation'] =
+                            passwordConfirmation.text;
+
+                        request.files.add(await MultipartFile.fromPath(
+                            'identity_card_attachment', cedulaFrente));
+                        request.files.add(await MultipartFile.fromPath(
+                            'identity_card_back_attachment', cedulaAtras));
+                        StreamedResponse response = await request.send();
+                        String stringResponse =
+                            await response.stream.bytesToString();
+                        print(stringResponse);
+
+                        if (response.statusCode == 200) {
+                          setState(() => {
+                                isLoading = !isLoading,
+                              });
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          Map responseBody = jsonDecode(stringResponse);
+                          if (responseBody['success']) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text(responseBody['message']),
+                              ),
+                            );
+                            SharedPreferences sharedPreferences =
+                                await SharedPreferences.getInstance();
+                            sharedPreferences.setString(
+                                'token', responseBody['data']['token']);
+
+                            if (responseBody['data']['user']['is_carrier']) {
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CreateVehicleAfterReg()));
+                            } else {
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ValidateCode()));
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text(responseBody['message']),
+                              ),
+                            );
+                          }
+                        } else {
+                          setState(() => {
+                                isLoading = !isLoading,
+                              });
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                duration: Duration(seconds: 1),
+                                content:
+                                    Text('Compruebe su conexión a internet')));
+
+                        setState(() => {
+                              isLoading = !isLoading,
+                            });
+                      }
+                    },
+              child: Text(
+                widget.text,
+                style: const TextStyle(color: Colors.white),
+              ))
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 }

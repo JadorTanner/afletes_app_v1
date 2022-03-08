@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/validate_code.dart';
+import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Vehicle {
   int id, ownerId, yearOfProd, brand, measurementUnitId, score;
@@ -64,6 +67,10 @@ class Vehicle {
     XFile? insurance,
   }) async {
     try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      Map user = jsonDecode(sharedPreferences.getString('user')!);
+
       Api api = Api();
       if (update) {
         body.addEntries([MapEntry('id', vehicleId)]);
@@ -125,30 +132,47 @@ class Vehicle {
             .add(await MultipartFile.fromPath('imagenes[]', file.path));
       });
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Dialog(
-          backgroundColor: Colors.transparent,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
+      // showDialog(
+      //   context: context,
+      //   barrierDismissible: false,
+      //   builder: (context) => const Dialog(
+      //     backgroundColor: Colors.transparent,
+      //     child: Center(
+      //       child: CircularProgressIndicator(),
+      //     ),
+      //   ),
+      // );
       StreamedResponse response = await request.send();
       Map responseBody = jsonDecode(await response.stream.bytesToString());
-
+      print(responseBody);
       if (response.statusCode == 200) {
         Navigator.pop(context);
         if (responseBody['success']) {
           if (context != null) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-            Future.delayed(
-                const Duration(seconds: 1),
-                () => {
-                      Navigator.of(context).pushReplacementNamed('/my-vehicles')
-                    });
+            if (user['confirmed']) {
+              if (user['habilitado']) {
+                Future.delayed(
+                    const Duration(seconds: 1),
+                    () => {
+                          Navigator.of(context)
+                              .pushReplacementNamed('/my-vehicles')
+                        });
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const WaitHabilitacion(),
+                  ),
+                );
+              }
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const ValidateCode(),
+                ),
+              );
+            }
           }
           return true;
         } else {

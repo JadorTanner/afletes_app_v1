@@ -1,9 +1,10 @@
-//casa
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-// String baseUrl = 'http://181.120.66.16:8000/';
+//casa
+String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
-String baseUrl = 'http://192.168.1.108:8000/';
+// String baseUrl = 'http://192.168.1.108:8000/';
 //producción
 // String baseUrl = 'https://www.afletes.com/';
 
@@ -17,3 +18,12 @@ String googleMapKey = 'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs';
 
 Color kGrey = const Color(0xFFC5C5C5);
 Color kBlack = const Color(0xFF101010);
+
+currencyFormat(int amount,
+    [String symbol = 'Gs.', String decimals = ',', String thousands = '.']) {
+  NumberFormat format = NumberFormat("#,##0.00");
+
+  return symbol +
+      ' ' +
+      format.format(amount).replaceAll('.00', '').replaceAll(',', '.');
+}

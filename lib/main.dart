@@ -23,7 +23,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -141,14 +140,27 @@ class _AfletesAppState extends State<AfletesApp> {
     }
   }
 
-  listenNotifications() {
+  listenNotifications() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? user = sharedPreferences.getString('user');
     NotificationsApi.onNotifications.stream.listen((event) {
       Map data = jsonDecode(event!);
       if (data['route'] == 'chat') {
-        if (navigatorKey.currentState != null) {
-          navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (context) => NegotiationChat(data['id']),
-          ));
+        if (data['id'] != null) {
+          if (navigatorKey.currentState != null) {
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => NegotiationChat(data['id']),
+            ));
+          }
+        } else {
+          if (user != null && user != 'null') {
+            navigatorKey.currentState!.pushReplacementNamed(
+                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+          } else {
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ));
+          }
         }
         // Navigator.of(context).pushReplacement(
         //   MaterialPageRoute(
@@ -270,12 +282,29 @@ class _AfletesAppState extends State<AfletesApp> {
       }
     });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      String? user = sharedPreferences.getString('user');
       if (navigatorKey.currentState != null) {
-        navigatorKey.currentState!.push(MaterialPageRoute(
-          builder: (context) =>
-              NegotiationChat(int.parse(message.data['negotiation_id'])),
-        ));
+        //SI EXISTE NEGOCIACION ID, LLEVA AL CHAT
+        if (message.data['negotiation_id'] != null) {
+          navigatorKey.currentState!.push(MaterialPageRoute(
+            builder: (context) =>
+                NegotiationChat(int.parse(message.data['negotiation_id'])),
+          ));
+        } else {
+          if (user != null) {
+            //SI EXISTE USUARIO, LLEVA A BUSCAR CARGAS O VEHICULOS
+            navigatorKey.currentState!.pushReplacementNamed(
+                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+          } else {
+            //SI NO EXISTE USUARIO, LLEVA A LOGIN
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ));
+          }
+        }
       }
     });
   }

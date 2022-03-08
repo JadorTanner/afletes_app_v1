@@ -33,6 +33,7 @@ class Api {
 
   postData(apiURL, body) async {
     var fullUrl = _url + apiURL;
+    print(fullUrl);
     await getToken();
     return await http.post(
       Uri.parse(fullUrl),

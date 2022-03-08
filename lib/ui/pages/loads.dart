@@ -102,14 +102,15 @@ onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
         for (var element in images) {
           attachments.add(Image.network(
             imgUrl + element['filename'],
-            fit: BoxFit.fitWidth,
+            fit: BoxFit.cover,
           ));
         }
       }
       Size size = MediaQuery.of(context).size;
-      await showModalBottomSheet(
+      await showBottomSheet(
         context: context,
-        barrierColor: Colors.transparent,
+        // barrierColor: Colors.transparent,
+        // isScrollControlled: true,
         backgroundColor: Colors.transparent,
         // enableDrag: true,
         constraints: BoxConstraints(
@@ -302,10 +303,10 @@ onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
                 : const SizedBox.shrink()
           ],
         ),
-      ).whenComplete(() {
-        setLoadsMarkers();
-      });
-      ;
+      ).closed.then((value) => setLoadsMarkers());
+      // .whenComplete(() {
+      //   setLoadsMarkers();
+      // });
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -745,7 +746,7 @@ class _LoadsMapState extends State<LoadsMap>
           icon: bitmapIcon,
           infoWindow: InfoWindow(
               title: load.product != '' ? load.product : load.addressFrom,
-              snippet: 'Oferta inicial: ' + load.initialOffer.toString()),
+              snippet: 'Oferta inicial: ' + currencyFormat(load.initialOffer)),
           onTap: () {
             onLoadTap(
                 load.id, context, () => setLoadsMarkers(position, true, false));
@@ -767,7 +768,9 @@ class _LoadsMapState extends State<LoadsMap>
 
 //MUESTRA PINES DE ORIGEN Y DESTINO
   setLoadMarkerInfo(
-      Load load, Position position, BuildContext bottomSheetContext) {
+      Load load, Position position, BuildContext bottomSheetContext) async {
+    BitmapDescriptor bitmapIcon = await BitmapDescriptor.fromAssetImage(
+        const ImageConfiguration(), 'assets/img/load-marker-icon.png');
     LatLng originLatLng = LatLng(
       double.parse(load.latitudeFrom),
       double.parse(load.longitudeFrom),
@@ -779,27 +782,27 @@ class _LoadsMapState extends State<LoadsMap>
     markers.clear();
     markers.add(
       Marker(
-        markerId: const MarkerId('load_origin'),
-        position: originLatLng,
-        infoWindow: InfoWindow(
-          title: 'Salida: ' + load.addressFrom,
-        ),
-        onTap: () {
-          setLoadsMarkers(position, true, true);
-        },
-      ),
+          markerId: const MarkerId('load_origin'),
+          position: originLatLng,
+          infoWindow: InfoWindow(
+            title: 'Salida: ' + load.addressFrom,
+          ),
+          onTap: () {
+            setLoadsMarkers(position, true, true);
+          },
+          icon: bitmapIcon),
     );
     markers.add(
       Marker(
-        markerId: const MarkerId('load_destin'),
-        position: destinLatLng,
-        infoWindow: InfoWindow(
-          title: 'Destino: ' + load.addressFrom,
-        ),
-        onTap: () {
-          setLoadsMarkers(position, true, true);
-        },
-      ),
+          markerId: const MarkerId('load_destin'),
+          position: destinLatLng,
+          infoWindow: InfoWindow(
+            title: 'Destino: ' + load.destinAddress,
+          ),
+          onTap: () {
+            setLoadsMarkers(position, true, true);
+          },
+          icon: bitmapIcon),
     );
     setState(() {
       setPolylinesInMap(originLatLng, destinLatLng);

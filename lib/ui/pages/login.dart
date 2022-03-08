@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/validate_code.dart';
+import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -175,10 +177,22 @@ class _LoginButtonState extends State<LoginButton> {
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
-                if (user['is_carrier']) {
-                  Navigator.of(context).pushReplacementNamed('/loads');
+                if (user['confirmed']) {
+                  if (user['habilitado']) {
+                    if (user['is_carrier']) {
+                      Navigator.of(context).pushReplacementNamed('/loads');
+                    } else {
+                      Navigator.of(context).pushReplacementNamed('/vehicles');
+                    }
+                  } else {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => const WaitHabilitacion(),
+                    ));
+                  }
                 } else {
-                  Navigator.of(context).pushReplacementNamed('/vehicles');
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => const ValidateCode(),
+                  ));
                 }
               } else {
                 setState(() {
