@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
+import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -233,15 +234,30 @@ class ValidateButtonState extends State<ValidateButton> {
                         setState(() => {
                               isLoading = !isLoading,
                             });
-                        if (responseBody['data']['user']['is_carrier']) {
-                          if (responseBody['data']['cant_vehicles'] <= 0) {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    const CreateVehicleAfterReg()));
+                        if (responseBody['data']['user']['habilitado']) {
+                          if (responseBody['data']['user']['is_carrier']) {
+                            if (responseBody['data']['cant_vehicles'] <= 0) {
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CreateVehicleAfterReg()));
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CreateVehicleAfterReg()));
+                            } else {
+                              Navigator.of(context)
+                                  .pushReplacementNamed('/loads');
+                            }
+                          } else {
+                            Navigator.of(context)
+                                .pushReplacementNamed('/vehicles');
                           }
                         } else {
-                          Navigator.of(context)
-                              .pushReplacementNamed('/vehicles');
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const WaitHabilitacion()));
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

@@ -119,14 +119,47 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        img = await _picker.pickImage(source: ImageSource.gallery);
-        if (img != null) {
-          setState(() {
-            widget.imageFile = img!.path;
-            print(widget.imageFile);
-          });
-          widget.onChange(img!.path);
-        }
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  content: const Text('Desde dónde quieres cargar la imágen?'),
+                  actions: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        img =
+                            await _picker.pickImage(source: ImageSource.camera);
+                        if (img != null) {
+                          setState(() {
+                            widget.imageFile = img!.path;
+                          });
+                          widget.onChange(img!.path);
+                          Navigator.pop(context);
+                        }
+                      },
+                      icon: const Icon(Icons.camera_alt,
+                          color: Color(0xFFF58633)),
+                      label: const Text('Cámara',
+                          style: TextStyle(color: Color(0xFFF58633))),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        img = await _picker.pickImage(
+                            source: ImageSource.gallery);
+                        if (img != null) {
+                          setState(() {
+                            widget.imageFile = img!.path;
+                          });
+                          widget.onChange(img!.path);
+                          Navigator.pop(context);
+                        }
+                      },
+                      icon: const Icon(Icons.image_search_sharp,
+                          color: Color(0xFFF58633)),
+                      label: const Text('Galería',
+                          style: TextStyle(color: Color(0xFFF58633))),
+                    ),
+                  ],
+                ));
       },
       child: Column(
         children: [
@@ -134,13 +167,13 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
           Container(
             width: widget.width,
             margin: const EdgeInsets.only(bottom: 20),
-            height: 200,
+            height: 150,
             color: img != null ? Colors.transparent : Colors.grey[200],
             child: img != null
                 ? Image.file(
                     File(img!.path),
                   )
-                : (widget.imageFile != null
+                : (widget.imageFile != null && widget.imageFile != ''
                     ? Image.file(
                         File(widget.imageFile!),
                       )

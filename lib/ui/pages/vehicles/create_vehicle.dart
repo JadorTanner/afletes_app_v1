@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
+import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
@@ -16,6 +17,7 @@ import 'package:image_picker/image_picker.dart';
 
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
+List<String> imagenesNetwork = [];
 
 bool hasVehicleData = false;
 int vehicleId = 0;
@@ -114,15 +116,15 @@ class _CreateVehicleState extends State<CreateVehicle> {
       vtoSenacsaController.text = args['vtoSenacsa'];
       vtoSeguroController.text = args['vtoSeguro'];
       imagenes.clear();
+      imagenesNetwork.clear();
       if (args['imgs'].isNotEmpty) {
         List.generate(args['imgs'].length, (index) async {
           Response image =
               await get(Uri.parse(vehicleImgUrl + args['imgs'][index]['path']));
-          imagenes.add(XFile.fromData(image.bodyBytes,
-              mimeType: args['imgs'][index]['path'].split('.')[1]));
-          imagePickerKey.currentState != null
-              ? imagePickerKey.currentState!.setState(() {})
-              : null;
+          imagenesNetwork.add(args['imgs'][index]['path']);
+          // imagePickerKey.currentState != null
+          //     ? imagePickerKey.currentState!.setState(() {})
+          //     : null;
         });
       }
     } else {
@@ -176,76 +178,108 @@ class DatosGenerales extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FocusScope(
-      child: ListView(
-        padding: const EdgeInsets.only(
-          top: 60,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        margin: const EdgeInsets.only(
+          top: 70,
           left: 20,
           right: 20,
-          bottom: 20,
         ),
-        children: [
-          const ImagesPicker(),
-          const Text('Imágenes del vehículo'),
-          const SizedBox(
-            height: 20,
-          ),
-          //chapa
-          VehicleFormField(chapaController, 'Dominio o chapa *'),
-          const SizedBox(
-            height: 20,
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              //Marca
-              MarcaSelect(),
-              const SizedBox(
-                width: 20,
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: 70,
               ),
-              //Modelo
-              Flexible(
-                child: VehicleFormField(
-                  modeloController,
-                  'Modelo *',
+              children: [
+                const ImagesPicker(),
+                const Text('Imágenes del vehículo'),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-            ],
-          ),
+                //chapa
+                VehicleFormField(chapaController, 'Dominio o chapa *'),
+                const SizedBox(
+                  height: 20,
+                ),
 
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            children: [
-              MeasurementUnit(),
-              const SizedBox(
-                width: 40,
-              ),
-              //Peso
-              Flexible(
-                child: VehicleFormField(
-                  pesoController,
-                  'Peso *',
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    //Marca
+                    Flexible(
+                      child: MarcaSelect(),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    //Modelo
+                    Flexible(
+                      child: VehicleFormField(
+                        modeloController,
+                        'Modelo *',
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: MeasurementUnit(),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    //Peso
+                    Flexible(
+                      child: VehicleFormField(
+                        pesoController,
+                        'Peso *',
+                        type: const TextInputType.numberWithOptions(
+                            decimal: true),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+
+                VehicleFormField(
+                  fabricacionController,
+                  'Año de producción *',
                   type: const TextInputType.numberWithOptions(decimal: true),
                 ),
+                const SizedBox(
+                  height: 40,
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: const [
+                  Flexible(
+                    child: NextPageButton(),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-
-          VehicleFormField(
-            fabricacionController,
-            'Año de producción *',
-            type: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          const SizedBox(
-            height: 40,
-          ),
-          const NextPageButton()
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -256,54 +290,124 @@ class Documentos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        padding: const EdgeInsets.only(
-          top: 60,
-          left: 20,
-          right: 20,
-          bottom: 20,
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      ),
+      margin: const EdgeInsets.only(
+        top: 70,
+        left: 20,
+        right: 20,
+      ),
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          ListView(
+            padding: const EdgeInsets.only(
+              top: 20,
+              left: 20,
+              right: 20,
+              bottom: 70,
+            ),
             children: [
-              ImageInput('Cédula verde (Frente)\n', greenCard,
-                  (newVal) => greenCard = newVal, 170),
-              const SizedBox(
-                width: 20,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Cédula verde (Frente)\n',
+                      greenCard,
+                      double.infinity,
+                      onChange: (newVal) => greenCard = newVal,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Cédula verde (Atras)\n',
+                      greenCardBack,
+                      double.infinity,
+                      onChange: (newVal) => greenCardBack = newVal,
+                    ),
+                  ),
+                ],
               ),
-              ImageInput('Cédula verde (Atras)\n', greenCardBack,
-                  (newVal) => greenCardBack = newVal, 170),
-            ],
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ImageInput('Habilitación Munic.\n', municipal,
-                  (newVal) => municipal = newVal, 170),
               const SizedBox(
-                width: 20,
+                height: 20,
               ),
-              ImageInput('Habilitación Munic.\n(Atras)', municipalBack,
-                  (newVal) => municipalBack = newVal, 170),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Habilitación Munic.\n',
+                      municipal,
+                      double.infinity,
+                      onChange: (newVal) => municipal = newVal,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Habilitación Munic.\n(Atras)',
+                      municipalBack,
+                      double.infinity,
+                      onChange: (newVal) => municipalBack = newVal,
+                    ),
+                  ),
+                ],
+              ),
+              DatePicker(vtoMunicipalController,
+                  'Fecha de vto. Habilitación Municipal'),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Seguro\n',
+                      seguro,
+                      double.infinity,
+                      onChange: (newVal) => seguro = newVal,
+                    ),
+                  ),
+                  const Flexible(
+                      child: SizedBox(
+                    width: double.infinity,
+                  )),
+                ],
+              ),
+              DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
+              const SizedBox(
+                height: 40,
+              ),
             ],
           ),
-          DatePicker(
-              vtoMunicipalController, 'Fecha de vto. Habilitación Municipal'),
-          const SizedBox(
-            height: 40,
-          ),
-          const ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              PrevPageButton(),
-              NextPageButton(),
-            ],
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              children: const [
+                Flexible(
+                  child: PrevPageButton(),
+                ),
+                Flexible(
+                  child: NextPageButton(),
+                ),
+              ],
+            ),
           )
-        ]);
+        ],
+      ),
+    );
   }
 }
 
@@ -312,118 +416,201 @@ class Documentos2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        padding: const EdgeInsets.only(
-          bottom: 20,
-          top: 60,
-          left: 20,
-          right: 20,
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      ),
+      margin: const EdgeInsets.only(
+        top: 70,
+        left: 20,
+        right: 20,
+      ),
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ImageInput('Habilitación DINATRAN\n', dinatran,
-                  (newVal) => dinatran = newVal, 170),
-              const SizedBox(
-                width: 20,
+          ListView(
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: 70,
               ),
-              ImageInput('Habilitación DINATRAN\n(Atras)', dinatranBack,
-                  (newVal) => dinatranBack = newVal, 170),
-            ],
-          ),
-          DatePicker(
-              vtoDinatranController, 'Fecha de vto. Habilitación DINATRAN'),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ImageInput('Habilitación SENACSA\n', senacsa,
-                  (newVal) => senacsa = newVal, 170),
-              const SizedBox(
-                width: 20,
-              ),
-              ImageInput('Habilitación SENACSA\n(Atras)', senacsaBack,
-                  (newVal) => senacsaBack = newVal, 170),
-            ],
-          ),
-          DatePicker(
-              vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ImageInput('Seguro\n', seguro, (newVal) => seguro = newVal, 170),
-            ],
-          ),
-          DatePicker(vtoSeguroController, 'Fecha de vto. Seguro'),
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              const PrevPageButton(),
-              IconButton(
-                  onPressed: () async {
-                    Vehicle vehicle = Vehicle();
-                    vehicle.createVehicle(
-                      {
-                        'license_plate': chapaController.text,
-                        'vehicle_brand_id': marcaController.text,
-                        'year_of_production': fabricacionController.text,
-                        'max_capacity': pesoController.text,
-                        'measurement_unit_id': unidadMedidaController.text,
-                        'model': modeloController.text,
-                        'expiration_date_vehicle_authorization':
-                            vtoMunicipalController.text != ''
-                                ? vtoMunicipalController.text
-                                : null,
-                        'expiration_date_dinatran_authorization':
-                            vtoDinatranController.text != ''
-                                ? vtoDinatranController.text
-                                : null,
-                        'expiration_date_senacsa_authorization':
-                            vtoSenacsaController.text != ''
-                                ? vtoSenacsaController.text
-                                : null,
-                        'expiration_date_insurance':
-                            vtoSeguroController.text != ''
-                                ? vtoSeguroController.text
-                                : null,
-                        'vehicleId': vehicleId,
-                      },
-                      imagenes,
-                      context: context,
-                      update: hasVehicleData,
-                      vehicleId: vehicleId,
-                      greenCard: XFile(greenCard),
-                      greenCardBack: XFile(greenCardBack),
-                      municipal: XFile(municipal),
-                      municipalBack: XFile(municipalBack),
-                      senacsa: XFile(senacsa),
-                      senacsaBack: XFile(senacsaBack),
-                      dinatran: XFile(dinatran),
-                      dinatranBack: XFile(dinatranBack),
-                      insurance: XFile(seguro),
-                    );
-                  },
-                  icon: const Icon(Icons.upload))
-            ],
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: SingleImagePicker(
+                        'Habilitación DINATRAN\n',
+                        dinatran,
+                        double.infinity,
+                        onChange: (newVal) => dinatran = newVal,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: SingleImagePicker(
+                        'Habilitación DINATRAN\n(Atras)',
+                        dinatranBack,
+                        double.infinity,
+                        onChange: (newVal) => dinatranBack = newVal,
+                      ),
+                    ),
+                  ],
+                ),
+                DatePicker(vtoDinatranController,
+                    'Fecha de vto. Habilitación DINATRAN'),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: SingleImagePicker(
+                        'Habilitación SENACSA\n',
+                        senacsa,
+                        double.infinity,
+                        onChange: (newVal) => senacsa = newVal,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: SingleImagePicker(
+                        'Habilitación SENACSA\n(Atras)',
+                        senacsaBack,
+                        double.infinity,
+                        onChange: (newVal) => senacsaBack = newVal,
+                      ),
+                    ),
+                  ],
+                ),
+                DatePicker(
+                    vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
+              ]),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              children: [
+                const Flexible(
+                  child: PrevPageButton(),
+                ),
+                Flexible(
+                  child: SendButton(),
+                ),
+              ],
+            ),
           )
-        ]);
+        ],
+      ),
+    );
   }
 }
 
-class ImageInput extends StatefulWidget {
-  ImageInput(this.title, this.fileVariable, this.onChange, this.width,
+class SendButton extends StatefulWidget {
+  SendButton({Key? key}) : super(key: key);
+
+  @override
+  State<SendButton> createState() => _SendButtonState();
+}
+
+class _SendButtonState extends State<SendButton> {
+  bool isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color(0xFFF58633),
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      onPressed: isLoading
+          ? null
+          : () async {
+              setState(() {
+                isLoading = !isLoading;
+              });
+              Vehicle vehicle = Vehicle();
+              vehicle.createVehicle(
+                {
+                  'license_plate': chapaController.text,
+                  'vehicle_brand_id': marcaController.text,
+                  'year_of_production': fabricacionController.text,
+                  'max_capacity': pesoController.text,
+                  'measurement_unit_id': unidadMedidaController.text,
+                  'model': modeloController.text,
+                  'expiration_date_vehicle_authorization':
+                      vtoMunicipalController.text != ''
+                          ? vtoMunicipalController.text
+                          : null,
+                  'expiration_date_dinatran_authorization':
+                      vtoDinatranController.text != ''
+                          ? vtoDinatranController.text
+                          : null,
+                  'expiration_date_senacsa_authorization':
+                      vtoSenacsaController.text != ''
+                          ? vtoSenacsaController.text
+                          : null,
+                  'expiration_date_insurance': vtoSeguroController.text != ''
+                      ? vtoSeguroController.text
+                      : null,
+                  'vehicleId': vehicleId,
+                },
+                imagenes,
+                context: context,
+                update: hasVehicleData,
+                vehicleId: vehicleId,
+                greenCard: XFile(greenCard),
+                greenCardBack: XFile(greenCardBack),
+                municipal: XFile(municipal),
+                municipalBack: XFile(municipalBack),
+                senacsa: XFile(senacsa),
+                senacsaBack: XFile(senacsaBack),
+                dinatran: XFile(dinatran),
+                dinatranBack: XFile(dinatranBack),
+                insurance: XFile(seguro),
+              );
+            },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: isLoading
+            ? [const CircularProgressIndicator()]
+            : const [
+                Text(
+                  'Enviar',
+                  style: TextStyle(color: Colors.white),
+                ),
+                Icon(Icons.upload, color: Colors.white)
+              ],
+      ),
+    );
+  }
+}
+
+/* class ImageInput extends StatefulWidget {
+  double.infinity,SingleImagePicker(this.title, this.fileVariable, this.
+  onChange, this.width,
       {Key? key})
       : super(key: key);
   String title;
   String? fileVariable;
   double width;
-  var onChange;
+  double.infinity,var 
+  onChange;
   @override
   State<ImageInput> createState() => _ImageInputState();
 }
@@ -434,13 +621,49 @@ class _ImageInputState extends State<ImageInput> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        img = await _picker.pickImage(source: ImageSource.gallery);
-        if (img != null) {
-          setState(() {
-            widget.fileVariable = img!.path;
-          });
-          widget.onChange(img!.path);
-        }
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  content: const Text('Desde dónde quieres cargar la imágen?'),
+                  actions: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        img =
+                            await _picker.pickImage(source: ImageSource.camera);
+                        if (img != null) {
+                          setState(() {
+                            widget.fileVariable = img!.path;
+                          });
+                          double.infinity,widget.
+                          onChange(img!.path);
+                          Navigator.pop(context);
+                        }
+                      },
+                      icon: const Icon(Icons.camera_alt,
+                          color: Color(0xFFF58633)),
+                      label: const Text('Cámara',
+                          style: TextStyle(color: Color(0xFFF58633))),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        img = await _picker.pickImage(
+                            source: ImageSource.gallery);
+                        if (img != null) {
+                          setState(() {
+                            widget.fileVariable = img!.path;
+                          });
+                          double.infinity,widget.
+                          onChange(img!.path);
+                          Navigator.pop(context);
+                        }
+                      },
+                      icon: const Icon(Icons.image_search_sharp,
+                          color: Color(0xFFF58633)),
+                      label: const Text('Galería',
+                          style: TextStyle(color: Color(0xFFF58633))),
+                    ),
+                  ],
+                ));
       },
       child: Column(
         children: [
@@ -448,7 +671,7 @@ class _ImageInputState extends State<ImageInput> {
           Container(
             width: widget.width,
             margin: const EdgeInsets.only(bottom: 20),
-            height: 200,
+            height: 100,
             color: img != null ? Colors.transparent : Colors.grey[200],
             child: img != null
                 ? Image.file(
@@ -467,7 +690,7 @@ class _ImageInputState extends State<ImageInput> {
     );
   }
 }
-
+ */
 class ImagesPicker extends StatefulWidget {
   const ImagesPicker({
     Key? key,
@@ -506,7 +729,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
         width: double.infinity,
         height: 200,
         color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
-        child: imagenes.isNotEmpty
+        child: imagenesNetwork.isNotEmpty
             ? Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
@@ -516,9 +739,9 @@ class _ImagesPickerState extends State<ImagesPicker> {
                       currentImage = value;
                     }),
                     children: List.generate(
-                      imagenes.length,
-                      (index) => Image.file(
-                        File(imagenes[index].path),
+                      imagenesNetwork.length,
+                      (index) => Image.network(
+                        vehicleImgUrl + imagenesNetwork[index],
                       ),
                     ),
                   ),
@@ -527,7 +750,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        imagenes.length,
+                        imagenesNetwork.length,
                         (index) => Container(
                           width: 10,
                           height: 10,
@@ -583,15 +806,20 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Unidad de medida'),
+        const Text('Unidad de medida *'),
         DropdownButton(
             value: value,
-            icon: const Icon(Icons.arrow_downward),
+            icon: const Icon(Icons.arrow_circle_down_outlined),
             elevation: 16,
-            style: const TextStyle(color: Colors.deepPurple),
+            isExpanded: true,
+            style: Theme.of(context).textTheme.bodyText2,
             underline: Container(
               height: 2,
-              color: Colors.deepPurpleAccent,
+              color: Theme.of(context)
+                  .inputDecorationTheme
+                  .border!
+                  .borderSide
+                  .color,
             ),
             onChanged: (String? newValue) {
               setState(() {
@@ -637,12 +865,14 @@ class _MarcaSelectState extends State<MarcaSelect> {
         const Text('Marca *'),
         DropdownButton(
           value: value,
-          icon: const Icon(Icons.arrow_downward),
+          icon: const Icon(Icons.arrow_circle_down_outlined),
           elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
+          isExpanded: true,
+          style: Theme.of(context).textTheme.bodyText2,
           underline: Container(
             height: 2,
-            color: Colors.deepPurpleAccent,
+            color:
+                Theme.of(context).inputDecorationTheme.border!.borderSide.color,
           ),
           onChanged: (String? newValue) {
             setState(() {
@@ -741,10 +971,35 @@ class NextPageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-        onPressed: () => pageController.nextPage(
-            duration: const Duration(milliseconds: 100), curve: Curves.ease),
-        icon: const Icon(Icons.navigate_next));
+    return TextButton(
+      onPressed: () => pageController.nextPage(
+          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color(0xFFF58633),
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            'Siguiente',
+            style: TextStyle(color: Colors.white),
+          ),
+          Icon(
+            Icons.navigate_next,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -753,10 +1008,31 @@ class PrevPageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-        onPressed: () => pageController.previousPage(
-            duration: const Duration(milliseconds: 100), curve: Curves.ease),
-        icon: const Icon(Icons.navigate_before));
+    return TextButton(
+      onPressed: () => pageController.previousPage(
+          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor:
+            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.navigate_before, color: Colors.white),
+          Text(
+            'Atrás',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
   }
 }
 

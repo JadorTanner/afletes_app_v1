@@ -126,20 +126,6 @@ class AfletesApp extends StatefulWidget {
 }
 
 class _AfletesAppState extends State<AfletesApp> {
-  getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? user = sharedPreferences.getString('user');
-    if (user != null) {
-      try {
-        await Api().postData('user/set-device-token',
-            {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
-      } catch (e) {
-        return false;
-      }
-    }
-  }
-
   listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
@@ -175,7 +161,6 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    getToken();
 
     NotificationsApi.init();
     listenNotifications();
@@ -319,6 +304,8 @@ class _AfletesAppState extends State<AfletesApp> {
         backgroundColor: const Color(0xFFF58633),
         textTheme: const TextTheme(
           bodyText1: TextStyle(color: Color(0xFF101010)),
+          bodyText2: TextStyle(
+              color: Color(0xFF101010), fontWeight: FontWeight.normal),
         ),
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(

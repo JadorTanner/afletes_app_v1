@@ -73,7 +73,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
     TextEditingController intialOfferController = TextEditingController();
 
     Response response = await api.getData('load/load-info?id=' + id.toString());
-
+    print(response.body);
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
       Map data = jsonResponse['data'];
@@ -145,6 +145,11 @@ onLoadTap(int id, BuildContext context, Load load) async {
                       right: 20,
                       top: 40,
                     ),
+                    child: Text(data['product'] ?? '',
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  Container(
+                    color: const Color(0xFFFFFFFF),
                     child: Text(data['description'] ?? ''),
                   ),
                   Container(
@@ -201,7 +206,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
                               'originState': load.stateFromId,
                               'originCoords':
                                   load.latitudeFrom + ',' + load.longitudeFrom,
-                              'destinAddress': load.addressFrom,
+                              'destinAddress': load.destinAddress,
                               'destinCity': load.destinCityId,
                               'destinState': load.destinStateId,
                               'destinCoords': load.latitudeFrom +
@@ -465,9 +470,11 @@ class LoadCard extends StatelessWidget {
                               painter: OpenPainter(100, 10, 10, -10),
                             ),
                       hasData
-                          ? Text(loads[index].addressFrom +
-                              ' - ' +
-                              loads[index].destinAddress)
+                          ? SizedBox(
+                              width: 200,
+                              child: Text(loads[index].addressFrom +
+                                  ' - ' +
+                                  loads[index].destinAddress))
                           : CustomPaint(
                               painter: OpenPainter(50, 10, 10, 20),
                             ),

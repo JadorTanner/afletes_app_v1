@@ -7,6 +7,7 @@ import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -778,6 +779,23 @@ class RegisterButtonState extends State<RegisterButton> {
                             );
                             SharedPreferences sharedPreferences =
                                 await SharedPreferences.getInstance();
+
+                            //TOKEN PARA MENSAJES PUSH
+                            String? token =
+                                await FirebaseMessaging.instance.getToken();
+                            try {
+                              await Api().postData('user/set-device-token', {
+                                'id': responseBody['data']['user']['id'],
+                                'device_token': token ?? ''
+                              });
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Ha ocurrido un error')));
+                            }
+
+                            sharedPreferences.setString('user',
+                                jsonEncode(responseBody['data']['user']));
                             sharedPreferences.setString(
                                 'token', responseBody['data']['token']);
 

@@ -4,6 +4,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -177,6 +178,16 @@ class _LoginButtonState extends State<LoginButton> {
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
+
+                //TOKEN PARA MENSAJES PUSH
+                String? token = await FirebaseMessaging.instance.getToken();
+                try {
+                  await Api().postData('user/set-device-token',
+                      {'id': user['id'], 'device_token': token ?? ''});
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Ha ocurrido un error')));
+                }
                 if (user['confirmed']) {
                   if (user['habilitado']) {
                     if (user['is_carrier']) {
