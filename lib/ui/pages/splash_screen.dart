@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +26,26 @@ class _SplashScreenState extends State<SplashScreen> {
     if (user != null && user != 'null') {
       if (jsonDecode(user)['confirmed']) {
         if (jsonDecode(user)['habilitado']) {
+          if (jsonDecode(user)['is_carrier']) {
+            //ENVIAR UBICACION CUANDO CAMBIE
+            LocationSettings locationSettings = const LocationSettings(
+              accuracy: LocationAccuracy.best,
+              distanceFilter: 20,
+            );
+            Geolocator.getPositionStream(locationSettings: locationSettings)
+                .listen((Position? position) {
+              String posicion = 'POSICION: ' +
+                  (position == null
+                      ? 'Unknown'
+                      : '${position.latitude.toString()}, ${position.longitude.toString()}');
+              print(posicion);
+              Api api = Api();
+              api.postData('update-location', {
+                'latitude': position!.latitude,
+                'longitude': position.longitude,
+              });
+            });
+          }
           Navigator.of(context).pushReplacementNamed(
               jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
         } else {

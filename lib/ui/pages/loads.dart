@@ -314,131 +314,6 @@ onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
   }
 }
 
-/* class LoadInformation extends StatelessWidget {
-  const LoadInformation({
-    Key? key,
-    required this.data,
-    required this.id,
-    required this.textoInformacion,
-    required this.intialOfferController,
-  }) : super(key: key);
-
-  final Map data;
-  final TextStyle textoInformacion;
-  final TextEditingController intialOfferController;
-  final int id;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Carga nro: ' + id.toString(),
-            ),
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Salida',
-                ),
-                Text(
-                  'Departamento: ' +
-                      (data['state'] != null ? data['state']['name'] : ''),
-                  style: textoInformacion,
-                ),
-                Text(
-                  'Ciudad: ' +
-                      (data['city'] != null ? data['city']['name'] : ''),
-                  style: textoInformacion,
-                ),
-                Text(
-                  'Dirección: ' + (data['address'] ?? ''),
-                  style: textoInformacion,
-                ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Entrega'),
-                Text(
-                  'Departamento: ' + (data['destination_state_name'] ?? ''),
-                  style: textoInformacion,
-                ),
-                Text(
-                  'Ciudad: ' + (data['destination_city_name'] ?? ''),
-                  style: textoInformacion,
-                ),
-                Text(
-                  'Dirección: ' + (data['destination_address'] ?? ''),
-                  style: textoInformacion,
-                ),
-              ],
-            )
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        const Text('Oferta inicial'),
-        TextField(
-          controller: intialOfferController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-              helperText:
-                  'Puedes cambiarlo para ofertar un precio diferente *'),
-        ),
-        (data['load_state_id'] == 1
-            ? ButtonBar(
-                children: [
-                  TextButton.icon(
-                      onPressed: () async {
-                        try {
-                          Api api = Api();
-                          Response response = await api.postData(
-                              'negotiation/start-negotiation', {
-                            'load_id': id,
-                            'initial_offer': intialOfferController.text
-                          });
-
-                          if (response.statusCode == 200) {
-                            Map jsonResponse = jsonDecode(response.body);
-                            if (jsonResponse['success']) {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => NegotiationChat(
-                                    jsonResponse['data']['negotiation_id']),
-                              ));
-                            }
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Compruebe su conexión a internet')));
-                        }
-                      },
-                      label: const Text('Negociar'),
-                      icon: const Icon(Icons.check))
-                ],
-              )
-            : const SizedBox.shrink())
-      ],
-    );
-  }
-} */
-
 class LoadInformation extends StatelessWidget {
   const LoadInformation({
     Key? key,
@@ -609,85 +484,23 @@ class _LoadsState extends State<Loads> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(
-      FutureBuilder<List<Load>>(
+    return WillPopScope(
+      child: BaseApp(
+        FutureBuilder<List<Load>>(
           future: getLoads(),
           builder: (context, snapshot) =>
               snapshot.connectionState == ConnectionState.done
                   ? LoadsMap()
-                  : const Center(child: CircularProgressIndicator())),
+                  : const Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      onWillPop: () => Future(() {
+        Navigator.pop(context);
+        return true;
+      }),
     );
   }
 }
-
-/* class LoadCard extends StatelessWidget {
-  LoadCard(
-    this.load, {
-    Key? key,
-  }) : super(key: key);
-  Load load;
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-        margin: const EdgeInsets.only(bottom: 15),
-        elevation: 10,
-        child: GestureDetector(
-          // onTap: () => Navigator.of(context)
-          //     .push(MaterialPageRoute(builder: (context) => LoadInfo(load))),
-          onTap: () => onLoadTap(load.id, context),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: double.infinity,
-            child: Row(
-              children: [
-                CircleAvatar(
-                  maxRadius: 50,
-                  minRadius: 50,
-                  backgroundColor: Colors.white,
-                  child: load.attachments.isNotEmpty
-                      ? Image.network(
-                          imgUrl + load.attachments[0]['filename'],
-                          loadingBuilder: (context, child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return Center(
-                                child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ));
-                          },
-                        )
-                      : Image.asset(
-                          'assets/img/noimage.png',
-                          fit: BoxFit.fitWidth,
-                        ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(load.product != '' ? load.product : 'Producto'),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(load.initialOffer.toString()),
-                        Text(load.addressFrom),
-                      ],
-                    )
-                  ],
-                )
-              ],
-            ),
-          ),
-        ));
-  }
-} */
 
 class LoadsMap extends StatefulWidget {
   LoadsMap({Key? key}) : super(key: key);
@@ -736,6 +549,7 @@ class _LoadsMapState extends State<LoadsMap>
         const ImageConfiguration(), 'assets/img/load-marker-icon.png');
     markers.clear();
     loads.asMap().forEach((key, load) {
+      print(load.addressFrom);
       markers.add(
         Marker(
           markerId: MarkerId(load.id.toString()),
@@ -874,6 +688,9 @@ class _LoadsMapState extends State<LoadsMap>
             child: IconButton(
               color: kBlack,
               onPressed: () async {
+                loads = await getLoads();
+                print('cantidad de cargas: ' + loads.length.toString());
+                setLoadsMarkers(position);
                 setState(() {});
               },
               icon: const Icon(Icons.refresh),

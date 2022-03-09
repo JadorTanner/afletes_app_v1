@@ -40,24 +40,26 @@ TextEditingController passwordConfirmation = TextEditingController();
 Future getData(context) async {
   await getStates();
   await getCities();
-
-  showDialog(
+  if (userType.text == '') {
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
-            title: const Text('Cómo quieres registrarte?'),
-            actions: [
-              TextButton(
-                onPressed: () =>
-                    {userType.text = 'load_generator', Navigator.pop(context)},
-                child: const Text('Generador de carga'),
-              ),
-              TextButton(
-                onPressed: () =>
-                    {userType.text = 'carrier', Navigator.pop(context)},
-                child: const Text('Transportista'),
-              ),
-            ],
-          ));
+        title: const Text('Cómo quieres registrarte?'),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                {userType.text = 'load_generator', Navigator.pop(context)},
+            child: const Text('Generador de carga'),
+          ),
+          TextButton(
+            onPressed: () =>
+                {userType.text = 'carrier', Navigator.pop(context)},
+            child: const Text('Transportista'),
+          ),
+        ],
+      ),
+    );
+  }
 
   return true;
 }
@@ -394,7 +396,6 @@ class SegundaParte extends StatelessWidget {
                     Icons.home,
                     street2,
                     hint: 'esq. #',
-                    action: TextInputAction.done,
                   ),
                 ),
                 const SizedBox(
@@ -406,7 +407,6 @@ class SegundaParte extends StatelessWidget {
                     Icons.home,
                     houseNumber,
                     hint: '1234',
-                    action: TextInputAction.done,
                   ),
                 ),
               ],
@@ -460,11 +460,13 @@ class _UbicacionPickerState extends State<UbicacionPicker> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        StatePicker(
-          (newVal) => setState(
-            () {
-              stateId = newVal;
-            },
+        Flexible(
+          child: StatePicker(
+            (newVal) => setState(
+              () {
+                stateId = newVal;
+              },
+            ),
           ),
         ),
         const SizedBox(
@@ -502,6 +504,7 @@ class _StatePickerState extends State<StatePicker> {
       icon: const Icon(Icons.arrow_downward),
       elevation: 16,
       style: const TextStyle(color: Colors.deepPurple),
+      isExpanded: true,
       underline: Container(
         height: 2,
         color: Colors.deepPurpleAccent,
@@ -553,6 +556,7 @@ class _CitiesPickerState extends State<CitiesPicker> {
         icon: const Icon(Icons.arrow_downward),
         elevation: 16,
         style: const TextStyle(color: Colors.deepPurple),
+        isExpanded: true,
         underline: Container(
           height: 2,
           color: Colors.deepPurpleAccent,

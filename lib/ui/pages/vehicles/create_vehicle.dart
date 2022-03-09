@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -205,7 +206,7 @@ class DatosGenerales extends StatelessWidget {
                   height: 20,
                 ),
                 //chapa
-                VehicleFormField(chapaController, 'Dominio o chapa *'),
+                CustomFormField(chapaController, 'Dominio o chapa *'),
                 const SizedBox(
                   height: 20,
                 ),
@@ -222,7 +223,7 @@ class DatosGenerales extends StatelessWidget {
                     ),
                     //Modelo
                     Flexible(
-                      child: VehicleFormField(
+                      child: CustomFormField(
                         modeloController,
                         'Modelo *',
                       ),
@@ -243,7 +244,7 @@ class DatosGenerales extends StatelessWidget {
                     ),
                     //Peso
                     Flexible(
-                      child: VehicleFormField(
+                      child: CustomFormField(
                         pesoController,
                         'Peso *',
                         type: const TextInputType.numberWithOptions(
@@ -256,7 +257,7 @@ class DatosGenerales extends StatelessWidget {
                   height: 20,
                 ),
 
-                VehicleFormField(
+                CustomFormField(
                   fabricacionController,
                   'Año de producción *',
                   type: const TextInputType.numberWithOptions(decimal: true),
@@ -574,15 +575,15 @@ class _SendButtonState extends State<SendButton> {
                 context: context,
                 update: hasVehicleData,
                 vehicleId: vehicleId,
-                greenCard: XFile(greenCard),
-                greenCardBack: XFile(greenCardBack),
-                municipal: XFile(municipal),
-                municipalBack: XFile(municipalBack),
-                senacsa: XFile(senacsa),
-                senacsaBack: XFile(senacsaBack),
-                dinatran: XFile(dinatran),
-                dinatranBack: XFile(dinatranBack),
-                insurance: XFile(seguro),
+                greenCard: greenCard,
+                greenCardBack: greenCardBack,
+                municipal: municipal,
+                municipalBack: municipalBack,
+                senacsa: senacsa,
+                senacsaBack: senacsaBack,
+                dinatran: dinatran,
+                dinatranBack: dinatranBack,
+                insurance: seguro,
               );
             },
       child: Row(
@@ -728,8 +729,10 @@ class _ImagesPickerState extends State<ImagesPicker> {
       child: Container(
         width: double.infinity,
         height: 200,
-        color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
-        child: imagenesNetwork.isNotEmpty
+        color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+            ? Colors.transparent
+            : Colors.grey[200],
+        child: (imagenesNetwork.isNotEmpty || imagenes.isNotEmpty)
             ? Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
@@ -739,10 +742,16 @@ class _ImagesPickerState extends State<ImagesPicker> {
                       currentImage = value;
                     }),
                     children: List.generate(
-                      imagenesNetwork.length,
-                      (index) => Image.network(
-                        vehicleImgUrl + imagenesNetwork[index],
-                      ),
+                      imagenesNetwork.isNotEmpty
+                          ? imagenesNetwork.length
+                          : imagenes.length,
+                      (index) => imagenesNetwork.isNotEmpty
+                          ? Image.network(
+                              vehicleImgUrl + imagenesNetwork[index],
+                            )
+                          : Image.file(
+                              File(imagenes[index].path),
+                            ),
                     ),
                   ),
                   Positioned(
@@ -750,7 +759,9 @@ class _ImagesPickerState extends State<ImagesPicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        imagenesNetwork.length,
+                        imagenesNetwork.isNotEmpty
+                            ? imagenesNetwork.length
+                            : imagenes.length,
                         (index) => Container(
                           width: 10,
                           height: 10,
@@ -919,7 +930,7 @@ class _DatePickerState extends State<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return VehicleFormField(
+    return CustomFormField(
       widget.controller,
       widget.title,
       onFocus: () => _selectDate(context),
@@ -954,7 +965,7 @@ class Load_TimePickerState extends State<LoadTimePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return VehicleFormField(
+    return CustomFormField(
       widget.controller,
       widget.title,
       onFocus: () => _selectTime(context),
@@ -1031,51 +1042,6 @@ class PrevPageButton extends StatelessWidget {
             style: TextStyle(color: Colors.white),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class VehicleFormField extends StatelessWidget {
-  VehicleFormField(this.controller, this.label,
-      {this.maxLength = 255,
-      this.type = TextInputType.text,
-      this.autofocus = false,
-      this.showCursor = null,
-      this.readOnly = false,
-      this.onFocus = null,
-      this.icon = null,
-      this.action = TextInputAction.next,
-      Key? key})
-      : super(key: key);
-  bool autofocus;
-  bool? showCursor;
-  bool readOnly;
-  var onFocus;
-  TextEditingController controller;
-  TextInputType type;
-  int maxLength;
-  Icon? icon;
-  String label;
-  TextInputAction action;
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      onTap: onFocus,
-      showCursor: showCursor,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      controller: controller,
-      keyboardType: type,
-      maxLength: maxLength != 255 ? maxLength : null,
-      textInputAction: action,
-      decoration: InputDecoration(
-        prefixIcon: icon,
-        label: Text(label),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 5,
-          horizontal: 20,
-        ),
       ),
     );
   }

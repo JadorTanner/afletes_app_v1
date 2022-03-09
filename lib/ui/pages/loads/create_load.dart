@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/components/date_picker.dart';
+import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/location_service.dart';
@@ -234,7 +236,7 @@ class DatosGenerales extends StatelessWidget {
                   height: 20,
                 ),
                 //producto
-                LoadFormField(productController, 'Producto *', maxLength: 10),
+                CustomFormField(productController, 'Producto *', maxLength: 10),
                 const SizedBox(
                   height: 20,
                 ),
@@ -259,7 +261,7 @@ class DatosGenerales extends StatelessWidget {
                   children: [
                     //Peso
                     Flexible(
-                      child: LoadFormField(
+                      child: CustomFormField(
                         pesoController,
                         'Peso *',
                         type: const TextInputType.numberWithOptions(
@@ -272,7 +274,7 @@ class DatosGenerales extends StatelessWidget {
                     ),
                     //Volumen
                     Flexible(
-                      child: LoadFormField(
+                      child: CustomFormField(
                         volumenController,
                         'Volumen',
                         type: const TextInputType.numberWithOptions(
@@ -289,7 +291,7 @@ class DatosGenerales extends StatelessWidget {
                   children: [
                     //Vehiculos requeridos
                     Flexible(
-                      child: LoadFormField(
+                      child: CustomFormField(
                         vehiculosController,
                         'Cant. vehículos *',
                         type: TextInputType.number,
@@ -301,7 +303,7 @@ class DatosGenerales extends StatelessWidget {
                     ),
                     //Ayudante requeridos
                     Flexible(
-                      child: LoadFormField(
+                      child: CustomFormField(
                         ayudantesController,
                         'Ayudantes *',
                         type: TextInputType.number,
@@ -314,7 +316,7 @@ class DatosGenerales extends StatelessWidget {
                   height: 20,
                 ),
                 //Precio
-                LoadFormField(
+                CustomFormField(
                   ofertaInicialController,
                   'Oferta inicial *',
                   type: TextInputType.number,
@@ -324,7 +326,7 @@ class DatosGenerales extends StatelessWidget {
                   height: 20,
                 ),
                 //Descripción
-                LoadFormField(descriptionController, 'Descripción *',
+                CustomFormField(descriptionController, 'Descripción *',
                     type: TextInputType.multiline,
                     action: TextInputAction.newline,
                     maxLines: 5,
@@ -623,7 +625,7 @@ class _DatosUbicacionState extends State<DatosUbicacion> {
             ),
             SearchPlace(originAddressController, originCoordsController),
             Visibility(
-              child: LoadFormField(originCoordsController, 'Coordenadas'),
+              child: CustomFormField(originCoordsController, 'Coordenadas'),
               visible: false,
             ),
             const SizedBox(
@@ -765,7 +767,7 @@ class _SearchPlaceState extends State<SearchPlace>
         Row(
           children: [
             Flexible(
-              child: LoadFormField(
+              child: CustomFormField(
                 widget.addressController,
                 'Dirección *',
                 action: TextInputAction.done,
@@ -775,11 +777,15 @@ class _SearchPlaceState extends State<SearchPlace>
               width: 20,
             ),
             TextButton(
-              onPressed: () async {
-                Map<String, dynamic> place = await LocationService()
-                    .getPlace(widget.addressController.text);
-                goToPlace(place);
-              },
+              onPressed: loading
+                  ? () {}
+                  : () async {
+                      setState(() => loading = !loading);
+                      Map<String, dynamic> place = await LocationService()
+                          .getPlace(widget.addressController.text);
+                      goToPlace(place);
+                      setState(() => loading = !loading);
+                    },
               style: ButtonStyle(
                 side: MaterialStateProperty.all<BorderSide>(const BorderSide(
                     style: BorderStyle.solid, width: 1, color: Colors.grey)),
@@ -840,7 +846,9 @@ class StateAndCityPicker extends StatefulWidget {
 }
 
 class _StateAndCityPickerState extends State<StateAndCityPicker> {
-  String departamentoId = states[0].id.toString();
+  String departamentoId = originStateController.text != ''
+      ? originStateController.text
+      : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
   @override
@@ -921,7 +929,7 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
               height: 20,
             ),
             Visibility(
-              child: LoadFormField(destinCoordsController, 'Coordenadas'),
+              child: CustomFormField(destinCoordsController, 'Coordenadas'),
               visible: false,
             ),
             const SizedBox(
@@ -969,7 +977,9 @@ class DestinStateAndCityPicker extends StatefulWidget {
 }
 
 class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
-  String departamentoId = states[0].id.toString();
+  String departamentoId = destinStateController.text != ''
+      ? destinStateController.text
+      : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
   @override
@@ -1011,7 +1021,10 @@ class DepartamentoPicker extends StatefulWidget {
 }
 
 class _DepartamentoPickerState extends State<DepartamentoPicker> {
-  late String value = states[0].id.toString();
+  late String value = widget.controller.text != ''
+      ? widget.controller.text
+      : states[0].id.toString();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -1164,7 +1177,7 @@ class PaginaFinal extends StatelessWidget {
               Row(
                 children: [
                   Flexible(
-                    child: LoadFormField(
+                    child: CustomFormField(
                       esperaCargaController,
                       'Espera en carga',
                       type: TextInputType.number,
@@ -1174,7 +1187,7 @@ class PaginaFinal extends StatelessWidget {
                     width: 20,
                   ),
                   Flexible(
-                    child: LoadFormField(
+                    child: CustomFormField(
                         esperaDescargaController, 'Espera en descarga',
                         type: TextInputType.number),
                   ),
@@ -1189,7 +1202,7 @@ class PaginaFinal extends StatelessWidget {
                     child: IsUrgent(),
                   ),
                   // Flexible(
-                  //     child: LoadFormField(
+                  //     child: CustomFormField(
                   //   loadDateController,
                   //   'Cargar Imágenes',
                   //   onFocus: () => _picker,
@@ -1210,7 +1223,7 @@ class PaginaFinal extends StatelessWidget {
               ),
 
               //Descripción
-              LoadFormField(
+              CustomFormField(
                 observacionesController,
                 'Observaciones',
                 type: TextInputType.multiline,
@@ -1332,82 +1345,6 @@ class _IsUrgentState extends State<IsUrgent> {
   }
 }
 
-class DatePicker extends StatefulWidget {
-  DatePicker(this.controller, this.title, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  String title;
-  @override
-  State<DatePicker> createState() => _DatePickerState();
-}
-
-class _DatePickerState extends State<DatePicker> {
-  DateTime selectedDate = DateTime.now();
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-        widget.controller.text = selectedDate.year.toString() +
-            '-' +
-            selectedDate.month.toString() +
-            '-' +
-            selectedDate.day.toString();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LoadFormField(
-      widget.controller,
-      widget.title,
-      onFocus: () => _selectDate(context),
-      showCursor: true,
-      readOnly: true,
-    );
-  }
-}
-
-class LoadTimePicker extends StatefulWidget {
-  LoadTimePicker(this.controller, this.title, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  String title;
-  @override
-  State<LoadTimePicker> createState() => LoadTimePickerState();
-}
-
-class LoadTimePickerState extends State<LoadTimePicker> {
-  TimeOfDay selectedTime = TimeOfDay.now();
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked =
-        await showTimePicker(context: context, initialTime: selectedTime);
-    if (picked != null && picked != selectedTime) {
-      setState(() {
-        selectedTime = picked;
-        widget.controller.text =
-            selectedTime.hour.toString() + ':' + selectedTime.minute.toString();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LoadFormField(
-      widget.controller,
-      widget.title,
-      onFocus: () => _selectTime(context),
-      showCursor: true,
-      readOnly: true,
-    );
-  }
-}
-
 //COMPONENTES
 
 class NextPageButton extends StatelessWidget {
@@ -1479,62 +1416,6 @@ class PrevPageButton extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class LoadFormField extends StatelessWidget {
-  LoadFormField(this.controller, this.label,
-      {this.maxLength = 255,
-      this.maxLines = 1,
-      this.radius = 10,
-      this.type = TextInputType.text,
-      this.autofocus = false,
-      this.showCursor = null,
-      this.readOnly = false,
-      this.onFocus = null,
-      this.icon = null,
-      this.defaultValue = '',
-      this.action = TextInputAction.next,
-      Key? key})
-      : super(key: key);
-  bool autofocus;
-  bool? showCursor;
-  bool readOnly;
-  var onFocus;
-  TextEditingController controller;
-  TextInputType type;
-  int maxLength;
-  int maxLines;
-  double radius;
-  Icon? icon;
-  String label;
-  String defaultValue;
-  TextInputAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    controller.text = defaultValue;
-    return TextField(
-      onTap: onFocus,
-      maxLines: maxLines,
-      showCursor: showCursor,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      controller: controller,
-      keyboardType: type,
-      textInputAction: action,
-      maxLength: maxLength != 255 ? maxLength : null,
-      decoration: InputDecoration(
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(radius))),
-          prefixIcon: icon,
-          label: Text(label),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 5,
-            horizontal: 20,
-          )),
     );
   }
 }

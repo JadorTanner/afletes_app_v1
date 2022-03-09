@@ -68,19 +68,26 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
       receiverId = jsonResp['data']['negotiation']
           [user.isCarrier ? 'generator_id' : 'transportist_id'];
       print(jsonResp['data']['negotiation_state']['id']);
+      context.read<ChatProvider>().setCanOffer(false);
+      context.read<ChatProvider>().setPaid(false);
+      context.read<ChatProvider>().setCanVote(false);
+      context.read<ChatProvider>().setShowDefaultMessages(false);
+      context.read<ChatProvider>().setToPay(false);
       //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
       switch (jsonResp['data']['negotiation_state']['id']) {
         case 1:
-          Provider.of(context)<ChatProvider>().setCanOffer(true);
+          context.read<ChatProvider>().setCanOffer(true);
+          context.read<ChatProvider>().setPaid(false);
+          context.read<ChatProvider>().setCanVote(false);
+          context.read<ChatProvider>().setShowDefaultMessages(false);
+          context.read<ChatProvider>().setToPay(false);
           break;
         case 2:
-          Provider.of(context)<ChatProvider>().setCanOffer(false);
-          Provider.of(context)<ChatProvider>().setPaid(false);
-          Provider.of(context)<ChatProvider>().setCanVote(false);
-          Provider.of(context)<ChatProvider>().setShowDefaultMessages(false);
-          if (user.isLoadGenerator) {
-            Provider.of(context)<ChatProvider>().setToPay(true);
-          }
+          context.read<ChatProvider>().setCanOffer(false);
+          context.read<ChatProvider>().setPaid(false);
+          context.read<ChatProvider>().setCanVote(false);
+          context.read<ChatProvider>().setShowDefaultMessages(false);
+          context.read<ChatProvider>().setToPay(true);
           break;
         case 6:
           Provider.of(context)<ChatProvider>().setCanOffer(true);
@@ -281,7 +288,13 @@ class _NegotiationChatState extends State<NegotiationChat> {
           ),
         ),
         onWillPop: () => Future(() {
-              Provider.of(context)<ChatProvider>().setNegotiationId(0);
+              context.read<ChatProvider>().setNegotiationId(0);
+              context.read<ChatProvider>().setCanOffer(false);
+              context.read<ChatProvider>().setPaid(false);
+              context.read<ChatProvider>().setCanVote(false);
+              context.read<ChatProvider>().setShowDefaultMessages(false);
+              context.read<ChatProvider>().setToPay(false);
+
               return true;
             }));
   }
