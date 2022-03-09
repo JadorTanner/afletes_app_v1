@@ -24,11 +24,10 @@ class Vehicles extends StatefulWidget {
 }
 
 class _VehiclesState extends State<Vehicles> {
-  Future<List> getVehicles([int? id = null]) async {
+  Future<List> getVehicles(String url, [int? id = null]) async {
     try {
       vehicles.clear();
-      Response response =
-          await Api().getData('user/find-vehicles?page=' + page.toString());
+      Response response = await Api().getData(url + 'page=' + page.toString());
       if (response.statusCode == 200) {
         Map jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success']) {
@@ -38,16 +37,15 @@ class _VehiclesState extends State<Vehicles> {
                   id: vehicle['id'],
                   licensePlate: vehicle['license_plate'],
                   senacsa:
-                      vehicle['senacsa_authorization_attachment_id'] != null
-                          ? true
-                          : false,
+                      vehicle['senacsa_authorization_attachment_id'] != null,
                   dinatran:
-                      vehicle['dinatran_authorization_attachment_id'] != null
-                          ? true
-                          : false,
-                  // owner: vehicle['owner_name'] != null
-                  //     ? User(fullName: vehicle['owner_name'])
-                  //     : null,
+                      vehicle['dinatran_authorization_attachment_id'] != null,
+                  model: vehicle['model'],
+                  score: vehicle['score'],
+                  owner: vehicle['created_by'] != null
+                      ? User(fullName: vehicle['created_by']['full_name'])
+                      : null,
+                  seguro: vehicle['insurance_attachment_id'] != null,
                   imgs: vehicle['vehicleattachments'] ?? ''));
             }
           }
@@ -64,14 +62,20 @@ class _VehiclesState extends State<Vehicles> {
   Widget build(BuildContext context) {
     return BaseApp(
       FutureBuilder(
-        future: getVehicles(widget.id),
+        future: getVehicles('user/find-vehicles?', widget.id),
         initialData: const [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.connectionState == ConnectionState.done) {
             return RefreshIndicator(
-                child: VehiclesList(), onRefresh: getVehicles);
+                backgroundColor: const Color(0xFFEBE3CD),
+                color: Colors.white,
+                child: VehiclesList(),
+                onRefresh: () async {
+                  // await getVehicles();
+                  setState(() {});
+                });
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -93,16 +97,6 @@ class _VehiclesListState extends State<VehiclesList> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // listViewController.addListener(() {
-    //   final position = listViewController.offset /
-    //       listViewController.position.maxScrollExtent;
-    //   if (position >= 0.8) {
-    //     print('final');
-    //     setState(() {
-    //       page += 1;
-    //     });
-    //   }
-    // });
   }
 
   onVehicleTap(int id, BuildContext context) async {
@@ -255,6 +249,17 @@ class _VehiclesListState extends State<VehiclesList> {
                                             const SizedBox(
                                               height: 30,
                                             ),
+                                            (snapshot.data!['data'].length > 0
+                                                ? const SizedBox.shrink()
+                                                : TextButton.icon(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pushNamed(
+                                                                '/create-load'),
+                                                    icon: const Icon(Icons.add),
+                                                    label: const Text(
+                                                        'Agregar carga'),
+                                                  )),
                                             ...List.generate(
                                                 snapshot.data!['data'].length,
                                                 (index) {
@@ -313,10 +318,13 @@ class _VehiclesListState extends State<VehiclesList> {
                                                           const SizedBox(
                                                             height: 10,
                                                           ),
-                                                          Text('Desde: ' +
-                                                              data['data']
-                                                                      [index]
-                                                                  ['address']),
+                                                          SizedBox(
+                                                            width: 200,
+                                                            child: Text('Desde: ' +
+                                                                data['data']
+                                                                        [index][
+                                                                    'address']),
+                                                          ),
                                                           const SizedBox(
                                                             height: 10,
                                                           ),
@@ -346,20 +354,7 @@ class _VehiclesListState extends State<VehiclesList> {
                                                         onPressed: () async {
                                                           try {
                                                             Api api = Api();
-                                                            loadingContext =
-                                                                context;
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) =>
-                                                                        const Dialog(
-                                                                          child:
-                                                                              Center(
-                                                                            child:
-                                                                                CircularProgressIndicator(),
-                                                                          ),
-                                                                        ));
+
                                                             Response response =
                                                                 await api.postData(
                                                                     'negotiation/start-negotiation',
@@ -371,6 +366,26 @@ class _VehiclesListState extends State<VehiclesList> {
                                                                   'vehicle_id':
                                                                       id
                                                                 });
+                                                            print(
+                                                                response.body);
+                                                            loadingContext =
+                                                                context;
+                                                            // showDialog(
+                                                            //     context:
+                                                            //         context,
+                                                            //     barrierColor: Colors
+                                                            //         .transparent,
+                                                            //     builder:
+                                                            //         (context) =>
+                                                            //             const Dialog(
+                                                            //               backgroundColor:
+                                                            //                   Colors.transparent,
+                                                            //               child:
+                                                            //                   Center(
+                                                            //                 child:
+                                                            //                     CircularProgressIndicator(),
+                                                            //               ),
+                                                            //             ));
 
                                                             if (response
                                                                     .statusCode ==
@@ -456,8 +471,8 @@ class _VehiclesListState extends State<VehiclesList> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
-      children: vehicles.length > 0
+      padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
+      children: vehicles.isNotEmpty
           ? List.generate(
               vehicles.length,
               (index) => CarCard2(

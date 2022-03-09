@@ -23,7 +23,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -127,28 +126,27 @@ class AfletesApp extends StatefulWidget {
 }
 
 class _AfletesAppState extends State<AfletesApp> {
-  getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
+  listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
-    if (user != null) {
-      try {
-        await Api().postData('user/set-device-token',
-            {'id': jsonDecode(user)['id'], 'device_token': token ?? ''});
-      } catch (e) {
-        return false;
-      }
-    }
-  }
-
-  listenNotifications() {
     NotificationsApi.onNotifications.stream.listen((event) {
       Map data = jsonDecode(event!);
       if (data['route'] == 'chat') {
-        if (navigatorKey.currentState != null) {
-          navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (context) => NegotiationChat(data['id']),
-          ));
+        if (data['id'] != null) {
+          if (navigatorKey.currentState != null) {
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => NegotiationChat(data['id']),
+            ));
+          }
+        } else {
+          if (user != null && user != 'null') {
+            navigatorKey.currentState!.pushReplacementNamed(
+                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+          } else {
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ));
+          }
         }
         // Navigator.of(context).pushReplacement(
         //   MaterialPageRoute(
@@ -159,19 +157,9 @@ class _AfletesAppState extends State<AfletesApp> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    getToken();
-
-    NotificationsApi.init();
-    listenNotifications();
-
-    pusherApi.init();
-
-// Bind to listen for events called "order-status-updated" sent to "private-orders" channel
-    pusherApi.bindEvent('App\\Events\\NegotiationChat',
+  initPusher() async {
+    PusherApi pusherapi = await pusherApi.init();
+    pusherapi.bindEvent('App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
       if (event != null) {
         if (event.data != null) {
@@ -224,6 +212,10 @@ class _AfletesAppState extends State<AfletesApp> {
                 if (jsonData['is_final_offer'] == 'true') {
                   context.read<ChatProvider>().setCanOffer(false);
                 }
+                if (jsonData['accepted'] != null) {
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(true);
+                }
               } else {
                 NotificationsApi.showNotification(
                   id: 10,
@@ -238,6 +230,16 @@ class _AfletesAppState extends State<AfletesApp> {
         }
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initPusher();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+
+    NotificationsApi.init();
+    listenNotifications();
 
     _determinePosition();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -266,12 +268,29 @@ class _AfletesAppState extends State<AfletesApp> {
       }
     });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      String? user = sharedPreferences.getString('user');
       if (navigatorKey.currentState != null) {
-        navigatorKey.currentState!.push(MaterialPageRoute(
-          builder: (context) =>
-              NegotiationChat(int.parse(message.data['negotiation_id'])),
-        ));
+        //SI EXISTE NEGOCIACION ID, LLEVA AL CHAT
+        if (message.data['negotiation_id'] != null) {
+          navigatorKey.currentState!.push(MaterialPageRoute(
+            builder: (context) =>
+                NegotiationChat(int.parse(message.data['negotiation_id'])),
+          ));
+        } else {
+          if (user != null) {
+            //SI EXISTE USUARIO, LLEVA A BUSCAR CARGAS O VEHICULOS
+            navigatorKey.currentState!.pushReplacementNamed(
+                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+          } else {
+            //SI NO EXISTE USUARIO, LLEVA A LOGIN
+            navigatorKey.currentState!.push(MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ));
+          }
+        }
       }
     });
   }
@@ -280,6 +299,28 @@ class _AfletesAppState extends State<AfletesApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Afletes',
+      theme: ThemeData(
+        dividerColor: const Color(0xBBF58633),
+        primaryColor: const Color(0xFFF58633),
+        backgroundColor: const Color(0xFFF58633),
+        textTheme: const TextTheme(
+          bodyText1: TextStyle(color: Color(0xFF101010)),
+          bodyText2: TextStyle(
+              color: Color(0xFF101010), fontWeight: FontWeight.normal),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(50),
+            ),
+            borderSide: BorderSide(
+              color: Color(0xFFBDBDBD),
+              width: 1,
+              style: BorderStyle.solid,
+            ),
+          ),
+        ),
+      ),
       initialRoute: '/splash_screen',
       debugShowCheckedModeBanner: false,
       routes: {

@@ -56,122 +56,140 @@ class _PaymentState extends State<Payment> {
                     data['data']['generator']['first_name'];
             ruc.text = data['data']['generator']['document_number'];
             method.text = '0';
-            return ListView(padding: const EdgeInsets.all(20), children: [
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    'Tu pedido',
-                    textScaleFactor: 1.3,
-                  ),
+            return ListView(
+                padding: const EdgeInsets.only(
+                  top: 60,
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
                 ),
-              ),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      TextField(
-                        controller: razon,
-                        decoration: const InputDecoration(
-                            label: Text('Razón social *')),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextField(
-                        controller: ruc,
-                        decoration:
-                            const InputDecoration(label: Text('RUC / C.I. *')),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      newRow(
-                          'Vehículo',
-                          data['data']['vehicle']['brand'] +
-                              ' - ' +
-                              data['data']['vehicle']['model']),
-                      newRow('Producto', data['data']['load']['product']),
-                      newRow(
-                          'Descripción', data['data']['load']['description']),
-                      newRow('Cantidad de vehículos',
-                          data['data']['load']['vehicles_quantity'].toString()),
-                      newRow('Cantidad de ayudantes',
-                          data['data']['load']['helpers_quantity'].toString()),
-                      newRow('Peso', data['data']['load']['weight'].toString()),
-                      newRow(
-                          'Volumen', data['data']['load']['volume'].toString()),
-                      newRow(
-                          'Precio',
-                          data['data']['load']['final_offer']
-                              .toString()
-                              .replaceAll('.00', '')),
-                      newRow('Dirección de partida',
-                          data['data']['load']['address']),
-                      newRow('Dirección de destino',
-                          data['data']['load']['destination_address']),
-                    ],
-                  ),
-                ),
-              ),
-              Card(
-                  child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: PaymentMethods(data['data']['saldo_transportista']),
-              )),
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
                 children: [
-                  TextButton.icon(
-                      onPressed: () async {
-                        try {
-                          Api api = Api();
+                  const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        'Tu pedido',
+                        textScaleFactor: 1.3,
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          TextField(
+                            controller: razon,
+                            decoration: const InputDecoration(
+                                label: Text('Razón social *'),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 20)),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          TextField(
+                            controller: ruc,
+                            decoration: const InputDecoration(
+                                label: Text('RUC / C.I. *'),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 20)),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          newRow(
+                              'Vehículo',
+                              data['data']['vehicle']['brand'] +
+                                  ' - ' +
+                                  data['data']['vehicle']['model']),
+                          newRow('Producto', data['data']['load']['product']),
+                          newRow('Descripción',
+                              data['data']['load']['description']),
+                          newRow(
+                              'Cantidad de vehículos',
+                              data['data']['load']['vehicles_quantity']
+                                  .toString()),
+                          newRow(
+                              'Cantidad de ayudantes',
+                              data['data']['load']['helpers_quantity']
+                                  .toString()),
+                          newRow('Peso',
+                              data['data']['load']['weight'].toString()),
+                          (data['data']['load']['volume'] != null
+                              ? newRow('Volumen',
+                                  data['data']['load']['volume'].toString())
+                              : const SizedBox.shrink()),
+                          newRow(
+                              'Precio',
+                              data['data']['load']['final_offer']
+                                  .toString()
+                                  .replaceAll('.00', '')),
+                          newRow('Dirección de partida',
+                              data['data']['load']['address']),
+                          newRow('Dirección de destino',
+                              data['data']['load']['destination_address']),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                      child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: PaymentMethods(data['data']['saldo_transportista']),
+                  )),
+                  ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton.icon(
+                          onPressed: () async {
+                            try {
+                              Api api = Api();
+                              print('requesteando');
+                              Response response = await api
+                                  .postData('negotiation/pay-negotiation', {
+                                'amount': data['data']['load']['final_offer']
+                                    .toString()
+                                    .replaceAll('.00', ''),
+                                'negotiation_id': widget.id
+                              });
+                              print(response.body);
 
-                          Response response = await api
-                              .postData('negotiation/pay-negotiation', {
-                            'amount': data['data']['load']['final_offer']
-                                .toString()
-                                .replaceAll('.00', ''),
-                            'negotiation_id': widget.id
-                          });
-                          print(response.body);
-
-                          Map jsonResponse = jsonDecode(response.body);
-                          if (response.statusCode == 200) {
-                            if (jsonResponse['process_id'] != '') {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => Dialog(
-                                        child: SizedBox(
-                                          child: WebView(
-                                            initialUrl: apiUrl +
-                                                'bancard-view?process_id=' +
-                                                jsonResponse['data']
-                                                    ['process_id'],
-                                            javascriptMode:
-                                                JavascriptMode.unrestricted,
+                              Map jsonResponse = jsonDecode(response.body);
+                              if (response.statusCode == 200) {
+                                if (jsonResponse['process_id'] != '') {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => Dialog(
+                                            child: SizedBox(
+                                              child: WebView(
+                                                initialUrl: apiUrl +
+                                                    'bancard-view?process_id=' +
+                                                    jsonResponse['data']
+                                                        ['process_id'],
+                                                javascriptMode:
+                                                    JavascriptMode.unrestricted,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                  barrierDismissible: false);
+                                      barrierDismissible: false);
+                                }
+                              } else {
+                                print(response.body);
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Compruebe su conexión a internet')));
                             }
-                          } else {
-                            print(response.body);
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Compruebe su conexión a internet')));
-                        }
-                      },
-                      icon: Icon(Icons.attach_money),
-                      label: Text('Realizar el pago'))
-                ],
-              )
-            ]);
+                          },
+                          icon: Icon(Icons.attach_money),
+                          label: Text('Realizar el pago'))
+                    ],
+                  )
+                ]);
           } else {
             return const Center(
               child: CircularProgressIndicator(),
@@ -211,6 +229,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Seleccione un método de pago',

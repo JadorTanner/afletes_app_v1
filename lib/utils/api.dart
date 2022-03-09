@@ -25,24 +25,21 @@ class Api {
     var fullUrl = _url + apiURL;
     print(fullUrl);
     await getToken();
-    return await http
-        .get(
-          Uri.parse(fullUrl),
-          headers: setHeaders(),
-        )
-        .timeout(Duration(seconds: 2));
+    return await http.get(
+      Uri.parse(fullUrl),
+      headers: setHeaders(),
+    );
   }
 
   postData(apiURL, body) async {
     var fullUrl = _url + apiURL;
+    print(fullUrl);
     await getToken();
-    return await http
-        .post(
-          Uri.parse(fullUrl),
-          body: jsonEncode(body),
-          headers: setHeaders(),
-        )
-        .timeout(Duration(seconds: 2));
+    return await http.post(
+      Uri.parse(fullUrl),
+      body: jsonEncode(body),
+      headers: setHeaders(),
+    );
   }
 
   postWithFiles(apiURL, Map body, List<XFile> files) async {

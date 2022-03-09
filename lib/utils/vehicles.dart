@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/validate_code.dart';
+import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Vehicle {
-  int id, ownerId, yearOfProd, brand, measurementUnitId;
+  int id, ownerId, yearOfProd, brand, measurementUnitId, score;
   double maxCapacity;
   String observation,
       licensePlate,
@@ -24,6 +27,7 @@ class Vehicle {
 
   Vehicle({
     this.id = 0,
+    this.score = 5,
     this.measurementUnitId = 0,
     this.brand = 0,
     this.ownerId = 0,
@@ -62,101 +66,135 @@ class Vehicle {
     XFile? senacsaBack,
     XFile? insurance,
   }) async {
-    try {
-      Api api = Api();
-      if (update) {
-        body.addEntries([MapEntry('id', vehicleId)]);
-      }
+    // try {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    Map user = jsonDecode(sharedPreferences.getString('user')!);
 
-      var fullUrl = apiUrl +
-          (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
+    Api api = Api();
+    if (update) {
+      body.addEntries([MapEntry('id', vehicleId)]);
+    }
 
-      String token = await api.getToken();
-      MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
-      Map headers = api.setHeaders();
-      headers.forEach((key, value) {
-        request.headers[key] = value;
-      });
-      body.forEach((key, value) {
-        request.fields[key] = value.toString();
-      });
+    var fullUrl =
+        apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
-      //DOCUMENTOS
-      if (greenCard != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_green_card_attachment', greenCard.path));
-      }
-      if (greenCardBack != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_green_card_back_attachment', greenCardBack.path));
-      }
-      if (municipal != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_authorization_attachment', municipal.path));
-      }
-      if (municipalBack != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_authorization_back_attachment', municipalBack.path));
-      }
-      if (dinatran != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'dinatran_authorization_attachment', dinatran.path));
-      }
-      if (dinatranBack != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'dinatran_authorization_back_attachment', dinatranBack.path));
-      }
-      if (senacsa != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'senacsa_authorization_attachment', senacsa.path));
-      }
-      if (senacsaBack != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'senacsa_authorization_back_attachment', senacsaBack.path));
-      }
-      if (insurance != null) {
-        request.files.add(await MultipartFile.fromPath(
-            'insurance_attachment', insurance.path));
-      }
+    String token = await api.getToken();
+    MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
+    Map headers = api.setHeaders();
+    headers.forEach((key, value) {
+      request.headers[key] = value;
+    });
+    body.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
 
-      imagenes.forEach((file) async {
-        request.files
-            .add(await MultipartFile.fromPath('imagenes[]', file.path));
-      });
+    //DOCUMENTOS
+    if (greenCard != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'vehicle_green_card_attachment', greenCard.path));
+    }
+    if (greenCardBack != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'vehicle_green_card_back_attachment', greenCardBack.path));
+    }
+    if (municipal != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'vehicle_authorization_attachment', municipal.path));
+    }
+    if (municipalBack != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'vehicle_authorization_back_attachment', municipalBack.path));
+    }
+    if (dinatran != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'dinatran_authorization_attachment', dinatran.path));
+    }
+    if (dinatranBack != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'dinatran_authorization_back_attachment', dinatranBack.path));
+    }
+    if (senacsa != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'senacsa_authorization_attachment', senacsa.path));
+    }
+    if (senacsaBack != null) {
+      request.files.add(await MultipartFile.fromPath(
+          'senacsa_authorization_back_attachment', senacsaBack.path));
+    }
+    if (insurance != null) {
+      request.files.add(
+          await MultipartFile.fromPath('insurance_attachment', insurance.path));
+    }
 
-      StreamedResponse response = await request.send();
-      Map responseBody = jsonDecode(await response.stream.bytesToString());
-      print(responseBody);
-      if (response.statusCode == 200) {
-        if (responseBody['success']) {
-          if (context != null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-            Future.delayed(const Duration(seconds: 1),
-                () => {Navigator.of(context).pop()});
+    imagenes.forEach((file) async {
+      request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
+    });
+
+    // showDialog(
+    //   context: context,
+    //   barrierDismissible: false,
+    //   builder: (context) => const Dialog(
+    //     backgroundColor: Colors.transparent,
+    //     child: Center(
+    //       child: CircularProgressIndicator(),
+    //     ),
+    //   ),
+    // );
+    StreamedResponse response = await request.send();
+    Map responseBody = jsonDecode(await response.stream.bytesToString());
+    print(responseBody);
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      if (responseBody['success']) {
+        if (context != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          if (user['confirmed']) {
+            if (user['habilitado']) {
+              Future.delayed(
+                  const Duration(seconds: 1),
+                  () => {
+                        Navigator.of(context)
+                            .pushReplacementNamed('/my-vehicles')
+                      });
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const WaitHabilitacion(),
+                ),
+              );
+            }
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const ValidateCode(),
+              ),
+            );
           }
-          return true;
-        } else {
-          if (context != null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-            Future.delayed(const Duration(seconds: 1),
-                () => {Navigator.of(context).pop()});
-          }
-          return false;
         }
+        return true;
       } else {
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-          // Future.delayed(
-          //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+          Future.delayed(
+              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
         }
+        return false;
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
-      return false;
+    } else {
+      Navigator.pop(context);
+      if (context != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+        // Future.delayed(
+        //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+      }
     }
+    // } catch (e) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Compruebe su conexión a internet')));
+    //   return false;
+    // }
   }
 }

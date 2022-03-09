@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_init_to_null
 import 'dart:convert';
 
+import 'package:afletes_app_v1/ui/pages/validate_code.dart';
+import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -73,8 +76,18 @@ class User extends ChangeNotifier {
     if (userStored != null) {
       Map userJson = jsonDecode(userStored);
       notifyListeners();
-      Navigator.of(context)
-          .pushReplacementNamed(userJson['is_carrier'] ? 'loads' : '/vehicles');
+      if (userJson['confirmed']) {
+        if (userJson['habilitado']) {
+          Navigator.of(context).pushReplacementNamed(
+              userJson['is_carrier'] ? 'loads' : '/vehicles');
+        } else {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => const WaitHabilitacion()));
+        }
+      } else {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ValidateCode()));
+      }
     } else {
       bool emailValid = RegExp(
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -87,7 +100,6 @@ class User extends ChangeNotifier {
             'email': email,
             'password': password,
           }, 'login');
-          print(response.body);
           if (response.statusCode == 200) {
             Map responseBody = jsonDecode(response.body);
             if (responseBody['success']) {
@@ -224,8 +236,6 @@ class User extends ChangeNotifier {
         if (jsonDecode(response.body)['success']) {
           sharedPreferences.remove('user');
           sharedPreferences.remove('token');
-          print(sharedPreferences.get('user'));
-          print(sharedPreferences.get('token'));
           Navigator.of(context).pushReplacementNamed('/login');
           return true;
         } else {

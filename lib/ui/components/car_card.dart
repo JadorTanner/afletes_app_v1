@@ -89,8 +89,8 @@ class _CarCard2State extends State<CarCard2> {
                     ),
                     const Spacer(flex: 1),
                     Row(
-                      children:
-                          List.generate(5, (index) => const StarFeedBack()),
+                      children: List.generate(widget.vehicle.score,
+                          (index) => const StarFeedBack()),
                     )
                   ],
                 ),

@@ -1,16 +1,15 @@
-// ignore_for_file: avoid_init_to_null, must_be_immutable
+// ignore_for_file: avoid_init_to_null, must_be_immutable, prefer_typing_uninitialized_variables, must_call_super
 
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
-import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
+import 'package:afletes_app_v1/utils/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
@@ -82,10 +81,13 @@ Future getCategories() async {
         if (data['cities'].isNotEmpty) {
           cities.clear();
           data['cities'].asMap().forEach((key, city) {
-            cities.add(City(
+            cities.add(
+              City(
                 id: city['id'],
                 name: city['name'],
-                state_id: city['state_id']));
+                state_id: city['state_id'],
+              ),
+            );
           });
           return cities;
         }
@@ -99,7 +101,7 @@ Future getCategories() async {
 }
 
 class CreateLoadPage extends StatefulWidget {
-  CreateLoadPage({Key? key}) : super(key: key);
+  const CreateLoadPage({Key? key}) : super(key: key);
 
   @override
   State<CreateLoadPage> createState() => _CreateLoadPageState();
@@ -121,7 +123,6 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
       if (arguments != null) {
         hasLoadData = true;
         loadId = arguments['id'];
-        print(loadId);
         productController.text = arguments['product'];
         pesoController.text = arguments['peso'].toString();
         volumenController.text = arguments['volumen'].toString();
@@ -145,6 +146,34 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         esperaDescargaController.text = arguments['esperaDescarga'].toString();
         observacionesController.text = arguments['observaciones'];
         isUrgentController.text = arguments['isUrgent'].toString();
+      } else {
+        loadId = 0;
+        imagenes.clear();
+        hasLoadData = false;
+        ubicacionController.text = '';
+        productController.text = '';
+        descriptionController.text = '';
+        categoriaController.text = '';
+        unidadMedidaController.text = '';
+        pesoController.text = '';
+        ofertaInicialController.text = '';
+        vehiculosController.text = '';
+        ayudantesController.text = '';
+        volumenController.text = '';
+        originAddressController.text = '';
+        originCityController.text = '';
+        originStateController.text = '';
+        originCoordsController.text = '';
+        destinAddressController.text = '';
+        destinCityController.text = '';
+        destinStateController.text = '';
+        destinCoordsController.text = '';
+        loadDateController.text = '';
+        loadHourController.text = '';
+        esperaCargaController.text = '';
+        esperaDescargaController.text = '';
+        observacionesController.text = '';
+        isUrgentController.text = '';
       }
     });
   }
@@ -158,11 +187,11 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
           return PageView(
             controller: pageController,
             physics: const NeverScrollableScrollPhysics(),
-            children: [
+            children: const [
               DatosGenerales(),
               DatosUbicacion(),
               DatosUbicacionDelivery(),
-              const PaginaFinal(),
+              PaginaFinal(),
             ],
           );
         } else {
@@ -174,117 +203,177 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
 }
 
 class DatosGenerales extends StatelessWidget {
-  DatosGenerales({Key? key}) : super(key: key);
+  const DatosGenerales({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FocusScope(
-      child: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const ImagesPicker(),
-          //producto
-          LoadFormField(productController, 'Producto *', maxLength: 10),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              //Categoría
-              CategoriaSelect(),
-              //Unidad de medida
-              MeasurementUnit()
-            ],
-          ),
-          Row(
-            children: [
-              //Peso
-              Flexible(
-                child: LoadFormField(
-                  pesoController,
-                  'Peso *',
-                  type: const TextInputType.numberWithOptions(decimal: true),
-                ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        margin: const EdgeInsets.only(
+          top: 70,
+          left: 20,
+          right: 20,
+        ),
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 20,
+                bottom: 60,
+                right: 20,
               ),
-              const SizedBox(
-                width: 20,
-              ),
-              //Volumen
-              Flexible(
-                child: LoadFormField(
-                  volumenController,
-                  'Volumen',
-                  type: const TextInputType.numberWithOptions(decimal: true),
+              children: [
+                const ImagesPicker(),
+                const SizedBox(
+                  height: 20,
                 ),
-              )
-            ],
-          ),
-          Row(
-            children: [
-              //Vehiculos requeridos
-              Flexible(
-                child: LoadFormField(
-                  vehiculosController,
-                  'Vehículos requeridos',
+                //producto
+                LoadFormField(productController, 'Producto *', maxLength: 10),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    //Categoría
+                    Flexible(
+                      child: CategoriaSelect(),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(child: MeasurementUnit()),
+                    //Unidad de medida
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    //Peso
+                    Flexible(
+                      child: LoadFormField(
+                        pesoController,
+                        'Peso *',
+                        type: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        defaultValue: '0',
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    //Volumen
+                    Flexible(
+                      child: LoadFormField(
+                        volumenController,
+                        'Volumen',
+                        type: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        defaultValue: '0',
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    //Vehiculos requeridos
+                    Flexible(
+                      child: LoadFormField(
+                        vehiculosController,
+                        'Cant. vehículos *',
+                        type: TextInputType.number,
+                        defaultValue: '1',
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    //Ayudante requeridos
+                    Flexible(
+                      child: LoadFormField(
+                        ayudantesController,
+                        'Ayudantes *',
+                        type: TextInputType.number,
+                        defaultValue: '0',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                //Precio
+                LoadFormField(
+                  ofertaInicialController,
+                  'Oferta inicial *',
                   type: TextInputType.number,
+                  defaultValue: '0',
                 ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              //Ayudante requeridos
-              Flexible(
-                child: LoadFormField(
-                  ayudantesController,
-                  'Ayudantes requeridos',
-                  type: TextInputType.number,
+                const SizedBox(
+                  height: 20,
                 ),
+                //Descripción
+                LoadFormField(descriptionController, 'Descripción *',
+                    type: TextInputType.multiline,
+                    action: TextInputAction.newline,
+                    maxLines: 5,
+                    radius: 10),
+                const SizedBox(
+                  height: 40,
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: NextPageButton(
+                      validator: (callback) {
+                        if (productController.text == '') {
+                          return false;
+                        }
+                        if (pesoController.text == '') {
+                          return false;
+                        }
+                        if (volumenController.text == '') {
+                          return false;
+                        }
+                        if (vehiculosController.text == '') {
+                          return false;
+                        }
+                        if (ayudantesController.text == '') {
+                          return false;
+                        }
+                        if (ofertaInicialController.text == '') {
+                          return false;
+                        }
+                        if (descriptionController.text == '') {
+                          return false;
+                        }
+                        callback();
+                        return true;
+                      },
+                    ),
+                  )
+                ],
               ),
-            ],
-          ),
-          //Precio
-          LoadFormField(
-            ofertaInicialController,
-            'Oferta inicial',
-            type: TextInputType.number,
-          ),
-          //Descripción
-          LoadFormField(
-            descriptionController,
-            'Descripción',
-            type: TextInputType.multiline,
-            action: TextInputAction.next,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          NextPageButton(
-            validator: (callback) {
-              if (productController.text == '') {
-                return false;
-              }
-              if (pesoController.text == '') {
-                return false;
-              }
-              if (volumenController.text == '') {
-                return false;
-              }
-              if (vehiculosController.text == '') {
-                return false;
-              }
-              if (ayudantesController.text == '') {
-                return false;
-              }
-              if (ofertaInicialController.text == '') {
-                return false;
-              }
-              if (descriptionController.text == '') {
-                return false;
-              }
-              callback();
-              return true;
-            },
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -317,7 +406,12 @@ class _ImagesPickerState extends State<ImagesPicker> {
       child: Container(
         width: double.infinity,
         height: MediaQuery.of(context).size.height * 0.4,
-        color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
+        decoration: BoxDecoration(
+          color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
+          borderRadius: const BorderRadius.all(
+            Radius.circular(20),
+          ),
+        ),
         child: imagenes.isNotEmpty
             ? Stack(
                 alignment: Alignment.bottomCenter,
@@ -380,7 +474,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
 }
 
 class MeasurementUnit extends StatefulWidget {
-  MeasurementUnit({Key? key}) : super(key: key);
+  const MeasurementUnit({Key? key}) : super(key: key);
 
   @override
   State<MeasurementUnit> createState() => _MeasurementUnitState();
@@ -390,18 +484,26 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
   String value = '1';
   @override
   Widget build(BuildContext context) {
+    unidadMedidaController.text = unidadMedidaController.text == ''
+        ? unidadMedidaController.text = value
+        : unidadMedidaController.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Unidad de medida'),
         DropdownButton(
             value: value,
-            icon: const Icon(Icons.arrow_downward),
+            icon: const Icon(Icons.arrow_circle_down_outlined),
             elevation: 16,
-            style: const TextStyle(color: Colors.deepPurple),
+            style: Theme.of(context).textTheme.bodyText2,
+            isExpanded: true,
             underline: Container(
               height: 2,
-              color: Colors.deepPurpleAccent,
+              color: Theme.of(context)
+                  .inputDecorationTheme
+                  .border!
+                  .borderSide
+                  .color,
             ),
             onChanged: (String? newValue) {
               setState(() {
@@ -421,7 +523,7 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
 }
 
 class CategoriaSelect extends StatefulWidget {
-  CategoriaSelect({Key? key}) : super(key: key);
+  const CategoriaSelect({Key? key}) : super(key: key);
 
   @override
   State<CategoriaSelect> createState() => _CategoriaSelectState();
@@ -445,12 +547,14 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
         const Text('Categoría'),
         DropdownButton(
           value: (categories.isNotEmpty ? value : categories[0].id.toString()),
-          icon: const Icon(Icons.arrow_downward),
+          icon: const Icon(Icons.arrow_circle_down_outlined),
           elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
+          style: Theme.of(context).textTheme.bodyText2,
+          isExpanded: true,
           underline: Container(
             height: 2,
-            color: Colors.deepPurpleAccent,
+            color:
+                Theme.of(context).inputDecorationTheme.border!.borderSide.color,
           ),
           onChanged: (String? newValue) {
             setState(() {
@@ -476,151 +580,116 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
 
 //PAGINA DE UBICACION ORIGEN
 class DatosUbicacion extends StatefulWidget {
-  DatosUbicacion({Key? key}) : super(key: key);
+  const DatosUbicacion({Key? key}) : super(key: key);
 
   @override
   State<DatosUbicacion> createState() => _DatosUbicacionState();
 }
 
-class _DatosUbicacionState extends State<DatosUbicacion>
-    with AutomaticKeepAliveClientMixin {
+class _DatosUbicacionState extends State<DatosUbicacion> {
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text(
-            'Dónde está tu carga?',
-            style: titleStyles,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      ),
+      margin: const EdgeInsets.only(
+        top: 70,
+        left: 20,
+        right: 20,
+      ),
+      child: Stack(children: [
+        ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(
+            top: 40,
+            left: 20,
+            bottom: 60,
+            right: 20,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Dónde está tu carga?',
+              style: titleStyles,
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            const StateAndCityPicker(),
+            const SizedBox(
+              height: 20,
+            ),
+            SearchPlace(originAddressController, originCoordsController),
+            Visibility(
+              child: LoadFormField(originCoordsController, 'Coordenadas'),
+              visible: false,
+            ),
+            const SizedBox(
+              height: 40,
+            ),
+            // ButtonBar(
+            //   alignment: MainAxisAlignment.center,
+            //   children: [
+            //     const Flexible(
+            //       child: PrevPageButton(),
+            //     ),
+            //     Flexible(
+            //       child: NextPageButton(
+            //         validator: (callback) {
+            //           if (originStateController.text == '') {
+            //             return false;
+            //           }
+            //           if (originCityController.text == '') {
+            //             return false;
+            //           }
+            //           if (originAddressController.text == '') {
+            //             return false;
+            //           }
+            //           if (originCoordsController.text == '') {
+            //             return false;
+            //           }
+            //           callback();
+            //           return true;
+            //         },
+            //       ),
+            //     ),
+            //   ],
+            // )
+          ],
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Row(
             children: [
-              DepartamentoPicker(originStateController),
-              CityPicker(originCityController)
-            ],
-          ),
-          LoadFormField(
-            originAddressController,
-            'Dirección *',
-            action: TextInputAction.done,
-          ),
-          LoadMap(originCoordsController),
-          Visibility(
-            child: LoadFormField(originCoordsController, 'Coordenadas'),
-            visible: true,
-          ),
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              PrevPageButton(),
-              NextPageButton(
-                validator: (callback) {
-                  if (originStateController.text == '') {
-                    return false;
-                  }
-                  if (originCityController.text == '') {
-                    return false;
-                  }
-                  if (originAddressController.text == '') {
-                    return false;
-                  }
-                  if (originCoordsController.text == '') {
-                    return false;
-                  }
-                  callback();
-                  return true;
-                },
+              const Flexible(
+                child: PrevPageButton(),
+              ),
+              Flexible(
+                child: NextPageButton(),
               ),
             ],
-          )
-        ]);
+          ),
+        )
+      ]),
+    );
   }
-
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
 }
 
-//PAGINA DE UBICACION ENTREGA
-
-class DatosUbicacionDelivery extends StatefulWidget {
-  DatosUbicacionDelivery({Key? key}) : super(key: key);
-
+class SearchPlace extends StatefulWidget {
+  SearchPlace(this.addressController, this.coordsController, {Key? key})
+      : super(key: key);
+  TextEditingController addressController;
+  TextEditingController coordsController;
   @override
-  State<DatosUbicacionDelivery> createState() => _DatosUbicacionDeliveryState();
+  State<SearchPlace> createState() => _SearchPlaceState();
 }
 
-class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery>
+class _SearchPlaceState extends State<SearchPlace>
     with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text(
-            'Dónde quieres llevarla?',
-            style: titleStyles,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              DepartamentoPicker(destinStateController),
-              CityPicker(destinCityController)
-            ],
-          ),
-          LoadFormField(
-            destinAddressController,
-            'Dirección *',
-            action: TextInputAction.next,
-          ),
-          LoadMap(destinCoordsController),
-          SizedBox(
-            child: LoadFormField(destinCoordsController, 'Coordenadas'),
-          ),
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              PrevPageButton(),
-              NextPageButton(
-                validator: (callback) {
-                  if (destinStateController.text == '') {
-                    return false;
-                  }
-                  if (destinCityController.text == '') {
-                    return false;
-                  }
-                  if (destinAddressController.text == '') {
-                    return false;
-                  }
-                  if (destinCoordsController.text == '') {
-                    return false;
-                  }
-                  callback();
-                  return true;
-                },
-              ),
-            ],
-          )
-        ]);
-  }
-
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
-}
-
-class LoadMap extends StatefulWidget {
-  LoadMap(this.textController, {Key? key}) : super(key: key);
-  TextEditingController textController;
-
-  @override
-  State<LoadMap> createState() => _LoadMapState();
-}
-
-class _LoadMapState extends State<LoadMap> {
   late GoogleMapController mapController;
   //ESTILOS DEL MAPA
   String _darkMapStyle = '';
@@ -645,63 +714,298 @@ class _LoadMapState extends State<LoadMap> {
     });
   }
 
+  goToPlace(Map<String, dynamic> place) async {
+    double lat = place['geometry']['location']['lat'];
+    double lng = place['geometry']['location']['lng'];
+    setState(() {
+      setMarker(LatLng(lat, lng));
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(lat, lng), 16),
+      );
+    });
+  }
+
+  setMarker(LatLng argument) {
+    widget.coordsController.text =
+        argument.latitude.toString() + ',' + argument.longitude.toString();
+    setState(() {
+      markers = [
+        Marker(
+            markerId: MarkerId(argument.latitude.toString() + '_location'),
+            position: LatLng(
+              argument.latitude,
+              argument.longitude,
+            ),
+            draggable: true,
+            onDragEnd: (LatLng newPosition) => widget.coordsController.text =
+                newPosition.latitude.toString() +
+                    ',' +
+                    newPosition.longitude.toString()),
+      ];
+    });
+  }
+
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
     setMapStyles();
     // mapController.setMapStyle('');
     getPosition();
+    if (widget.coordsController.text != '') {
+      setMarker(LatLng(double.parse(widget.coordsController.text.split(',')[0]),
+          double.parse(widget.coordsController.text.split(',')[1])));
+    }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    destinAddressController.addListener(() {
-      Future.delayed(const Duration(seconds: 1), () async {
-        //BUSCAR LA DIRECCION Y SETEAR EL MAPA
-        print(destinAddressController.text);
-      });
-    });
-  }
-
+  bool loading = false;
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.4,
-      child: GoogleMap(
-        onMapCreated: _onMapCreated,
-        myLocationEnabled: true,
-        onTap: (argument) => setState(() {
-          widget.textController.text = argument.latitude.toString() +
-              ',' +
-              argument.longitude.toString();
-          markers = [
-            Marker(
-                markerId: MarkerId('delivery_location'),
-                position: LatLng(
-                  argument.latitude,
-                  argument.longitude,
-                ),
-                draggable: true,
-                onDragEnd: (LatLng newPosition) => widget.textController.text =
-                    newPosition.latitude.toString() +
-                        ',' +
-                        newPosition.longitude.toString()),
-          ];
-        }),
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(-25.27705190025039, -57.63737049639007),
-          zoom: 11.0,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: LoadFormField(
+                widget.addressController,
+                'Dirección *',
+                action: TextInputAction.done,
+              ),
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            TextButton(
+              onPressed: () async {
+                Map<String, dynamic> place = await LocationService()
+                    .getPlace(widget.addressController.text);
+                goToPlace(place);
+              },
+              style: ButtonStyle(
+                side: MaterialStateProperty.all<BorderSide>(const BorderSide(
+                    style: BorderStyle.solid, width: 1, color: Colors.grey)),
+              ),
+              child: const Icon(Icons.search),
+            )
+          ],
         ),
-        markers: markers.map((e) => e).toSet(),
+        const SizedBox(
+          height: 20,
+        ),
+        SizedBox(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.4,
+          child: Stack(
+            children: [
+              GoogleMap(
+                key: widget.key,
+                onMapCreated: _onMapCreated,
+                myLocationEnabled: true,
+                onTap: (argument) => setMarker(argument),
+                initialCameraPosition: CameraPosition(
+                  // target: LatLng(-25.27705190025039, -57.63737049639007),
+                  target: LatLng(
+                      (widget.coordsController.text != ''
+                          ? double.parse(
+                              widget.coordsController.text.split(',')[0])
+                          : -25.27705190025039),
+                      (widget.coordsController.text != ''
+                          ? double.parse(
+                              widget.coordsController.text.split(',')[1])
+                          : -57.63737049639007)),
+                  zoom: 11.0,
+                ),
+                markers: markers.map((e) => e).toSet(),
+              ),
+              loading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : const SizedBox.shrink()
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+class StateAndCityPicker extends StatefulWidget {
+  const StateAndCityPicker({Key? key}) : super(key: key);
+
+  @override
+  State<StateAndCityPicker> createState() => _StateAndCityPickerState();
+}
+
+class _StateAndCityPickerState extends State<StateAndCityPicker> {
+  String departamentoId = states[0].id.toString();
+  List<City> newCities = cities;
+  late String value;
+  @override
+  Widget build(BuildContext context) {
+    value = newCities[0].id.toString();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: DepartamentoPicker(originStateController, (newVal) {
+            setState(() {
+              departamentoId = newVal;
+
+              newCities = cities.where((element) {
+                return element.state_id.toString() == departamentoId;
+              }).toList();
+              value = newCities[0].id.toString();
+            });
+          }),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Flexible(
+          child: CityPicker(originCityController, value, newCities),
+        )
+      ],
+    );
+  }
+}
+
+//PAGINA DE UBICACION ENTREGA
+
+class DatosUbicacionDelivery extends StatefulWidget {
+  const DatosUbicacionDelivery({Key? key}) : super(key: key);
+
+  @override
+  State<DatosUbicacionDelivery> createState() => _DatosUbicacionDeliveryState();
+}
+
+class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
+      margin: const EdgeInsets.only(
+        top: 70,
+        left: 20,
+        right: 20,
+      ),
+      child: Stack(children: [
+        ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(
+            top: 40,
+            left: 20,
+            bottom: 60,
+            right: 20,
+          ),
+          children: [
+            Text(
+              'Dónde quieres llevarla?',
+              style: titleStyles,
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            const DestinStateAndCityPicker(),
+            const SizedBox(
+              height: 20,
+            ),
+            SearchPlace(destinAddressController, destinCoordsController),
+            const SizedBox(
+              height: 20,
+            ),
+            Visibility(
+              child: LoadFormField(destinCoordsController, 'Coordenadas'),
+              visible: false,
+            ),
+            const SizedBox(
+              height: 40,
+            ),
+            // ButtonBar(
+            //   alignment: MainAxisAlignment.center,
+            //   children: [
+            //     const Flexible(
+            //       child: PrevPageButton(),
+            //     ),
+            //     Flexible(
+            //       child: NextPageButton(),
+            //     ),
+            //   ],
+            // )
+          ],
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Row(
+            children: [
+              const Flexible(
+                child: PrevPageButton(),
+              ),
+              Flexible(
+                child: NextPageButton(),
+              ),
+            ],
+          ),
+        )
+      ]),
+    );
+  }
+}
+
+class DestinStateAndCityPicker extends StatefulWidget {
+  const DestinStateAndCityPicker({Key? key}) : super(key: key);
+
+  @override
+  State<DestinStateAndCityPicker> createState() =>
+      _DestinStateAndCityPickerState();
+}
+
+class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
+  String departamentoId = states[0].id.toString();
+  List<City> newCities = cities;
+  late String value;
+  @override
+  Widget build(BuildContext context) {
+    value = newCities[0].id.toString();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: DepartamentoPicker(destinStateController, (newVal) {
+            setState(() {
+              departamentoId = newVal;
+
+              newCities = cities.where((element) {
+                return element.state_id.toString() == departamentoId;
+              }).toList();
+              value = newCities[0].id.toString();
+            });
+          }),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Flexible(
+          child: CityPicker(destinCityController, value, newCities),
+        ),
+      ],
     );
   }
 }
 
 class DepartamentoPicker extends StatefulWidget {
-  DepartamentoPicker(this.controller, {Key? key}) : super(key: key);
+  DepartamentoPicker(this.controller, this.onChange, {Key? key})
+      : super(key: key);
   TextEditingController controller;
+  var onChange;
   @override
   State<DepartamentoPicker> createState() => _DepartamentoPickerState();
 }
@@ -718,14 +1022,17 @@ class _DepartamentoPickerState extends State<DepartamentoPicker> {
           value: widget.controller.text != ''
               ? widget.controller.text
               : (states.isNotEmpty ? value : states[0].id.toString()),
-          icon: const Icon(Icons.arrow_downward),
+          icon: const Icon(Icons.arrow_circle_down_outlined),
           elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
+          isExpanded: true,
+          style: Theme.of(context).textTheme.bodyText2,
           underline: Container(
             height: 2,
-            color: Colors.deepPurpleAccent,
+            color:
+                Theme.of(context).inputDecorationTheme.border!.borderSide.color,
           ),
           onChanged: (String? newValue) {
+            widget.onChange(newValue);
             setState(() {
               value = newValue!;
               widget.controller.text = newValue;
@@ -748,44 +1055,53 @@ class _DepartamentoPickerState extends State<DepartamentoPicker> {
 }
 
 class CityPicker extends StatefulWidget {
-  CityPicker(this.controller, {Key? key}) : super(key: key);
+  CityPicker(this.controller, this.value, this.newCities, {Key? key})
+      : super(key: key);
+  List<City> newCities;
   TextEditingController controller;
+  String value;
   @override
   State<CityPicker> createState() => CityPickerState();
 }
 
 class CityPickerState extends State<CityPicker> {
-  late String value = cities[0].id.toString();
+  late List<City> newCities;
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    newCities = widget.newCities;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Ciudad'),
         DropdownButton(
-          value: widget.controller.text != ''
-              ? widget.controller.text
-              : (cities.isNotEmpty ? value : cities[0].id.toString()),
-          icon: const Icon(Icons.arrow_downward),
+          value: widget.value,
+          icon: const Icon(Icons.arrow_circle_down_outlined),
+          isExpanded: true,
           elevation: 16,
-          style: const TextStyle(color: Colors.deepPurple),
+          style: Theme.of(context).textTheme.bodyText2,
           underline: Container(
             height: 2,
-            color: Colors.deepPurpleAccent,
+            color:
+                Theme.of(context).inputDecorationTheme.border!.borderSide.color,
           ),
           onChanged: (String? newValue) {
             setState(() {
-              value = newValue!;
+              widget.value = newValue!;
               widget.controller.text = newValue;
             });
             // print(newValue);
           },
           items: List.generate(
-            cities.length,
+            newCities.length,
             (index) {
               return DropdownMenuItem(
-                child: Text(cities[index].name),
-                value: cities[index].id.toString(),
+                child: Text(newCities[index].name),
+                value: newCities[index].id.toString(),
               );
             },
           ),
@@ -801,104 +1117,191 @@ class PaginaFinal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(imagenes);
-    return ListView(padding: const EdgeInsets.all(20), children: [
-      Row(
-        children: [
-          Flexible(
-            child: DatePicker(loadDateController, 'Fecha de carga'),
-          ),
-          Flexible(
-            child: LoadTimePicker(loadHourController, 'Hora de carga'),
-          ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
-      Row(
+      margin: const EdgeInsets.only(
+        top: 70,
+        left: 20,
+        right: 20,
+      ),
+      child: Stack(
         children: [
-          Flexible(
-            child: LoadFormField(
-              esperaCargaController,
-              'Espera en carga',
-              type: TextInputType.number,
+          ListView(
+            padding: const EdgeInsets.only(
+              top: 40,
+              left: 20,
+              bottom: 60,
+              right: 20,
             ),
-          ),
-          Flexible(
-            child: LoadFormField(esperaDescargaController, 'Espera en descarga',
-                type: TextInputType.number),
-          ),
-        ],
-      ),
-      Row(
-        children: [
-          Flexible(
-            child: IsUrgent(),
-          ),
-          // Flexible(
-          //     child: LoadFormField(
-          //   loadDateController,
-          //   'Cargar Imágenes',
-          //   onFocus: () => _picker,
-          //   showCursor: true,
-          //   readOnly: true,
-          // ))
-        ],
-      ),
+            children: [
+              Text(
+                'Cuándo debe ser recogida?',
+                style: titleStyles,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: DatePicker(loadDateController, 'Fecha de carga'),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Flexible(
+                    child: LoadTimePicker(loadHourController, 'Hora de carga'),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: LoadFormField(
+                      esperaCargaController,
+                      'Espera en carga',
+                      type: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Flexible(
+                    child: LoadFormField(
+                        esperaDescargaController, 'Espera en descarga',
+                        type: TextInputType.number),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                children: const [
+                  Flexible(
+                    child: IsUrgent(),
+                  ),
+                  // Flexible(
+                  //     child: LoadFormField(
+                  //   loadDateController,
+                  //   'Cargar Imágenes',
+                  //   onFocus: () => _picker,
+                  //   showCursor: true,
+                  //   readOnly: true,
+                  // ))
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Danos más detalles de tu carga',
+                style: titleStyles,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
 
-      //Descripción
-      LoadFormField(
-        observacionesController,
-        'Observaciones',
-        type: TextInputType.multiline,
-        action: TextInputAction.next,
-      ),
-      ButtonBar(
-        alignment: MainAxisAlignment.center,
-        children: [
-          const PrevPageButton(),
-          IconButton(
-              onPressed: () async {
-                Load load = Load();
-                load.createLoad({
-                  'vehicle_type_id': 1,
-                  'product_category_id': categoriaController.text,
-                  'product': productController.text,
-                  'vehicles_quantity': vehiculosController.text,
-                  'helpers_quantity': ayudantesController.text,
-                  'weight': pesoController.text,
-                  'measurement_unit_id': unidadMedidaController.text,
-                  'initial_offer': ofertaInicialController.text,
-                  'state_id': originStateController.text,
-                  'city_id': originCityController.text,
-                  'address': originAddressController.text,
-                  'latitude':
-                      originCoordsController.text.split(',')[0].toString(),
-                  'longitude':
-                      originCoordsController.text.split(',')[1].toString(),
-                  'destination_state_id': destinStateController.text,
-                  'destination_city_id': destinCityController.text,
-                  'destination_address': destinAddressController.text,
-                  'destination_latitude':
-                      destinCoordsController.text.split(',')[0].toString(),
-                  'destination_longitude':
-                      destinCoordsController.text.split(',')[1].toString(),
-                  'pickup_at': loadDateController.text,
-                  'pickup_time': loadHourController.text,
-                  'payment_term_after_delivery': 1,
-                  'wait_in_origin': esperaCargaController.text,
-                  'wait_in_destination': esperaDescargaController.text,
-                  'loadId': loadId
-                }, imagenes,
-                    context: context, update: hasLoadData, loadId: loadId);
-              },
-              icon: const Icon(Icons.upload))
+              //Descripción
+              LoadFormField(
+                observacionesController,
+                'Observaciones',
+                type: TextInputType.multiline,
+                action: TextInputAction.newline,
+                maxLines: 5,
+                radius: 10,
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              children: [
+                const Flexible(
+                  child: PrevPageButton(),
+                ),
+                Flexible(
+                    child: TextButton(
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsets>(
+                        const EdgeInsets.symmetric(vertical: 20)),
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      const Color(0xFFF58633),
+                    ),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(0)),
+                      ),
+                    ),
+                  ),
+                  onPressed: () async {
+                    Load load = Load();
+                    load.createLoad({
+                      'description': descriptionController.text,
+                      'vehicle_type_id': 1,
+                      'product_category_id': categoriaController.text,
+                      'product': productController.text,
+                      'vehicles_quantity': vehiculosController.text,
+                      'helpers_quantity': ayudantesController.text,
+                      'weight': pesoController.text,
+                      'measurement_unit_id': unidadMedidaController.text,
+                      'initial_offer': ofertaInicialController.text,
+                      'state_id': originStateController.text,
+                      'city_id': originCityController.text,
+                      'address': originAddressController.text,
+                      'latitude':
+                          originCoordsController.text.split(',')[0].toString(),
+                      'longitude':
+                          originCoordsController.text.split(',')[1].toString(),
+                      'destination_state_id': destinStateController.text,
+                      'destination_city_id': destinCityController.text,
+                      'destination_address': destinAddressController.text,
+                      'destination_latitude':
+                          destinCoordsController.text.split(',')[0].toString(),
+                      'destination_longitude':
+                          destinCoordsController.text.split(',')[1].toString(),
+                      'pickup_at': loadDateController.text,
+                      'pickup_time': loadHourController.text,
+                      'payment_term_after_delivery': 1,
+                      'wait_in_origin': esperaCargaController.text,
+                      'wait_in_destination': esperaDescargaController.text,
+                      'observatios': observacionesController.text,
+                      'is_urgent': isUrgentController.text == '1',
+                      'loadId': loadId
+                    }, imagenes,
+                        context: context, update: hasLoadData, loadId: loadId);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text('Enviar', style: TextStyle(color: Colors.white)),
+                      Icon(Icons.upload, color: Colors.white)
+                    ],
+                  ),
+                ))
+              ],
+            ),
+          )
         ],
-      )
-    ]);
+      ),
+    );
   }
 }
 
 class IsUrgent extends StatefulWidget {
-  IsUrgent({Key? key}) : super(key: key);
+  const IsUrgent({Key? key}) : super(key: key);
 
   @override
   State<IsUrgent> createState() => _IsUrgentState();
@@ -908,14 +1311,18 @@ class _IsUrgentState extends State<IsUrgent> {
   bool checked = false;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
         const Text('Es urgente?'),
-        Checkbox(
+        const SizedBox(
+          width: 20,
+        ),
+        Switch(
           value: checked,
+          activeColor: const Color(0xFFF58633),
           onChanged: (newVal) => setState(
             () {
-              checked = newVal!;
+              checked = newVal;
               isUrgentController.text = checked ? '1' : '0';
             },
           ),
@@ -971,10 +1378,10 @@ class LoadTimePicker extends StatefulWidget {
   TextEditingController controller;
   String title;
   @override
-  State<LoadTimePicker> createState() => Load_TimePickerState();
+  State<LoadTimePicker> createState() => LoadTimePickerState();
 }
 
-class Load_TimePickerState extends State<LoadTimePicker> {
+class LoadTimePickerState extends State<LoadTimePicker> {
   TimeOfDay selectedTime = TimeOfDay.now();
 
   Future<void> _selectTime(BuildContext context) async {
@@ -1008,15 +1415,38 @@ class NextPageButton extends StatelessWidget {
   var validator;
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-        onPressed: () => (validator != null
-            ? validator(() => pageController.nextPage(
-                duration: const Duration(milliseconds: 100),
-                curve: Curves.ease))
-            : pageController.nextPage(
-                duration: const Duration(milliseconds: 100),
-                curve: Curves.ease)),
-        icon: const Icon(Icons.navigate_next));
+    return TextButton(
+      onPressed: () => (validator != null
+          ? validator(() => pageController.nextPage(
+              duration: const Duration(milliseconds: 100), curve: Curves.ease))
+          : pageController.nextPage(
+              duration: const Duration(milliseconds: 100), curve: Curves.ease)),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color(0xFFF58633),
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            'Siguiente',
+            style: TextStyle(color: Colors.white),
+          ),
+          Icon(
+            Icons.navigate_next,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1025,22 +1455,46 @@ class PrevPageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-        onPressed: () => pageController.previousPage(
-            duration: const Duration(milliseconds: 100), curve: Curves.ease),
-        icon: const Icon(Icons.navigate_before));
+    return TextButton(
+      onPressed: () => pageController.previousPage(
+          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor:
+            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.navigate_before, color: Colors.white),
+          Text(
+            'Atrás',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 class LoadFormField extends StatelessWidget {
   LoadFormField(this.controller, this.label,
       {this.maxLength = 255,
+      this.maxLines = 1,
+      this.radius = 10,
       this.type = TextInputType.text,
       this.autofocus = false,
       this.showCursor = null,
       this.readOnly = false,
       this.onFocus = null,
       this.icon = null,
+      this.defaultValue = '',
       this.action = TextInputAction.next,
       Key? key})
       : super(key: key);
@@ -1051,21 +1505,36 @@ class LoadFormField extends StatelessWidget {
   TextEditingController controller;
   TextInputType type;
   int maxLength;
+  int maxLines;
+  double radius;
   Icon? icon;
   String label;
+  String defaultValue;
   TextInputAction action;
+
   @override
   Widget build(BuildContext context) {
+    controller.text = defaultValue;
     return TextField(
       onTap: onFocus,
-      onEditingComplete: () => controller.notifyListeners(),
+      maxLines: maxLines,
       showCursor: showCursor,
       readOnly: readOnly,
       autofocus: autofocus,
       controller: controller,
       keyboardType: type,
+      textInputAction: action,
       maxLength: maxLength != 255 ? maxLength : null,
-      decoration: InputDecoration(prefixIcon: icon, label: Text(label)),
+      decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(radius))),
+          prefixIcon: icon,
+          label: Text(label),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 5,
+            horizontal: 20,
+          )),
     );
   }
 }

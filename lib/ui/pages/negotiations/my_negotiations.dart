@@ -72,7 +72,10 @@ class _MyNegotiationsState extends State<MyNegotiations> {
         future: getNegotiations(),
         builder: (context, snapshot) {
           return RefreshIndicator(
-            onRefresh: getNegotiations,
+            onRefresh: () {
+              setState(() {});
+              return Future(() => {});
+            },
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
