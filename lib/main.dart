@@ -168,6 +168,7 @@ class _AfletesAppState extends State<AfletesApp> {
           Map jsonData = jsonDecode(data);
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
+          String? negotiationId = sharedPreferences.getString('negotiation_id');
           User user =
               User(userData: jsonDecode(sharedPreferences.getString('user')!))
                   .userFromArray();
@@ -194,7 +195,9 @@ class _AfletesAppState extends State<AfletesApp> {
                           'Ha ocurrido un error. Compruebe su conexión a internet')));
                 }
               }
-              if (chat.negotiationId == jsonData['negotiation_id']) {
+              if ((chat.negotiationId == jsonData['negotiation_id']) ||
+                  (negotiationId != null &&
+                      negotiationId == jsonData['negotiation_id'])) {
                 chat.addMessage(
                   jsonData['negotiation_id'],
                   ChatMessage(

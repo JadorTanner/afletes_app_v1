@@ -14,7 +14,7 @@ class PusherApi {
     String? user = sharedPreferences.getString('user');
     if (user != null) {
       options = PusherOptions(
-        host: '192.168.1.152',
+        host: '181.120.66.16',
         wsPort: 8000,
         encrypted: false,
         cluster: 'us2',
