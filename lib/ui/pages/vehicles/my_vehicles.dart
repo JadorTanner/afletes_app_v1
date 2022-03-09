@@ -77,12 +77,18 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
         builder: (context, snapshot) {
           List items = [];
           if (snapshot.connectionState == ConnectionState.done) {
-            items = List.generate(
-                vehicles.length,
-                (index) => VehicleCard(
-                      index,
-                      hasData: true,
-                    ));
+            items = vehicles.isNotEmpty
+                ? List.generate(
+                    vehicles.length,
+                    (index) => VehicleCard(
+                          index,
+                          hasData: true,
+                        ))
+                : [
+                    const Center(
+                      child: Text('No hay vehículos aún'),
+                    )
+                  ];
           } else {
             items = List.generate(
               5,

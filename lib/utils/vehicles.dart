@@ -56,15 +56,15 @@ class Vehicle {
     context = null,
     update = false,
     vehicleId = 0,
-    XFile? greenCard,
-    XFile? greenCardBack,
-    XFile? municipal,
-    XFile? municipalBack,
-    XFile? dinatran,
-    XFile? dinatranBack,
-    XFile? senacsa,
-    XFile? senacsaBack,
-    XFile? insurance,
+    String greenCard = '',
+    String greenCardBack = '',
+    String municipal = '',
+    String municipalBack = '',
+    String dinatran = '',
+    String dinatranBack = '',
+    String senacsa = '',
+    String senacsaBack = '',
+    String insurance = '',
   }) async {
     // try {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -89,41 +89,41 @@ class Vehicle {
     });
 
     //DOCUMENTOS
-    if (greenCard != null) {
+    if (greenCard != '') {
       request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_attachment', greenCard.path));
+          'vehicle_green_card_attachment', greenCard));
     }
-    if (greenCardBack != null) {
+    if (greenCardBack != '') {
       request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_back_attachment', greenCardBack.path));
+          'vehicle_green_card_back_attachment', greenCardBack));
     }
-    if (municipal != null) {
+    if (municipal != '') {
       request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_attachment', municipal.path));
+          'vehicle_authorization_attachment', municipal));
     }
-    if (municipalBack != null) {
+    if (municipalBack != '') {
       request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_back_attachment', municipalBack.path));
+          'vehicle_authorization_back_attachment', municipalBack));
     }
-    if (dinatran != null) {
+    if (dinatran != '') {
       request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_attachment', dinatran.path));
+          'dinatran_authorization_attachment', dinatran));
     }
-    if (dinatranBack != null) {
+    if (dinatranBack != '') {
       request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_back_attachment', dinatranBack.path));
+          'dinatran_authorization_back_attachment', dinatranBack));
     }
-    if (senacsa != null) {
+    if (senacsa != '') {
       request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_attachment', senacsa.path));
+          'senacsa_authorization_attachment', senacsa));
     }
-    if (senacsaBack != null) {
+    if (senacsaBack != '') {
       request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_back_attachment', senacsaBack.path));
+          'senacsa_authorization_back_attachment', senacsaBack));
     }
-    if (insurance != null) {
-      request.files.add(
-          await MultipartFile.fromPath('insurance_attachment', insurance.path));
+    if (insurance != '') {
+      request.files
+          .add(await MultipartFile.fromPath('insurance_attachment', insurance));
     }
 
     imagenes.forEach((file) async {

@@ -324,12 +324,18 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
         builder: (context, snapshot) {
           List items = [];
           if (snapshot.connectionState == ConnectionState.done) {
-            items = List.generate(
-                loads.length,
-                (index) => LoadCard(
-                      index,
-                      hasData: true,
-                    ));
+            items = loads.isNotEmpty
+                ? List.generate(
+                    loads.length,
+                    (index) => LoadCard(
+                          index,
+                          hasData: true,
+                        ))
+                : [
+                    const Center(
+                      child: Text('No hay cargas aún'),
+                    )
+                  ];
           } else {
             items = List.generate(
               5,

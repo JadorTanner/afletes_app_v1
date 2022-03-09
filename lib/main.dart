@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
-import 'package:afletes_app_v1/models/common.dart';
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
@@ -11,28 +12,24 @@ import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
+import 'package:afletes_app_v1/ui/pages/tests.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
-import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
-import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
-late Position position;
 late AndroidNotificationChannel channel;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-PusherApi pusherApi = PusherApi();
 
 //PERMISOS DE LOCALIZACION
 Future _determinePosition() async {
@@ -68,7 +65,6 @@ Future _determinePosition() async {
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
-  position = await Geolocator.getCurrentPosition();
 }
 //PERMISOS DE LOCALIZACION
 
@@ -109,6 +105,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<TransportistsLocProvider>(
+            create: (context) => TransportistsLocProvider()),
         ChangeNotifierProvider<User>(create: (context) => User()),
         ChangeNotifierProvider<ChatProvider>(
             create: (context) => ChatProvider()),
@@ -157,85 +155,9 @@ class _AfletesAppState extends State<AfletesApp> {
     });
   }
 
-  initPusher() async {
-    PusherApi pusherapi = await pusherApi.init();
-    pusherapi.bindEvent('App\\Events\\NegotiationChat',
-        (PusherEvent? event) async {
-      if (event != null) {
-        if (event.data != null) {
-          ChatProvider chat = context.read<ChatProvider>();
-          String data = event.data!;
-          Map jsonData = jsonDecode(data);
-          SharedPreferences sharedPreferences =
-              await SharedPreferences.getInstance();
-          User user =
-              User(userData: jsonDecode(sharedPreferences.getString('user')!))
-                  .userFromArray();
-          if (user.id != jsonData['sender_id']) {
-            if (user.id == jsonData['user_id']) {
-              if (jsonData['ask_location'] == true) {
-                Map loc = {
-                  'coords': {
-                    'latitude': position.latitude,
-                    'longitude': position.longitude,
-                  }
-                };
-
-                try {
-                  Api api = Api();
-                  await api.postData('user/send-location', {
-                    'negotiation_id': jsonData['negotiation_id'],
-                    'user_id': jsonData['sender_id'],
-                    'location': loc
-                  });
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text(
-                          'Ha ocurrido un error. Compruebe su conexión a internet')));
-                }
-              }
-              if (chat.negotiationId == jsonData['negotiation_id']) {
-                chat.addMessage(
-                  jsonData['negotiation_id'],
-                  ChatMessage(
-                    jsonData['message'],
-                    jsonData['sender_id'],
-                    jsonData['negotiation_id'],
-                    jsonData['is_location'] ?? false,
-                  ),
-                );
-                if (jsonData['negotiation_state'] != null) {
-                  context
-                      .read<ChatProvider>()
-                      .setLoadState(jsonData['negotiation_state']);
-                }
-                if (jsonData['is_final_offer'] == 'true') {
-                  context.read<ChatProvider>().setCanOffer(false);
-                }
-                if (jsonData['accepted'] != null) {
-                  context.read<ChatProvider>().setCanOffer(false);
-                  context.read<ChatProvider>().setToPay(true);
-                }
-              } else {
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: 'Tiene una nueva notificación',
-                  body: jsonData['message'],
-                  payload:
-                      '{"route": "chat", "id":${jsonData["negotiation_id"]}}',
-                );
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    initPusher();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
 
     NotificationsApi.init();
@@ -326,11 +248,11 @@ class _AfletesAppState extends State<AfletesApp> {
       routes: {
         '/splash_screen': (context) => SplashScreen(),
         '/login': (context) => const LoginPage(),
-        '/register': (context) => RegisterPage(),
+        '/register': (context) => const RegisterPage(),
         '/loads': (context) => const Loads(),
         '/vehicles': (context) => Vehicles(),
         '/my-loads': (context) => MyLoadsPage(),
-        '/create-load': (context) => CreateLoadPage(),
+        '/create-load': (context) => const CreateLoadPage(),
         '/create-vehicle': (context) => CreateVehicle(),
         '/my-vehicles': (context) => MyVehiclesPage(),
         '/my-negotiations': (context) => MyNegotiations(),

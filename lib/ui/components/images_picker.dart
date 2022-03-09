@@ -133,6 +133,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                             widget.imageFile = img!.path;
                           });
                           widget.onChange(img!.path);
+                          FocusManager.instance.primaryFocus?.unfocus();
                           Navigator.pop(context);
                         }
                       },
@@ -150,6 +151,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                             widget.imageFile = img!.path;
                           });
                           widget.onChange(img!.path);
+                          FocusManager.instance.primaryFocus?.unfocus();
                           Navigator.pop(context);
                         }
                       },

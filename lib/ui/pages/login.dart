@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -175,22 +178,41 @@ class _LoginButtonState extends State<LoginButton> {
                 setState(() {
                   isLoading = !isLoading;
                 });
+
+                PusherApi().init(context);
+
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
 
                 //TOKEN PARA MENSAJES PUSH
-                String? token = await FirebaseMessaging.instance.getToken();
-                try {
-                  await Api().postData('user/set-device-token',
-                      {'id': user['id'], 'device_token': token ?? ''});
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ha ocurrido un error')));
-                }
+                // String? token = await FirebaseMessaging.instance.getToken();
+                // try {
+                //   await Api().postData('user/set-device-token',
+                //       {'id': user['id'], 'device_token': token ?? ''});
+                // } catch (e) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(content: Text('Ha ocurrido un error')));
+                // }
                 if (user['confirmed']) {
                   if (user['habilitado']) {
                     if (user['is_carrier']) {
+                      //ENVIAR UBICACION CUANDO CAMBIE
+                      LocationSettings locationSettings =
+                          const LocationSettings(
+                        accuracy: LocationAccuracy.best,
+                        distanceFilter: 5,
+                      );
+                      Geolocator.getPositionStream(
+                              locationSettings: locationSettings)
+                          .listen((Position? position) {
+                        Api api = Api();
+                        api.postData('update-location', {
+                          'latitude': position!.latitude,
+                          'longitude': position.longitude,
+                          'heading': position.heading,
+                        });
+                      });
                       Navigator.of(context).pushReplacementNamed('/loads');
                     } else {
                       Navigator.of(context).pushReplacementNamed('/vehicles');
