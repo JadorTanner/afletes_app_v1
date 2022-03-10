@@ -73,7 +73,6 @@ onLoadTap(int id, BuildContext context, Load load) async {
     TextEditingController intialOfferController = TextEditingController();
 
     Response response = await api.getData('load/load-info?id=' + id.toString());
-    print(response.body);
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
       Map data = jsonResponse['data'];
@@ -385,54 +384,14 @@ class LoadCard extends StatelessWidget {
         elevation: 10,
         child: GestureDetector(
           onTap: hasData
-              ? () => onLoadTap(
-                  loads[index].id,
-                  context,
-                  loads[
-                      index]) /* () =>
-                  Navigator.of(context).pushNamed('/create-load', arguments: {
-                    'id': loads[index].id,
-                    'product': loads[index].product,
-                    'peso': loads[index].weight,
-                    'volumen': loads[index].volumen,
-                    'description': loads[index].description,
-                    'categoria': loads[index].categoryId,
-                    'unidadMedida': loads[index].measurement,
-                    'ofertaInicial': loads[index].initialOffer,
-                    'vehiculos': loads[index].vehicleQuantity,
-                    'ayudantes': loads[index].helpersQuantity,
-                    'originAddress': loads[index].addressFrom,
-                    'originCity': loads[index].cityFromId,
-                    'originState': loads[index].stateFromId,
-                    'originCoords': loads[index].latitudeFrom +
-                        ',' +
-                        loads[index].longitudeFrom,
-                    'destinAddress': loads[index].addressFrom,
-                    'destinCity': loads[index].destinCityId,
-                    'destinState': loads[index].destinStateId,
-                    'destinCoords': loads[index].latitudeFrom +
-                        ',' +
-                        loads[index].destinLongitude,
-                    'loadDate': loads[index].pickUpDate,
-                    'loadHour': loads[index].pickUpTime,
-                    'esperaCarga': loads[index].loadWait,
-                    'esperaDescarga': loads[index].deliveryWait,
-                    'observaciones': loads[index].observations,
-                    'isUrgent': loads[index].isUrgent,
-                  }) */
+              ? () => onLoadTap(loads[index].id, context, loads[index])
               : null,
           child: SizedBox(
-            // padding: const EdgeInsets.all(10),
             width: double.infinity,
             height: 100,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // CircleAvatar(
-                //   maxRadius: 50,
-                //   minRadius: 50,
-                //   backgroundColor: Colors.white,
-                //   child:
                 SizedBox(
                     width: 150,
                     child: hasData

@@ -38,7 +38,6 @@ class _SplashScreenState extends State<SplashScreen> {
                   (position == null
                       ? 'Unknown'
                       : '${position.latitude.toString()}, ${position.longitude.toString()}');
-              print(posicion);
               Api api = Api();
               api.postData('update-location', {
                 'latitude': position!.latitude,

@@ -37,7 +37,6 @@ class ChatProvider extends ChangeNotifier {
 
   addMessage(int id, ChatMessage message) {
     // if (id == negotiationId) {
-    // print(message.message);
     RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
     message.message = message.message.replaceAll(exp, '');
     _messages.insert(0, message);
@@ -46,7 +45,6 @@ class ChatProvider extends ChangeNotifier {
   }
 
   clearMessages() {
-    print('limpiando');
     _messages.clear();
     notifyListeners();
   }

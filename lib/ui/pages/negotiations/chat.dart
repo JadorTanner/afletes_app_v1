@@ -67,7 +67,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
       }
       receiverId = jsonResp['data']['negotiation']
           [user.isCarrier ? 'generator_id' : 'transportist_id'];
-      print(jsonResp['data']['negotiation_state']['id']);
       context.read<ChatProvider>().setCanOffer(false);
       context.read<ChatProvider>().setPaid(false);
       context.read<ChatProvider>().setCanVote(false);
@@ -484,12 +483,9 @@ class ButtonsSection extends StatelessWidget {
       }
     } else {
       //Si la negociación no está pagada
-      print('Es generador de carga');
       if (toPay) {
         //Si la negociación está para pago
-        print('Es generador de carga');
         if (user.isLoadGenerator) {
-          print('Es generador de carga');
           children = [
             TextButton.icon(
               onPressed: () => Navigator.of(context).push(

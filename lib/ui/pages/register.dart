@@ -766,7 +766,6 @@ class RegisterButtonState extends State<RegisterButton> {
                         StreamedResponse response = await request.send();
                         String stringResponse =
                             await response.stream.bytesToString();
-                        print(stringResponse);
 
                         if (response.statusCode == 200) {
                           setState(() => {

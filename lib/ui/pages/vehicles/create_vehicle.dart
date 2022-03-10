@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
-import 'package:afletes_app_v1/ui/components/google_map.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
@@ -26,8 +25,6 @@ int vehicleId = 0;
 List brands = [];
 List<DropdownMenuItem<String>> brandsSelectList = [];
 PageController pageController = PageController();
-late AfletesGoogleMap originMap;
-late AfletesGoogleMap deliveryMap;
 
 late String greenCard = '';
 late String greenCardBack = '';
@@ -602,96 +599,6 @@ class _SendButtonState extends State<SendButton> {
   }
 }
 
-/* class ImageInput extends StatefulWidget {
-  double.infinity,SingleImagePicker(this.title, this.fileVariable, this.
-  onChange, this.width,
-      {Key? key})
-      : super(key: key);
-  String title;
-  String? fileVariable;
-  double width;
-  double.infinity,var 
-  onChange;
-  @override
-  State<ImageInput> createState() => _ImageInputState();
-}
-
-class _ImageInputState extends State<ImageInput> {
-  XFile? img;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  content: const Text('Desde dónde quieres cargar la imágen?'),
-                  actions: [
-                    TextButton.icon(
-                      onPressed: () async {
-                        img =
-                            await _picker.pickImage(source: ImageSource.camera);
-                        if (img != null) {
-                          setState(() {
-                            widget.fileVariable = img!.path;
-                          });
-                          double.infinity,widget.
-                          onChange(img!.path);
-                          Navigator.pop(context);
-                        }
-                      },
-                      icon: const Icon(Icons.camera_alt,
-                          color: Color(0xFFF58633)),
-                      label: const Text('Cámara',
-                          style: TextStyle(color: Color(0xFFF58633))),
-                    ),
-                    TextButton.icon(
-                      onPressed: () async {
-                        img = await _picker.pickImage(
-                            source: ImageSource.gallery);
-                        if (img != null) {
-                          setState(() {
-                            widget.fileVariable = img!.path;
-                          });
-                          double.infinity,widget.
-                          onChange(img!.path);
-                          Navigator.pop(context);
-                        }
-                      },
-                      icon: const Icon(Icons.image_search_sharp,
-                          color: Color(0xFFF58633)),
-                      label: const Text('Galería',
-                          style: TextStyle(color: Color(0xFFF58633))),
-                    ),
-                  ],
-                ));
-      },
-      child: Column(
-        children: [
-          Text(widget.title),
-          Container(
-            width: widget.width,
-            margin: const EdgeInsets.only(bottom: 20),
-            height: 100,
-            color: img != null ? Colors.transparent : Colors.grey[200],
-            child: img != null
-                ? Image.file(
-                    File(img!.path),
-                  )
-                : (widget.fileVariable != null && widget.fileVariable != ''
-                    ? Image.file(
-                        File(widget.fileVariable!),
-                      )
-                    : const Center(
-                        child: Icon(Icons.camera_alt),
-                      )),
-          ),
-        ],
-      ),
-    );
-  }
-}
- */
 class ImagesPicker extends StatefulWidget {
   const ImagesPicker({
     Key? key,

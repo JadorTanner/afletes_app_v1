@@ -563,7 +563,6 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
               value = newValue!;
               categoriaController.text = newValue;
             });
-            // print(newValue);
           },
           items: List.generate(
             categories.length,
@@ -1050,7 +1049,6 @@ class _DepartamentoPickerState extends State<DepartamentoPicker> {
               value = newValue!;
               widget.controller.text = newValue;
             });
-            // print(newValue);
           },
           items: List.generate(
             states.length,
@@ -1107,7 +1105,6 @@ class CityPickerState extends State<CityPicker> {
               widget.value = newValue!;
               widget.controller.text = newValue;
             });
-            // print(newValue);
           },
           items: List.generate(
             newCities.length,

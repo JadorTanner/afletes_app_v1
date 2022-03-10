@@ -230,7 +230,7 @@ class User extends ChangeNotifier {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     try {
       Response response = await Api().getData('logout');
-      print(response.body);
+
       sharedPreferences.clear();
       if (response.statusCode == 200) {
         if (jsonDecode(response.body)['success']) {

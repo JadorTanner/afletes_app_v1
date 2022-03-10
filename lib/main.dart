@@ -12,7 +12,6 @@ import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
-import 'package:afletes_app_v1/ui/pages/tests.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';

@@ -79,7 +79,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.emailAddress,
                   // onEditingComplete: () => {},
-                  // onChanged: (value) => {print(value)},
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Ejemplo@gmail.com',

@@ -23,7 +23,6 @@ class Api {
 
   getData(apiURL) async {
     var fullUrl = _url + apiURL;
-    print(fullUrl);
     await getToken();
     return await http.get(
       Uri.parse(fullUrl),
@@ -33,7 +32,6 @@ class Api {
 
   postData(apiURL, body) async {
     var fullUrl = _url + apiURL;
-    print(fullUrl);
     await getToken();
     return await http.post(
       Uri.parse(fullUrl),
@@ -44,7 +42,6 @@ class Api {
 
   postWithFiles(apiURL, Map body, List<XFile> files) async {
     var fullUrl = _url + apiURL;
-    print(body);
     await getToken();
     http.MultipartRequest request =
         http.MultipartRequest('POST', Uri.parse(fullUrl));

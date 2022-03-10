@@ -142,7 +142,6 @@ class Vehicle {
     // );
     StreamedResponse response = await request.send();
     Map responseBody = jsonDecode(await response.stream.bytesToString());
-    print(responseBody);
     if (response.statusCode == 200) {
       Navigator.pop(context);
       if (responseBody['success']) {

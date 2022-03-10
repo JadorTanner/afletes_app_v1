@@ -112,7 +112,6 @@ class Load {
         ),
       );
       String stringResponse = await response.stream.bytesToString();
-      print(stringResponse);
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).clearSnackBars();
         Map responseBody = jsonDecode(stringResponse);
