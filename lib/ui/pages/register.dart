@@ -787,15 +787,11 @@ class RegisterButtonState extends State<RegisterButton> {
                             //TOKEN PARA MENSAJES PUSH
                             String? token =
                                 await FirebaseMessaging.instance.getToken();
-                            try {
+                            if (token != null) {
                               await Api().postData('user/set-device-token', {
                                 'id': responseBody['data']['user']['id'],
-                                'device_token': token ?? ''
+                                'device_token': token
                               });
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Ha ocurrido un error')));
                             }
 
                             sharedPreferences.setString('user',
