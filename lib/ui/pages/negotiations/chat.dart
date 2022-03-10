@@ -36,19 +36,18 @@ ButtonStyle pillStyle = ButtonStyle(
             borderRadius: BorderRadius.circular(18.0),
             side: const BorderSide(color: Colors.orange))));
 
-userData() async {
-  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
-      .userFromArray();
-}
-
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   try {
-    await userData();
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
+        .userFromArray();
+
+    sharedPreferences.setString('negotiation_id', id.toString());
+    Provider.of(context)<ChatProvider>().setNegotiationId(id);
+
     Api api = Api();
 
-    context.read<ChatProvider>().clearMessages();
-    context.read<ChatProvider>().setNegotiationId(id);
+    Provider.of(context)<ChatProvider>().clearMessages();
     FocusManager.instance.primaryFocus?.unfocus();
 
     Response response = await api.getData('negotiation/?id=' + id.toString());
@@ -57,7 +56,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
       List listMessages = jsonResp['data']['messages'];
       if (listMessages.isNotEmpty) {
         listMessages.asMap().forEach((key, message) {
-          context.read<ChatProvider>().addMessage(
+          Provider.of(context)<ChatProvider>().addMessage(
               id,
               ChatMessage(
                   message['img_url'] ?? message['message'],
@@ -91,28 +90,29 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
           context.read<ChatProvider>().setToPay(true);
           break;
         case 6:
-          context.read<ChatProvider>().setCanOffer(true);
-          context.read<ChatProvider>().setPaid(false);
-          context.read<ChatProvider>().setToPay(false);
+          Provider.of(context)<ChatProvider>().setCanOffer(true);
+          Provider.of(context)<ChatProvider>().setPaid(false);
+          Provider.of(context)<ChatProvider>().setToPay(false);
           break;
         case 8:
-          context.read<ChatProvider>().setCanOffer(false);
-          context.read<ChatProvider>().setPaid(true);
-          context.read<ChatProvider>().setShowDefaultMessages(true);
+          Provider.of(context)<ChatProvider>().setCanOffer(false);
+          Provider.of(context)<ChatProvider>().setPaid(true);
+          Provider.of(context)<ChatProvider>().setShowDefaultMessages(true);
           break;
         default:
-          context.read<ChatProvider>().setCanOffer(false);
+          Provider.of(context)<ChatProvider>().setCanOffer(false);
       }
-      // if (context.read<ChatProvider>().paid) {
+      // if (Provider.of(context)<ChatProvider>().paid) {
       //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
       // }
       context
           .read<ChatProvider>()
           .setLoadState(jsonResp['data']['load_state']['id']);
       if (jsonResp['data']['load_state']['id'] == 13) {
-        context.read<ChatProvider>().setShowDefaultMessages(false);
+        Provider.of(context)<ChatProvider>().setShowDefaultMessages(false);
       }
-      context.read<ChatProvider>().setLoadId(jsonResp['data']['load']['id']);
+      Provider.of(context)<ChatProvider>()
+          .setLoadId(jsonResp['data']['load']['id']);
     }
     return [];
   } catch (e) {
@@ -175,7 +175,7 @@ Future cancelNegotiation(id, context) async {
       'id': id,
     });
     if (response.statusCode == 200) {
-      context.read<ChatProvider>().setCanOffer(false);
+      Provider.of(context)<ChatProvider>().setCanOffer(false);
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -226,8 +226,8 @@ Future acceptNegotiation(id, context) async {
                 'id': id,
               });
               if (response.statusCode == 200) {
-                context.read<ChatProvider>().setCanOffer(false);
-                context.read<ChatProvider>().setToPay(true);
+                Provider.of(context)<ChatProvider>().setCanOffer(false);
+                Provider.of(context)<ChatProvider>().setToPay(true);
                 Navigator.pop(context);
                 if (user.isLoadGenerator) {
                   Navigator.of(context).push(MaterialPageRoute(
@@ -325,8 +325,12 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
-                      9, context, context.read<ChatProvider>())
+                  setLoadState(
+                      widget.id,
+                      Provider.of(context)<ChatProvider>().loadId,
+                      9,
+                      context,
+                      Provider.of(context)<ChatProvider>())
                 },
                 icon: const Icon(Icons.location_on),
                 label: const Text('En camino a recogida'),
@@ -340,8 +344,12 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
-                      11, context, context.read<ChatProvider>())
+                  setLoadState(
+                      widget.id,
+                      Provider.of(context)<ChatProvider>().loadId,
+                      11,
+                      context,
+                      Provider.of(context)<ChatProvider>())
                 },
                 icon: const Icon(Icons.arrow_forward_ios_rounded),
                 label: const Text('Recogido y en camino a destino'),
@@ -365,8 +373,12 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
-                      12, context, context.read<ChatProvider>())
+                  setLoadState(
+                      widget.id,
+                      Provider.of(context)<ChatProvider>().loadId,
+                      12,
+                      context,
+                      Provider.of(context)<ChatProvider>())
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Entregado'),
@@ -380,9 +392,13 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
-                      13, context, context.read<ChatProvider>()),
-                  context.read<ChatProvider>().setCanVote(false),
+                  setLoadState(
+                      widget.id,
+                      Provider.of(context)<ChatProvider>().loadId,
+                      13,
+                      context,
+                      Provider.of(context)<ChatProvider>()),
+                  Provider.of(context)<ChatProvider>().setCanVote(false),
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Confirmar entrega'),
@@ -542,7 +558,8 @@ class OfferInputSection extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => {
-                  sendMessage(widget.id, context, context.read<ChatProvider>())
+                  sendMessage(
+                      widget.id, context, Provider.of(context)<ChatProvider>())
                 },
                 icon: const Icon(Icons.send),
                 splashColor: Colors.red,
@@ -636,8 +653,8 @@ class PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () => {
-        sendMessage(
-            id, context, context.read<ChatProvider>(), true, title, isLocation)
+        sendMessage(id, context, Provider.of(context)<ChatProvider>(), true,
+            title, isLocation)
       },
       child: Text(
         title,
