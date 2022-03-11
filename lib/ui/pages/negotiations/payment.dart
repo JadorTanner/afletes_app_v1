@@ -146,7 +146,6 @@ class _PaymentState extends State<Payment> {
                           onPressed: () async {
                             try {
                               Api api = Api();
-                              print('requesteando');
                               Response response = await api
                                   .postData('negotiation/pay-negotiation', {
                                 'amount': data['data']['load']['final_offer']
@@ -154,7 +153,6 @@ class _PaymentState extends State<Payment> {
                                     .replaceAll('.00', ''),
                                 'negotiation_id': widget.id
                               });
-                              print(response.body);
 
                               Map jsonResponse = jsonDecode(response.body);
                               if (response.statusCode == 200) {
@@ -175,8 +173,6 @@ class _PaymentState extends State<Payment> {
                                           ),
                                       barrierDismissible: false);
                                 }
-                              } else {
-                                print(response.body);
                               }
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(

@@ -19,7 +19,6 @@ Future<List<Vehicle>> getMyVehicles() async {
         var data = jsonResponse['data'];
         if (data.isNotEmpty) {
           data.asMap().forEach((key, vehicle) {
-            print(vehicle['model']);
             vehicles.add(
               Vehicle(
                 id: vehicle['id'],
@@ -141,7 +140,6 @@ class VehicleCard extends StatelessWidget {
           ? CarCard2(
               vehicles[index],
               onTap: () {
-                print('push a vehicles');
                 Navigator.of(context).pushNamed('/create-vehicle', arguments: {
                   'id': vehicles[index].id,
                   'chapa': vehicles[index].licensePlate,

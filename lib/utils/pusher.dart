@@ -132,9 +132,7 @@ class PusherApi {
         bindEvent(transportistsLocationChannel,
             'App\\Events\\TransportistLocationEvent',
             (PusherEvent? event) async {
-          print('PUSHER DATA LOCATION:' + event!.data.toString());
           if (event != null) {
-            print('PUSHER DATA LOCATION:' + event.data!.toString());
             if (event.data != null) {
               Map data = jsonDecode(event.data!.toString());
               context.read<TransportistsLocProvider>().updateLocation(

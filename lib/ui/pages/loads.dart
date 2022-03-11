@@ -550,7 +550,6 @@ class _LoadsMapState extends State<LoadsMap>
         await getBytesFromAsset('assets/img/load-marker-icon.png', 30));
     markers.clear();
     loads.asMap().forEach((key, load) {
-      print(load.addressFrom);
       markers.add(
         Marker(
           markerId: MarkerId(load.id.toString()),
@@ -690,7 +689,6 @@ class _LoadsMapState extends State<LoadsMap>
               color: kBlack,
               onPressed: () async {
                 loads = await getLoads();
-                print('cantidad de cargas: ' + loads.length.toString());
                 setLoadsMarkers(position);
                 setState(() {});
               },

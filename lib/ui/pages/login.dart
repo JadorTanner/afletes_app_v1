@@ -79,7 +79,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.emailAddress,
                   // onEditingComplete: () => {},
-                  // onChanged: (value) => {print(value)},
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Ejemplo@gmail.com',
@@ -186,14 +185,14 @@ class _LoginButtonState extends State<LoginButton> {
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
 
                 //TOKEN PARA MENSAJES PUSH
-                // String? token = await FirebaseMessaging.instance.getToken();
-                // try {
-                //   await Api().postData('user/set-device-token',
-                //       {'id': user['id'], 'device_token': token ?? ''});
-                // } catch (e) {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //       const SnackBar(content: Text('Ha ocurrido un error')));
-                // }
+                String? token = await FirebaseMessaging.instance.getToken();
+                try {
+                  await Api().postData('user/set-device-token',
+                      {'id': user['id'], 'device_token': token ?? ''});
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Ha ocurrido un error')));
+                }
                 if (user['confirmed']) {
                   if (user['habilitado']) {
                     if (user['is_carrier']) {
