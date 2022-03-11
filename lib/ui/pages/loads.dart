@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -545,8 +546,8 @@ class _LoadsMapState extends State<LoadsMap>
     //   .load(imgurl))
     //   .buffer
     //   .asUint8List();
-    BitmapDescriptor bitmapIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(), 'assets/img/load-marker-icon.png');
+    BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(
+        await getBytesFromAsset('assets/img/load-marker-icon.png', 30));
     markers.clear();
     loads.asMap().forEach((key, load) {
       print(load.addressFrom);

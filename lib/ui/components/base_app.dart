@@ -47,7 +47,7 @@ class _BaseAppState extends State<BaseApp> {
             if (snapshot.hasData) {
               return SafeArea(
                   minimum: const EdgeInsets.all(15),
-                  child: Column(
+                  child: ListView(
                     children: [
                       const SizedBox(
                         height: 20,

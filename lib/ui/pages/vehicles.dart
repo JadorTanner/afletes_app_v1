@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -10,6 +9,7 @@ import 'package:afletes_app_v1/ui/components/car_card.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
@@ -833,16 +833,6 @@ class _VehiclesListState extends State<VehiclesList> {
   //coordenada inicial
   //LISTA DE MARCADORES
   List<Marker> markers = [];
-
-  Future<Uint8List> getBytesFromAsset(String path, int width) async {
-    ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
-        targetWidth: width);
-    ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
-  }
 
 //OBTIENE LA POSICIÓN DEL USUARIO
   void _onMapCreated(GoogleMapController controller,
