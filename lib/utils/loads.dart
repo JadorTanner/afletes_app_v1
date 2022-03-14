@@ -38,6 +38,7 @@ class Load {
       state,
       loadWait,
       deliveryWait,
+      negWith,
       product;
   bool isUrgent;
   List attachments;
@@ -74,6 +75,7 @@ class Load {
     this.product = '',
     this.loadWait = '',
     this.deliveryWait = '',
+    this.negWith = '',
     this.isUrgent = false,
     this.attachments = const [],
   });

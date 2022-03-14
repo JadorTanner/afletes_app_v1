@@ -180,8 +180,9 @@ class _BaseAppState extends State<BaseApp> {
                         color: Colors.white,
                       ),
                       child: IconButton(
-                          onPressed: () => {Navigator.of(context).pop()},
-                          icon: const Icon(Icons.chevron_left, size: 20)),
+                        onPressed: () => {Navigator.of(context).pop()},
+                        icon: const Icon(Icons.chevron_left, size: 20),
+                      ),
                     )
                   : const SizedBox.shrink()
             ],

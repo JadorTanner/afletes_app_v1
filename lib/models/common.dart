@@ -34,7 +34,7 @@ class City {
 
 class Negotiation {
   int id, transportistId, generatorId, loadId, vehicleId, stateId;
-  String fecha, state;
+  String fecha, state, withPerson;
 
   Load? negotiationLoad;
 
@@ -47,6 +47,7 @@ class Negotiation {
       this.stateId = 0,
       this.fecha = '',
       this.state = '',
+      this.withPerson = '',
       this.negotiationLoad = null});
 
   //TIPOS DE MENSAJES

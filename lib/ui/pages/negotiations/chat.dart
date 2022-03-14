@@ -37,88 +37,88 @@ ButtonStyle pillStyle = ButtonStyle(
             side: const BorderSide(color: Colors.orange))));
 
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
-  try {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
-        .userFromArray();
+  // try {
+  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
+      .userFromArray();
 
-    sharedPreferences.setString('negotiation_id', id.toString());
-    Provider.of(context)<ChatProvider>().setNegotiationId(id);
+  sharedPreferences.setString('negotiation_id', id.toString());
+  context.read<ChatProvider>().setNegotiationId(id);
 
-    Api api = Api();
+  Api api = Api();
 
-    Provider.of(context)<ChatProvider>().clearMessages();
-    FocusManager.instance.primaryFocus?.unfocus();
+  context.read<ChatProvider>().clearMessages();
+  FocusManager.instance.primaryFocus?.unfocus();
 
-    Response response = await api.getData('negotiation/?id=' + id.toString());
-    if (response.statusCode == 200) {
-      Map jsonResp = jsonDecode(response.body);
-      List listMessages = jsonResp['data']['messages'];
-      if (listMessages.isNotEmpty) {
-        listMessages.asMap().forEach((key, message) {
-          Provider.of(context)<ChatProvider>().addMessage(
-              id,
-              ChatMessage(
-                  message['img_url'] ?? message['message'],
-                  message['sender_id'],
-                  message['id'],
-                  message['img_url'] != null));
-        });
-      }
-      receiverId = jsonResp['data']['negotiation']
-          [user.isCarrier ? 'generator_id' : 'transportist_id'];
-      context.read<ChatProvider>().setCanOffer(false);
-      context.read<ChatProvider>().setPaid(false);
-      context.read<ChatProvider>().setCanVote(false);
-      context.read<ChatProvider>().setShowDefaultMessages(false);
-      context.read<ChatProvider>().setToPay(false);
-      //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
-      switch (jsonResp['data']['negotiation_state']['id']) {
-        case 1:
-          context.read<ChatProvider>().setCanOffer(true);
-          context.read<ChatProvider>().setPaid(false);
-          context.read<ChatProvider>().setCanVote(false);
-          context.read<ChatProvider>().setShowDefaultMessages(false);
-          context.read<ChatProvider>().setToPay(false);
-          break;
-        case 2:
-          context.read<ChatProvider>().setCanOffer(false);
-          context.read<ChatProvider>().setPaid(false);
-          context.read<ChatProvider>().setCanVote(false);
-          context.read<ChatProvider>().setShowDefaultMessages(false);
-          context.read<ChatProvider>().setToPay(true);
-          break;
-        case 6:
-          Provider.of(context)<ChatProvider>().setCanOffer(true);
-          Provider.of(context)<ChatProvider>().setPaid(false);
-          Provider.of(context)<ChatProvider>().setToPay(false);
-          break;
-        case 8:
-          Provider.of(context)<ChatProvider>().setCanOffer(false);
-          Provider.of(context)<ChatProvider>().setPaid(true);
-          Provider.of(context)<ChatProvider>().setShowDefaultMessages(true);
-          break;
-        default:
-          Provider.of(context)<ChatProvider>().setCanOffer(false);
-      }
-      // if (Provider.of(context)<ChatProvider>().paid) {
-      //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
-      // }
-      context
-          .read<ChatProvider>()
-          .setLoadState(jsonResp['data']['load_state']['id']);
-      if (jsonResp['data']['load_state']['id'] == 13) {
-        Provider.of(context)<ChatProvider>().setShowDefaultMessages(false);
-      }
-      Provider.of(context)<ChatProvider>()
-          .setLoadId(jsonResp['data']['load']['id']);
+  Response response = await api.getData('negotiation/?id=' + id.toString());
+  print(response.body);
+  if (response.statusCode == 200) {
+    Map jsonResp = jsonDecode(response.body);
+    List listMessages = jsonResp['data']['messages'];
+    if (listMessages.isNotEmpty) {
+      listMessages.asMap().forEach((key, message) {
+        context.read<ChatProvider>().addMessage(
+            id,
+            ChatMessage(
+                message['img_url'] ?? message['message'],
+                message['sender_id'],
+                message['id'],
+                message['img_url'] != null));
+      });
     }
-    return [];
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
-    return [];
+    receiverId = jsonResp['data']['negotiation']
+        [user.isCarrier ? 'generator_id' : 'transportist_id'];
+    context.read<ChatProvider>().setCanOffer(false);
+    context.read<ChatProvider>().setPaid(false);
+    context.read<ChatProvider>().setCanVote(false);
+    context.read<ChatProvider>().setShowDefaultMessages(false);
+    context.read<ChatProvider>().setToPay(false);
+    //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
+    switch (jsonResp['data']['negotiation_state']['id']) {
+      case 1:
+        context.read<ChatProvider>().setCanOffer(true);
+        context.read<ChatProvider>().setPaid(false);
+        context.read<ChatProvider>().setCanVote(false);
+        context.read<ChatProvider>().setShowDefaultMessages(false);
+        context.read<ChatProvider>().setToPay(false);
+        break;
+      case 2:
+        context.read<ChatProvider>().setCanOffer(false);
+        context.read<ChatProvider>().setPaid(false);
+        context.read<ChatProvider>().setCanVote(false);
+        context.read<ChatProvider>().setShowDefaultMessages(false);
+        context.read<ChatProvider>().setToPay(true);
+        break;
+      case 6:
+        context.read<ChatProvider>().setCanOffer(true);
+        context.read<ChatProvider>().setPaid(false);
+        context.read<ChatProvider>().setToPay(false);
+        break;
+      case 8:
+        context.read<ChatProvider>().setCanOffer(false);
+        context.read<ChatProvider>().setPaid(true);
+        context.read<ChatProvider>().setShowDefaultMessages(true);
+        break;
+      default:
+        context.read<ChatProvider>().setCanOffer(false);
+    }
+    // if (context.read<ChatProvider>().paid) {
+    //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
+    // }
+    context
+        .read<ChatProvider>()
+        .setLoadState(jsonResp['data']['load_state']['id']);
+    if (jsonResp['data']['load_state']['id'] == 13) {
+      context.read<ChatProvider>().setShowDefaultMessages(false);
+    }
+    context.read<ChatProvider>().setLoadId(jsonResp['data']['load']['id']);
   }
+  return [];
+  // } catch (e) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Compruebe su conexión a internet')));
+  //   return [];
+  // }
 }
 
 Future sendMessage(id, BuildContext context, ChatProvider chat,
@@ -174,7 +174,7 @@ Future cancelNegotiation(id, context) async {
       'id': id,
     });
     if (response.statusCode == 200) {
-      Provider.of(context)<ChatProvider>().setCanOffer(false);
+      context.read<ChatProvider>().setCanOffer(false);
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -225,8 +225,8 @@ Future acceptNegotiation(id, context) async {
                 'id': id,
               });
               if (response.statusCode == 200) {
-                Provider.of(context)<ChatProvider>().setCanOffer(false);
-                Provider.of(context)<ChatProvider>().setToPay(true);
+                context.read<ChatProvider>().setCanOffer(false);
+                context.read<ChatProvider>().setToPay(true);
                 Navigator.pop(context);
                 if (user.isLoadGenerator) {
                   Navigator.of(context).push(MaterialPageRoute(
@@ -274,15 +274,28 @@ class _NegotiationChatState extends State<NegotiationChat> {
         child: FutureBuilder(
           future: getNegotiationChat(widget.id, context),
           builder: (context, snapshot) => BaseApp(
-            Column(
-              children: [
-                Expanded(
-                  // height: MediaQuery.of(context).size.height * 0.75,
-                  child: ChatPanel(),
-                ),
-                OfferInputSection(widget: widget),
-                ButtonsSection(widget: widget)
-              ],
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20)),
+              ),
+              margin: const EdgeInsets.only(
+                top: 70,
+                left: 20,
+                right: 20,
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    // height: MediaQuery.of(context).size.height * 0.75,
+                    child: ChatPanel(),
+                  ),
+                  OfferInputSection(widget: widget),
+                  ButtonsSection(widget: widget)
+                ],
+              ),
             ),
           ),
         ),
@@ -324,12 +337,8 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(
-                      widget.id,
-                      Provider.of(context)<ChatProvider>().loadId,
-                      9,
-                      context,
-                      Provider.of(context)<ChatProvider>())
+                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
+                      9, context, context.read<ChatProvider>())
                 },
                 icon: const Icon(Icons.location_on),
                 label: const Text('En camino a recogida'),
@@ -343,12 +352,8 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(
-                      widget.id,
-                      Provider.of(context)<ChatProvider>().loadId,
-                      11,
-                      context,
-                      Provider.of(context)<ChatProvider>())
+                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
+                      11, context, context.read<ChatProvider>())
                 },
                 icon: const Icon(Icons.arrow_forward_ios_rounded),
                 label: const Text('Recogido y en camino a destino'),
@@ -372,12 +377,8 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(
-                      widget.id,
-                      Provider.of(context)<ChatProvider>().loadId,
-                      12,
-                      context,
-                      Provider.of(context)<ChatProvider>())
+                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
+                      12, context, context.read<ChatProvider>())
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Entregado'),
@@ -391,13 +392,9 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton.icon(
                 onPressed: () => {
-                  setLoadState(
-                      widget.id,
-                      Provider.of(context)<ChatProvider>().loadId,
-                      13,
-                      context,
-                      Provider.of(context)<ChatProvider>()),
-                  Provider.of(context)<ChatProvider>().setCanVote(false),
+                  setLoadState(widget.id, context.read<ChatProvider>().loadId,
+                      13, context, context.read<ChatProvider>()),
+                  context.read<ChatProvider>().setCanVote(false),
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Confirmar entrega'),
@@ -487,14 +484,37 @@ class ButtonsSection extends StatelessWidget {
         //Si la negociación está para pago
         if (user.isLoadGenerator) {
           children = [
-            TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => Payment(widget.id),
+            Flexible(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => Payment(widget.id),
+                  ),
+                ),
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all<EdgeInsets>(
+                      const EdgeInsets.symmetric(vertical: 20)),
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                    kBlack,
+                  ),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(0)),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Text(
+                      'Pagar',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Icon(Icons.attach_money, color: Colors.white),
+                  ],
                 ),
               ),
-              icon: const Icon(Icons.attach_money),
-              label: const Text('Pagar'),
             ),
           ];
         }
@@ -514,8 +534,7 @@ class ButtonsSection extends StatelessWidget {
         ];
       }
     }
-    return ButtonBar(
-      alignment: MainAxisAlignment.center,
+    return Row(
       children: children,
     );
   }
@@ -545,6 +564,8 @@ class OfferInputSection extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: 'Oferto',
+                  fillColor: Colors.white,
+                  filled: true,
                   contentPadding:
                       EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                 ),
@@ -554,8 +575,7 @@ class OfferInputSection extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => {
-                  sendMessage(
-                      widget.id, context, Provider.of(context)<ChatProvider>())
+                  sendMessage(widget.id, context, context.read<ChatProvider>())
                 },
                 icon: const Icon(Icons.send),
                 splashColor: Colors.red,
@@ -626,14 +646,15 @@ class _ChatPanelState extends State<ChatPanel> {
       padding: const EdgeInsets.all(20),
       reverse: true,
       children: List.generate(
-          chat.length,
-          (index) => chat[index].senderId != user.id
-              ? MessageBubbleReceived(
-                  chat[index].message,
-                  isImage: chat[index].isImage,
-                )
-              : MessageBubbleSent(chat[index].message,
-                  isImage: chat[index].isImage)),
+        chat.length,
+        (index) => chat[index].senderId != user.id
+            ? MessageBubbleReceived(
+                chat[index].message,
+                isImage: chat[index].isImage,
+              )
+            : MessageBubbleSent(chat[index].message,
+                isImage: chat[index].isImage),
+      ),
     );
   }
 }
@@ -649,8 +670,8 @@ class PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () => {
-        sendMessage(id, context, Provider.of(context)<ChatProvider>(), true,
-            title, isLocation)
+        sendMessage(
+            id, context, context.read<ChatProvider>(), true, title, isLocation)
       },
       child: Text(
         title,

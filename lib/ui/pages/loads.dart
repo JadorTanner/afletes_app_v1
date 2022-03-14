@@ -534,8 +534,8 @@ class _LoadsMapState extends State<LoadsMap>
   getPosition() async {
     position = await Geolocator.getCurrentPosition();
     setState(() {
-      // mapController.animateCamera(CameraUpdate.newLatLng(
-      //     LatLng(position.latitude, position.longitude)));
+      mapController.animateCamera(CameraUpdate.newLatLng(
+          LatLng(position.latitude, position.longitude)));
     });
     setLoadsMarkers(position);
   } //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
@@ -636,12 +636,21 @@ class _LoadsMapState extends State<LoadsMap>
         polylineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
       });
+
+      mapController.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+              southwest: LatLng(destin.latitude, destin.longitude),
+              northeast: LatLng(origin.latitude, origin.longitude)),
+          10,
+        ),
+      );
     }
 
     setState(() {
       _polylines.add(Polyline(
         width: 5,
-        polylineId: PolylineId('polyline'),
+        polylineId: const PolylineId('polyline'),
         color: Colors.blueAccent,
         points: polylineCoordinates,
       ));
@@ -672,7 +681,7 @@ class _LoadsMapState extends State<LoadsMap>
           myLocationEnabled: true,
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
-            zoom: 6,
+            zoom: 14,
           ),
           markers: markers.map((e) => e).toSet(),
           buildingsEnabled: false,

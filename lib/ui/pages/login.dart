@@ -5,6 +5,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -33,47 +34,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFED8232),
-      ),
-      // resizeToAvoidBottomInset: false,
       body: ListView(
-        // mainAxisSize: MainAxisSize.max,
-        // mainAxisAlignment: MainAxisAlignment.start,
-        // crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Align(
             alignment: const AlignmentDirectional(-1, -1),
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.3,
-              decoration: const BoxDecoration(
-                color: Color(0xFFED8232),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(50),
-                  topLeft: Radius.circular(0),
-                  topRight: Radius.circular(0),
-                ),
-                shape: BoxShape.rectangle,
-              ),
-              child: Hero(
-                tag: 'splash-screen-loading',
-                child: Lottie.asset('assets/lottie/camion.json'),
-              ),
+              height: MediaQuery.of(context).size.height * 0.6,
+              decoration: const BoxDecoration(color: Colors.orange),
             ),
           ),
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
+            padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(
-                  width: 100,
-                  height: 40,
-                ),
                 TextFormField(
                   controller: textController1,
                   textInputAction: TextInputAction.next,
@@ -81,24 +57,28 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   // onEditingComplete: () => {},
                   decoration: InputDecoration(
                     labelText: 'Email',
+                    floatingLabelStyle: TextStyle(color: kBlack),
                     hintText: 'Ejemplo@gmail.com',
+                    hintStyle: TextStyle(color: kInputBorder),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color(0xFFED8232),
+                      borderSide: BorderSide(
+                        color: kInputBorder,
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color(0xFFED8232),
+                      borderSide: BorderSide(
+                        color: kInputBorder,
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.alternate_email,
-                      color: Color(0xFFED8232),
+                      color: kInputBorder,
                     ),
                   ),
                   validator: (val) {
@@ -111,12 +91,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 ),
                 const SizedBox(
                   width: 100,
-                  height: 40,
+                  height: 20,
                 ),
                 PasswordField(),
                 const SizedBox(
                   width: 100,
-                  height: 40,
+                  height: 20,
                 ),
                 LoginButton(),
                 const SizedBox(
@@ -130,8 +110,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
           // const Spacer(),
           RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(children: [
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              children: [
                 const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
                 WidgetSpan(
                   child: GestureDetector(
@@ -145,8 +126,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-              ])),
+              ],
+            ),
+          ),
           // const Spacer(),
+          const SizedBox(
+            width: 100,
+            height: 20,
+          ),
         ],
       ),
     );
@@ -275,23 +262,25 @@ class _PasswordFieldState extends State<PasswordField> {
       // onEditingComplete: () => {},
       decoration: InputDecoration(
         labelText: 'Contraseña',
+        floatingLabelStyle: TextStyle(color: kBlack),
+        contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
         ),
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.lock,
-          color: Color(0xFFED8232),
+          color: kInputBorder,
         ),
         suffixIcon: InkWell(
           onTap: () => setState(
@@ -301,7 +290,7 @@ class _PasswordFieldState extends State<PasswordField> {
             passwordVisibility
                 ? Icons.visibility_outlined
                 : Icons.visibility_off_outlined,
-            color: const Color(0xFFED8232),
+            color: kInputBorder,
             size: 22,
           ),
         ),

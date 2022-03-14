@@ -1,3 +1,4 @@
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -18,15 +19,15 @@ class MessageBubbleReceived extends StatelessWidget {
               alignment: Alignment.center,
               transform: Matrix4.rotationY(pi),
               child: CustomPaint(
-                painter: CustomShape(const Color(0xFFE0E0E0)),
+                painter: CustomShape(Color(0xFFE5E5E5)),
               ),
             ),
             Flexible(
               child: Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: const BorderRadius.only(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE5E5E5),
+                  borderRadius: BorderRadius.only(
                     topRight: Radius.circular(18),
                     bottomLeft: Radius.circular(18),
                     bottomRight: Radius.circular(18),
@@ -126,7 +127,7 @@ class MessageBubbleSent extends StatelessWidget {
                     ),
             ),
           ),
-          CustomPaint(painter: CustomShape(const Color(0xFF006064))),
+          CustomPaint(painter: CustomShape(const Color(0xFF006435))),
         ],
       ),
     );

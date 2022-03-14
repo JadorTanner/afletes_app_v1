@@ -221,13 +221,21 @@ class _AfletesAppState extends State<AfletesApp> {
     return MaterialApp(
       title: 'Afletes',
       theme: ThemeData(
+        fontFamily: 'Afletes',
         dividerColor: const Color(0xBBF58633),
         primaryColor: const Color(0xFFF58633),
         backgroundColor: const Color(0xFFF58633),
         textTheme: const TextTheme(
-          bodyText1: TextStyle(color: Color(0xFF101010)),
-          bodyText2: TextStyle(
-              color: Color(0xFF101010), fontWeight: FontWeight.normal),
+          bodyText1:
+              TextStyle(color: Color(0xFF101010), fontWeight: FontWeight.w200),
+          bodyText2:
+              TextStyle(color: Color(0xFF101010), fontWeight: FontWeight.w200),
+          headline5: TextStyle(
+            fontWeight: FontWeight.w700,
+          ),
+          headline6: TextStyle(
+            fontWeight: FontWeight.w700,
+          ),
         ),
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(

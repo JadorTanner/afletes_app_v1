@@ -40,6 +40,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
 
     if (Platform.isAndroid) WebView.platform = AndroidWebView();
+    if (Platform.isIOS) WebView.platform = CupertinoWebView();
   }
 
   @override
@@ -49,6 +50,7 @@ class _PaymentState extends State<Payment> {
         future: getPaymentData(),
         builder: (context, snapshot) {
           Map? data = snapshot.data;
+          print(data);
           if (data != null) {
             razon.text = data['data']['generator']['legal_name'] ??
                 data['data']['generator']['last_name'] +
@@ -160,15 +162,13 @@ class _PaymentState extends State<Payment> {
                                   showDialog(
                                       context: context,
                                       builder: (context) => Dialog(
-                                            child: SizedBox(
-                                              child: WebView(
-                                                initialUrl: apiUrl +
-                                                    'bancard-view?process_id=' +
-                                                    jsonResponse['data']
-                                                        ['process_id'],
-                                                javascriptMode:
-                                                    JavascriptMode.unrestricted,
-                                              ),
+                                            child: WebView(
+                                              initialUrl: apiUrl +
+                                                  'bancard-view?process_id=' +
+                                                  jsonResponse['data']
+                                                      ['process_id'],
+                                              javascriptMode:
+                                                  JavascriptMode.unrestricted,
                                             ),
                                           ),
                                       barrierDismissible: false);

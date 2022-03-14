@@ -20,6 +20,7 @@ List cities = [];
 
 String cedulaFrente = '';
 String cedulaAtras = '';
+PageController pageController = PageController();
 
 TextEditingController userType = TextEditingController();
 TextEditingController firstName = TextEditingController();
@@ -43,6 +44,7 @@ Future getData(context) async {
   if (userType.text == '') {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Cómo quieres registrarte?'),
         actions: [
@@ -122,39 +124,15 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFed8d23),
-        elevation: 0,
-      ),
       body: FutureBuilder(
         future: getData(context),
         builder: (context, AsyncSnapshot snapshot) =>
             (snapshot.connectionState == ConnectionState.done
-                ? Column(
+                ? PageView(
+                    controller: pageController,
                     children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.3,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFED8232),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(50),
-                            bottomRight: Radius.circular(50),
-                            topLeft: Radius.circular(0),
-                            topRight: Radius.circular(0),
-                          ),
-                          shape: BoxShape.rectangle,
-                        ),
-                        child: Hero(
-                          tag: 'splash-screen-loading',
-                          child: Lottie.asset('assets/lottie/camion.json'),
-                        ),
-                      ),
-                      // Hero(
-                      //   tag: 'splash-screen-loading',
-                      //   child: Lottie.asset('assets/lottie/camion.json'),
-                      // ),
-                      const RegisterPagePage()
+                      PrimeraParte(pageController: pageController),
+                      SegundaParte(pageController: pageController),
                     ],
                   )
                 : const Center(
@@ -173,8 +151,6 @@ class RegisterPagePage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPagePage> {
-  bool passwordVisibility = false;
-  PageController pageController = PageController();
   // static const double separacion = 15;
   @override
   Widget build(BuildContext context) {
@@ -184,74 +160,7 @@ class RegisterPageState extends State<RegisterPagePage> {
       children: [
         PrimeraParte(pageController: pageController),
         SegundaParte(pageController: pageController),
-        ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      SingleImagePicker(
-                        'Cédula (frente)',
-                        cedulaFrente,
-                        150,
-                        onChange: (path) => setState(() {
-                          cedulaFrente = path;
-                        }),
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      SingleImagePicker(
-                        'Cédula (atrás)',
-                        cedulaAtras,
-                        150,
-                        onChange: (path) => setState(() {
-                          cedulaAtras = path;
-                        }),
-                      ),
-                    ],
-                  ),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                          onPressed: () => pageController.previousPage(
-                              duration: const Duration(milliseconds: 100),
-                              curve: Curves.ease),
-                          icon: const Icon(Icons.navigate_before)),
-                      RegisterButton(
-                        text: 'Registrarse',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(children: [
-                  const WidgetSpan(child: Text('Ya tienes una cuenta? ')),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Ingresa aquí!',
-                        style: TextStyle(
-                            color: Color(0xFFED8232),
-                            fontSize: 16,
-                            decoration: TextDecoration.underline),
-                      ),
-                    ),
-                  ),
-                ])),
-            const Spacer(),
-          ],
-        ),
+        SegundaParte(pageController: pageController),
       ],
     ));
   }
@@ -269,172 +178,241 @@ class PrimeraParte extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(
-              width: 100,
-              height: 10,
-            ),
-            RegisterFormField(
-              'Cédula o RUC *',
-              Icons.article,
-              documentNumber,
-              hint: '9888777',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Razón social',
-              Icons.person,
-              legalName,
-              hint: 'Empresa s.a.',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Nombre',
-              Icons.person,
-              firstName,
-              hint: 'José',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Apellido',
-              Icons.person,
-              lastName,
-              hint: 'Gonzalez',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Email',
-              Icons.alternate_email,
-              email,
-              hint: 'ejemplo@gmail.com',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            Row(
+    return ListView(
+      // crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 40,
+            left: 20,
+            right: 20,
+            bottom: 20,
+          ),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
               children: [
-                Flexible(
-                    child: RegisterFormField(
-                  'Celular',
-                  Icons.phone_android,
-                  cellphone,
-                  hint: '0981222333',
-                )),
+                Text('Registro', style: Theme.of(context).textTheme.headline5),
                 const SizedBox(
-                  width: 20,
+                  width: 100,
+                  height: 20,
                 ),
-                Flexible(
-                  child: RegisterFormField(
-                    'Teléfono fijo:',
-                    Icons.phone,
-                    phone,
-                    hint: '021444666',
-                    action: TextInputAction.done,
-                  ),
-                )
-              ],
+                RegisterFormField(
+                  'Cédula o RUC *',
+                  Icons.article,
+                  documentNumber,
+                  hint: '9888777',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                RegisterFormField(
+                  'Razón social',
+                  Icons.person,
+                  legalName,
+                  hint: 'Empresa s.a.',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                RegisterFormField(
+                  'Nombre',
+                  Icons.person,
+                  firstName,
+                  hint: 'José',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                RegisterFormField(
+                  'Apellido',
+                  Icons.person,
+                  lastName,
+                  hint: 'Gonzalez',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                Row(
+                  children: [
+                    Flexible(
+                        child: RegisterFormField(
+                      'Celular',
+                      Icons.phone_android,
+                      cellphone,
+                      hint: '0981222333',
+                    )),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: RegisterFormField(
+                        'Teléfono fijo:',
+                        Icons.phone,
+                        phone,
+                        hint: '021444666',
+                        action: TextInputAction.done,
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(width: 100, height: separacion),
+                const UbicacionPicker(),
+                const SizedBox(width: 100, height: separacion),
+                RegisterFormField(
+                  'Calle Principal *',
+                  Icons.home,
+                  street1,
+                  hint: 'Avda Mcal López',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                Row(
+                  children: [
+                    Flexible(
+                      child: RegisterFormField(
+                        'Calle Secundaria',
+                        Icons.home,
+                        street2,
+                        hint: 'esq. #',
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: RegisterFormField(
+                        'Nro.',
+                        Icons.home,
+                        houseNumber,
+                        hint: '1234',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 100, height: separacion),
+                RegisterFormField(
+                  'Email',
+                  Icons.alternate_email,
+                  email,
+                  hint: 'ejemplo@gmail.com',
+                ),
+                const SizedBox(width: 100, height: separacion),
+                PassField('Contraseña', TextInputAction.next, password),
+                const SizedBox(width: 100, height: separacion),
+                PassField('Confirmar contraseña', TextInputAction.done,
+                    passwordConfirmation),
+              ]),
+        ),
+        const SizedBox(width: 100, height: separacion),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: const [
+            Flexible(
+              flex: 1,
+              child: SizedBox.shrink(),
             ),
-            const SizedBox(width: 100, height: separacion),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    onPressed: () => pageController.nextPage(
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.ease),
-                    icon: const Icon(Icons.navigate_next))
-              ],
-            )
+            Flexible(
+              flex: 1,
+              child: NextPageButton(),
+            ),
           ],
         ),
-      ),
+      ],
     );
   }
 }
 
-class SegundaParte extends StatelessWidget {
-  const SegundaParte({
-    Key? key,
-    required this.pageController,
-  }) : super(key: key);
-
-  final PageController pageController;
-  // static const double separacion = 15;
+class SegundaParte extends StatefulWidget {
+  SegundaParte({required this.pageController, Key? key}) : super(key: key);
+  PageController pageController;
 
   @override
+  State<SegundaParte> createState() => _SegundaParteState();
+}
+
+class _SegundaParteState extends State<SegundaParte> {
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(40, 40, 40, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(
-              width: 100,
-              height: 10,
-            ),
-            const SizedBox(width: 100, height: separacion),
-            const UbicacionPicker(),
-            const SizedBox(width: 100, height: separacion),
-            RegisterFormField(
-              'Calle Principal *',
-              Icons.home,
-              street1,
-              hint: 'Avda Mcal López',
-            ),
-            const SizedBox(width: 100, height: separacion),
-            Row(
-              children: [
-                Flexible(
-                  child: RegisterFormField(
-                    'Calle Secundaria',
-                    Icons.home,
-                    street2,
-                    hint: 'esq. #',
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 40,
+            left: 20,
+            right: 20,
+            bottom: 20,
+          ),
+          child: ListView(
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Documentos', style: Theme.of(context).textTheme.headline5),
+              const SizedBox(
+                width: 100,
+                height: 20,
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Cédula (frente)',
+                      cedulaFrente,
+                      double.infinity,
+                      onChange: (path) => setState(() {
+                        cedulaFrente = path;
+                      }),
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Flexible(
-                  child: RegisterFormField(
-                    'Nro.',
-                    Icons.home,
-                    houseNumber,
-                    hint: '1234',
+                  const SizedBox(
+                    width: 20,
                   ),
+                  Flexible(
+                    child: SingleImagePicker(
+                      'Cédula (atrás)',
+                      cedulaAtras,
+                      double.infinity,
+                      onChange: (path) => setState(() {
+                        cedulaAtras = path;
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    const WidgetSpan(child: Text('Ya tienes una cuenta? ')),
+                    WidgetSpan(
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const Text(
+                          'Ingresa aquí!',
+                          style: TextStyle(
+                              color: Color(0xFFED8232),
+                              fontSize: 16,
+                              decoration: TextDecoration.underline),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(width: 100, height: separacion),
-            PassField('Contraseña', TextInputAction.next, password),
-            const SizedBox(width: 100, height: separacion),
-            PassField('Confirmar contraseña', TextInputAction.done,
-                passwordConfirmation),
-            const SizedBox(width: 100, height: separacion),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    onPressed: () => pageController.previousPage(
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.ease),
-                    icon: const Icon(Icons.navigate_before)),
-                IconButton(
-                    onPressed: () => pageController.nextPage(
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.ease),
-                    icon: const Icon(Icons.navigate_next))
-              ],
-            )
-          ],
+              ),
+              const Spacer()
+            ],
+          ),
         ),
-      ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: const [
+              Flexible(
+                flex: 1,
+                child: PrevPageButton(),
+              ),
+              Flexible(
+                flex: 1,
+                child: RegisterButton(),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -501,13 +479,13 @@ class _StatePickerState extends State<StatePicker> {
   Widget build(BuildContext context) {
     return DropdownButton(
       value: value,
-      icon: const Icon(Icons.arrow_downward),
+      icon: const Icon(Icons.arrow_circle_down_outlined),
       elevation: 16,
-      style: const TextStyle(color: Colors.deepPurple),
+      style: Theme.of(context).textTheme.bodyText2,
       isExpanded: true,
       underline: Container(
         height: 2,
-        color: Colors.deepPurpleAccent,
+        color: Theme.of(context).inputDecorationTheme.border!.borderSide.color,
       ),
       onChanged: (String? newValue) {
         setState(() {
@@ -553,13 +531,14 @@ class _CitiesPickerState extends State<CitiesPicker> {
     });
     return DropdownButton(
         value: value,
-        icon: const Icon(Icons.arrow_downward),
+        icon: const Icon(Icons.arrow_circle_down_outlined),
         elevation: 16,
-        style: const TextStyle(color: Colors.deepPurple),
+        style: Theme.of(context).textTheme.bodyText2,
         isExpanded: true,
         underline: Container(
           height: 2,
-          color: Colors.deepPurpleAccent,
+          color:
+              Theme.of(context).inputDecorationTheme.border!.borderSide.color,
         ),
         onChanged: (String? newValue) {
           setState(() {
@@ -611,17 +590,18 @@ class _PassFieldState extends State<PassField> {
       textInputAction: widget.action,
       decoration: InputDecoration(
         labelText: widget.title,
+        floatingLabelStyle: TextStyle(color: kBlack),
         contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
@@ -632,7 +612,7 @@ class _PassFieldState extends State<PassField> {
           }),
           child: Icon(
             locked ? Icons.lock : Icons.lock_open,
-            color: const Color(0xFFED8232),
+            color: kInputBorder,
           ),
         ),
       ),
@@ -665,24 +645,26 @@ class RegisterFormField extends StatelessWidget {
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
         labelText: label,
+        floatingLabelStyle: TextStyle(color: kBlack),
         hintText: hint,
+        hintStyle: TextStyle(color: kInputBorder),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFED8232),
+          borderSide: BorderSide(
+            color: kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(100),
         ),
         prefixIcon: Icon(
           icon,
-          color: const Color(0xFFED8232),
+          color: kInputBorder,
         ),
       ),
       validator: (val) {
@@ -697,8 +679,7 @@ class RegisterFormField extends StatelessWidget {
 }
 
 class RegisterButton extends StatefulWidget {
-  RegisterButton({this.text = 'Iniciar Sesión', Key? key}) : super(key: key);
-  String text;
+  const RegisterButton({Key? key}) : super(key: key);
   @override
   State<RegisterButton> createState() => RegisterButtonState();
 }
@@ -708,139 +689,210 @@ class RegisterButtonState extends State<RegisterButton> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      child: !isLoading
-          ? TextButton(
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFFED8232)),
-                padding: MaterialStateProperty.all(const EdgeInsets.all(15)),
-                shape: MaterialStateProperty.all(
-                  const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(100),
-                    ),
-                  ),
+    return !isLoading
+        ? TextButton(
+            style: ButtonStyle(
+              padding: MaterialStateProperty.all<EdgeInsets>(
+                  const EdgeInsets.symmetric(vertical: 20)),
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(const Color(0xFFF58633)),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(0)),
                 ),
               ),
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      setState(() => {
-                            isLoading = !isLoading,
-                          });
-                      try {
-                        Api api = Api();
-
-                        var fullUrl = apiUrl + 'register';
-
-                        String token = await api.getToken();
-                        MultipartRequest request =
-                            MultipartRequest('POST', Uri.parse(fullUrl));
-                        Map headers = api.setHeaders();
-                        headers.forEach((key, value) {
-                          request.headers[key] = value;
+            ),
+            onPressed: isLoading
+                ? null
+                : () async {
+                    setState(() => {
+                          isLoading = !isLoading,
                         });
+                    try {
+                      Api api = Api();
 
-                        request.fields['user_type'] = userType.text;
-                        request.fields['first_name'] = firstName.text;
-                        request.fields['last_name'] = lastName.text;
-                        request.fields['legal_name'] = legalName.text;
-                        request.fields['document_number'] = documentNumber.text;
-                        request.fields['cellphone'] = cellphone.text;
-                        request.fields['phone'] = phone.text;
-                        request.fields['email'] = email.text;
-                        request.fields['street1'] = street1.text;
-                        request.fields['street2'] = street2.text;
-                        request.fields['house_number'] = houseNumber.text;
-                        request.fields['city_id'] = cityId.text;
-                        request.fields['password'] = password.text;
-                        request.fields['password_confirmation'] =
-                            passwordConfirmation.text;
+                      var fullUrl = apiUrl + 'register';
 
-                        request.files.add(await MultipartFile.fromPath(
-                            'identity_card_attachment', cedulaFrente));
-                        request.files.add(await MultipartFile.fromPath(
-                            'identity_card_back_attachment', cedulaAtras));
-                        StreamedResponse response = await request.send();
-                        String stringResponse =
-                            await response.stream.bytesToString();
+                      MultipartRequest request =
+                          MultipartRequest('POST', Uri.parse(fullUrl));
+                      Map headers = api.setHeaders();
+                      headers.forEach((key, value) {
+                        request.headers[key] = value;
+                      });
 
-                        if (response.statusCode == 200) {
-                          setState(() => {
-                                isLoading = !isLoading,
-                              });
-                          ScaffoldMessenger.of(context).clearSnackBars();
-                          Map responseBody = jsonDecode(stringResponse);
-                          if (responseBody['success']) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                duration: const Duration(seconds: 1),
-                                content: Text(responseBody['message']),
-                              ),
-                            );
-                            SharedPreferences sharedPreferences =
-                                await SharedPreferences.getInstance();
+                      request.fields['user_type'] = userType.text;
+                      request.fields['first_name'] = firstName.text;
+                      request.fields['last_name'] = lastName.text;
+                      request.fields['legal_name'] = legalName.text;
+                      request.fields['document_number'] = documentNumber.text;
+                      request.fields['cellphone'] = cellphone.text;
+                      request.fields['phone'] = phone.text;
+                      request.fields['email'] = email.text;
+                      request.fields['street1'] = street1.text;
+                      request.fields['street2'] = street2.text;
+                      request.fields['house_number'] = houseNumber.text;
+                      request.fields['city_id'] = cityId.text;
+                      request.fields['password'] = password.text;
+                      request.fields['password_confirmation'] =
+                          passwordConfirmation.text;
 
-                            //TOKEN PARA MENSAJES PUSH
-                            String? token =
-                                await FirebaseMessaging.instance.getToken();
-                            if (token != null) {
-                              await Api().postData('user/set-device-token', {
-                                'id': responseBody['data']['user']['id'],
-                                'device_token': token
-                              });
-                            }
+                      request.files.add(await MultipartFile.fromPath(
+                          'identity_card_attachment', cedulaFrente));
+                      request.files.add(await MultipartFile.fromPath(
+                          'identity_card_back_attachment', cedulaAtras));
+                      StreamedResponse response = await request.send();
+                      String stringResponse =
+                          await response.stream.bytesToString();
 
-                            sharedPreferences.setString('user',
-                                jsonEncode(responseBody['data']['user']));
-                            sharedPreferences.setString(
-                                'token', responseBody['data']['token']);
+                      if (response.statusCode == 200) {
+                        setState(() => {
+                              isLoading = !isLoading,
+                            });
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        Map responseBody = jsonDecode(stringResponse);
+                        if (responseBody['success']) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              duration: const Duration(seconds: 1),
+                              content: Text(responseBody['message']),
+                            ),
+                          );
+                          SharedPreferences sharedPreferences =
+                              await SharedPreferences.getInstance();
 
-                            if (responseBody['data']['user']['is_carrier']) {
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CreateVehicleAfterReg()));
-                            } else {
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const ValidateCode()));
-                            }
+                          //TOKEN PARA MENSAJES PUSH
+                          String? token =
+                              await FirebaseMessaging.instance.getToken();
+                          if (token != null) {
+                            await Api().postData('user/set-device-token', {
+                              'id': responseBody['data']['user']['id'],
+                              'device_token': token
+                            });
+                          }
+
+                          sharedPreferences.setString(
+                              'user', jsonEncode(responseBody['data']['user']));
+                          sharedPreferences.setString(
+                              'token', responseBody['data']['token']);
+
+                          if (responseBody['data']['user']['is_carrier']) {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CreateVehicleAfterReg()));
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                duration: const Duration(seconds: 1),
-                                content: Text(responseBody['message']),
-                              ),
-                            );
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ValidateCode()));
                           }
                         } else {
-                          setState(() => {
-                                isLoading = !isLoading,
-                              });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              duration: const Duration(seconds: 1),
+                              content: Text(responseBody['message']),
+                            ),
+                          );
                         }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                duration: Duration(seconds: 1),
-                                content:
-                                    Text('Compruebe su conexión a internet')));
-
+                      } else {
                         setState(() => {
                               isLoading = !isLoading,
                             });
                       }
-                    },
-              child: Text(
-                widget.text,
-                style: const TextStyle(color: Colors.white),
-              ))
-          : const Center(
-              child: CircularProgressIndicator(),
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          duration: Duration(seconds: 1),
+                          content: Text('Compruebe su conexión a internet')));
+
+                      setState(() => {
+                            isLoading = !isLoading,
+                          });
+                    }
+                  },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Text(
+                  'Registrarse',
+                  style: TextStyle(color: Colors.white),
+                ),
+                Icon(Icons.upload, color: Colors.white),
+              ],
             ),
+          )
+        : const Center(
+            child: CircularProgressIndicator(),
+          );
+  }
+}
+
+class NextPageButton extends StatelessWidget {
+  const NextPageButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => pageController.nextPage(
+          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color(0xFFF58633),
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            'Siguiente',
+            style: TextStyle(color: Colors.white),
+          ),
+          Icon(
+            Icons.navigate_next,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PrevPageButton extends StatelessWidget {
+  const PrevPageButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => pageController.previousPage(
+          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor:
+            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.navigate_before, color: Colors.white),
+          Text(
+            'Atrás',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 }
