@@ -15,6 +15,7 @@ import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -157,7 +158,8 @@ class _AfletesAppState extends State<AfletesApp> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+    WidgetsFlutterBinding.ensureInitialized();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     NotificationsApi.init();
     listenNotifications();

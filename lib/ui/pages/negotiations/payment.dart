@@ -50,7 +50,6 @@ class _PaymentState extends State<Payment> {
         future: getPaymentData(),
         builder: (context, snapshot) {
           Map? data = snapshot.data;
-          print(data);
           if (data != null) {
             razon.text = data['data']['generator']['legal_name'] ??
                 data['data']['generator']['last_name'] +

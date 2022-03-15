@@ -24,7 +24,6 @@ Future<List<Negotiation>> getNegotiations() async {
       if (jsonResponse['success']) {
         List data = jsonResponse['data'];
         data.asMap().forEach((key, negotiation) {
-          print(negotiation['generator']);
           negotiations.add(
             Negotiation(
               id: negotiation['id'],
@@ -206,7 +205,7 @@ class _MyNegotiationsState extends State<MyNegotiations> {
                                                   .attachments
                                                   .isNotEmpty
                                               ? Image.network(
-                                                  imgUrl +
+                                                  loadImgUrl +
                                                       negotiations[index]
                                                               .negotiationLoad!
                                                               .attachments[0]

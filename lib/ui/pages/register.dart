@@ -2,7 +2,9 @@
 
 import 'dart:convert';
 
+import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
+import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -10,8 +12,6 @@ import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const double separacion = 20;
@@ -123,21 +123,42 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: getData(context),
-        builder: (context, AsyncSnapshot snapshot) =>
-            (snapshot.connectionState == ConnectionState.done
-                ? PageView(
-                    controller: pageController,
-                    children: [
-                      PrimeraParte(pageController: pageController),
-                      SegundaParte(pageController: pageController),
-                    ],
-                  )
-                : const Center(
-                    child: CircularProgressIndicator(),
-                  )),
+    return WillPopScope(
+      onWillPop: () async {
+        userType.text = '';
+        firstName.text = '';
+        lastName.text = '';
+        legalName.text = '';
+        documentNumber.text = '';
+        cellphone.text = '';
+        phone.text = '';
+        email.text = '';
+        street1.text = '';
+        street2.text = '';
+        houseNumber.text = '';
+        cityId.text = '';
+        lastLoginType.text = '';
+        password.text = '';
+        passwordConfirmation.text = '';
+
+        return true;
+      },
+      child: Scaffold(
+        body: FutureBuilder(
+          future: getData(context),
+          builder: (context, AsyncSnapshot snapshot) =>
+              (snapshot.connectionState == ConnectionState.done
+                  ? PageView(
+                      controller: pageController,
+                      children: [
+                        PrimeraParte(pageController: pageController),
+                        SegundaParte(pageController: pageController),
+                      ],
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
+        ),
       ),
     );
   }
@@ -197,51 +218,51 @@ class PrimeraParte extends StatelessWidget {
                   width: 100,
                   height: 20,
                 ),
-                RegisterFormField(
-                  'Cédula o RUC *',
-                  Icons.article,
+                CustomFormField(
                   documentNumber,
+                  'Cédula o RUC *',
+                  icon: Icons.article,
                   hint: '9888777',
                 ),
                 const SizedBox(width: 100, height: separacion),
-                RegisterFormField(
-                  'Razón social',
-                  Icons.person,
+                CustomFormField(
                   legalName,
+                  'Razón social',
+                  icon: Icons.person,
                   hint: 'Empresa s.a.',
                 ),
                 const SizedBox(width: 100, height: separacion),
-                RegisterFormField(
-                  'Nombre',
-                  Icons.person,
+                CustomFormField(
                   firstName,
+                  'Nombre',
+                  icon: Icons.person,
                   hint: 'José',
                 ),
                 const SizedBox(width: 100, height: separacion),
-                RegisterFormField(
-                  'Apellido',
-                  Icons.person,
+                CustomFormField(
                   lastName,
+                  'Apellido',
+                  icon: Icons.person,
                   hint: 'Gonzalez',
                 ),
                 const SizedBox(width: 100, height: separacion),
                 Row(
                   children: [
                     Flexible(
-                        child: RegisterFormField(
-                      'Celular',
-                      Icons.phone_android,
+                        child: CustomFormField(
                       cellphone,
+                      'Celular',
+                      icon: Icons.phone_android,
                       hint: '0981222333',
                     )),
                     const SizedBox(
                       width: 20,
                     ),
                     Flexible(
-                      child: RegisterFormField(
-                        'Teléfono fijo:',
-                        Icons.phone,
+                      child: CustomFormField(
                         phone,
+                        'Teléfono fijo:',
+                        icon: Icons.phone,
                         hint: '021444666',
                         action: TextInputAction.done,
                       ),
@@ -251,20 +272,20 @@ class PrimeraParte extends StatelessWidget {
                 const SizedBox(width: 100, height: separacion),
                 const UbicacionPicker(),
                 const SizedBox(width: 100, height: separacion),
-                RegisterFormField(
-                  'Calle Principal *',
-                  Icons.home,
+                CustomFormField(
                   street1,
+                  'Calle Principal *',
+                  icon: Icons.home,
                   hint: 'Avda Mcal López',
                 ),
                 const SizedBox(width: 100, height: separacion),
                 Row(
                   children: [
                     Flexible(
-                      child: RegisterFormField(
-                        'Calle Secundaria',
-                        Icons.home,
+                      child: CustomFormField(
                         street2,
+                        'Calle Secundaria',
+                        icon: Icons.home,
                         hint: 'esq. #',
                       ),
                     ),
@@ -272,20 +293,20 @@ class PrimeraParte extends StatelessWidget {
                       width: 20,
                     ),
                     Flexible(
-                      child: RegisterFormField(
-                        'Nro.',
-                        Icons.home,
+                      child: CustomFormField(
                         houseNumber,
+                        'Nro.',
+                        icon: Icons.home,
                         hint: '1234',
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(width: 100, height: separacion),
-                RegisterFormField(
-                  'Email',
-                  Icons.alternate_email,
+                CustomFormField(
                   email,
+                  'Email',
+                  icon: Icons.alternate_email,
                   hint: 'ejemplo@gmail.com',
                 ),
                 const SizedBox(width: 100, height: separacion),
@@ -298,14 +319,14 @@ class PrimeraParte extends StatelessWidget {
         const SizedBox(width: 100, height: separacion),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: const [
-            Flexible(
+          children: [
+            const Flexible(
               flex: 1,
               child: SizedBox.shrink(),
             ),
             Flexible(
               flex: 1,
-              child: NextPageButton(),
+              child: NextPageButton(pageController),
             ),
           ],
         ),
@@ -400,12 +421,12 @@ class _SegundaParteState extends State<SegundaParte> {
           right: 0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
+            children: [
               Flexible(
                 flex: 1,
-                child: PrevPageButton(),
+                child: PrevPageButton(pageController),
               ),
-              Flexible(
+              const Flexible(
                 flex: 1,
                 child: RegisterButton(),
               ),
@@ -431,6 +452,10 @@ class _UbicacionPickerState extends State<UbicacionPicker> {
   void initState() {
     super.initState();
     stateId = states[0]['id'].toString();
+    List firstCity = cities
+        .where((element) => element['state_id'].toString() == stateId)
+        .toList();
+    cityId.text = firstCity[0]['id'].toString();
   }
 
   @override
@@ -443,6 +468,11 @@ class _UbicacionPickerState extends State<UbicacionPicker> {
             (newVal) => setState(
               () {
                 stateId = newVal;
+                List firstCity = cities
+                    .where(
+                        (element) => element['state_id'].toString() == stateId)
+                    .toList();
+                cityId.text = firstCity[0]['id'].toString();
               },
             ),
           ),
@@ -527,10 +557,10 @@ class _CitiesPickerState extends State<CitiesPicker> {
       newCities = cities.where((city) {
         return city['state_id'].toString() == widget.stateId;
       }).toList();
-      value = newCities[0]['id'].toString();
+      // value = newCities[0]['id'].toString();
     });
     return DropdownButton(
-        value: value,
+        value: cityId.text,
         icon: const Icon(Icons.arrow_circle_down_outlined),
         elevation: 16,
         style: Theme.of(context).textTheme.bodyText2,
@@ -597,14 +627,14 @@ class _PassFieldState extends State<PassField> {
             color: kInputBorder,
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.circular(10),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
             color: kInputBorder,
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.circular(10),
         ),
         prefixIcon: GestureDetector(
           onTap: () => setState(() {
@@ -614,57 +644,6 @@ class _PassFieldState extends State<PassField> {
             locked ? Icons.lock : Icons.lock_open,
             color: kInputBorder,
           ),
-        ),
-      ),
-      validator: (val) {
-        if (val!.isEmpty) {
-          return 'Ingresa un valor';
-        }
-
-        return null;
-      },
-    );
-  }
-}
-
-class RegisterFormField extends StatelessWidget {
-  RegisterFormField(this.label, this.icon, this.controller,
-      {this.hint = '', this.action = TextInputAction.next, Key? key})
-      : super(key: key);
-
-  String label = '';
-  String hint = '';
-  IconData icon;
-  TextInputAction action;
-  TextEditingController controller;
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: action,
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-        labelText: label,
-        floatingLabelStyle: TextStyle(color: kBlack),
-        hintText: hint,
-        hintStyle: TextStyle(color: kInputBorder),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: kInputBorder,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: kInputBorder,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: kInputBorder,
         ),
       ),
       validator: (val) {
@@ -824,75 +803,5 @@ class RegisterButtonState extends State<RegisterButton> {
         : const Center(
             child: CircularProgressIndicator(),
           );
-  }
-}
-
-class NextPageButton extends StatelessWidget {
-  const NextPageButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => pageController.nextPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor: MaterialStateProperty.all<Color>(
-          const Color(0xFFF58633),
-        ),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Siguiente',
-            style: TextStyle(color: Colors.white),
-          ),
-          Icon(
-            Icons.navigate_next,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class PrevPageButton extends StatelessWidget {
-  const PrevPageButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => pageController.previousPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor:
-            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.navigate_before, color: Colors.white),
-          Text(
-            'Atrás',
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
-      ),
-    );
   }
 }

@@ -7,6 +7,7 @@ import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
+import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/location_service.dart';
@@ -344,6 +345,7 @@ class DatosGenerales extends StatelessWidget {
                 children: [
                   Flexible(
                     child: NextPageButton(
+                      pageController,
                       validator: (callback) {
                         if (productController.text == '') {
                           return false;
@@ -634,7 +636,7 @@ class _DatosUbicacionState extends State<DatosUbicacion> {
             //   alignment: MainAxisAlignment.center,
             //   children: [
             //     const Flexible(
-            //       child: PrevPageButton(),
+            //       child: PrevPageButton(pageController),
             //     ),
             //     Flexible(
             //       child: NextPageButton(
@@ -666,11 +668,11 @@ class _DatosUbicacionState extends State<DatosUbicacion> {
           right: 0,
           child: Row(
             children: [
-              const Flexible(
-                child: PrevPageButton(),
+              Flexible(
+                child: PrevPageButton(pageController),
               ),
               Flexible(
-                child: NextPageButton(),
+                child: NextPageButton(pageController),
               ),
             ],
           ),
@@ -938,10 +940,10 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
             //   alignment: MainAxisAlignment.center,
             //   children: [
             //     const Flexible(
-            //       child: PrevPageButton(),
+            //       child: PrevPageButton(pageController),
             //     ),
             //     Flexible(
-            //       child: NextPageButton(),
+            //       child: NextPageButton(pageController),
             //     ),
             //   ],
             // )
@@ -953,11 +955,11 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
           right: 0,
           child: Row(
             children: [
-              const Flexible(
-                child: PrevPageButton(),
+              Flexible(
+                child: PrevPageButton(pageController),
               ),
               Flexible(
-                child: NextPageButton(),
+                child: NextPageButton(pageController),
               ),
             ],
           ),
@@ -1198,14 +1200,6 @@ class PaginaFinal extends StatelessWidget {
                   Flexible(
                     child: IsUrgent(),
                   ),
-                  // Flexible(
-                  //     child: CustomFormField(
-                  //   loadDateController,
-                  //   'Cargar Imágenes',
-                  //   onFocus: () => _picker,
-                  //   showCursor: true,
-                  //   readOnly: true,
-                  // ))
                 ],
               ),
               const SizedBox(
@@ -1239,8 +1233,8 @@ class PaginaFinal extends StatelessWidget {
             right: 0,
             child: Row(
               children: [
-                const Flexible(
-                  child: PrevPageButton(),
+                Flexible(
+                  child: PrevPageButton(pageController),
                 ),
                 Flexible(
                     child: TextButton(
@@ -1338,81 +1332,6 @@ class _IsUrgentState extends State<IsUrgent> {
           ),
         )
       ],
-    );
-  }
-}
-
-//COMPONENTES
-
-class NextPageButton extends StatelessWidget {
-  NextPageButton({validator, Key? key}) : super(key: key);
-  var validator;
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => (validator != null
-          ? validator(() => pageController.nextPage(
-              duration: const Duration(milliseconds: 100), curve: Curves.ease))
-          : pageController.nextPage(
-              duration: const Duration(milliseconds: 100), curve: Curves.ease)),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor: MaterialStateProperty.all<Color>(
-          const Color(0xFFF58633),
-        ),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Siguiente',
-            style: TextStyle(color: Colors.white),
-          ),
-          Icon(
-            Icons.navigate_next,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class PrevPageButton extends StatelessWidget {
-  const PrevPageButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => pageController.previousPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor:
-            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.navigate_before, color: Colors.white),
-          Text(
-            'Atrás',
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
-      ),
     );
   }
 }

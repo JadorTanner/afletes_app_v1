@@ -85,7 +85,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
       if (images.isNotEmpty) {
         for (var element in images) {
           attachments.add(Image.network(
-            imgUrl + element['filename'],
+            loadImgUrl + element['filename'],
             fit: BoxFit.cover,
           ));
         }
@@ -397,7 +397,7 @@ class LoadCard extends StatelessWidget {
                     child: hasData
                         ? Image.network(
                             loads[index].attachments.isNotEmpty
-                                ? imgUrl +
+                                ? loadImgUrl +
                                     loads[index].attachments[0]['filename']
                                 : 'https://magazine.medlineplus.gov/images/uploads/main_images/red-meat-v2.jpg',
                             loadingBuilder: (context, child,

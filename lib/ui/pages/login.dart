@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -50,50 +51,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: textController1,
-                  textInputAction: TextInputAction.next,
-                  keyboardType: TextInputType.emailAddress,
-                  // onEditingComplete: () => {},
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    floatingLabelStyle: TextStyle(color: kBlack),
-                    hintText: 'Ejemplo@gmail.com',
-                    hintStyle: TextStyle(color: kInputBorder),
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kInputBorder,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kInputBorder,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.alternate_email,
-                      color: kInputBorder,
-                    ),
-                  ),
-                  validator: (val) {
-                    if (val!.isEmpty) {
-                      return 'Ingresa un email';
-                    }
-
-                    return null;
-                  },
+                CustomFormField(
+                  textController1,
+                  'Email',
+                  hint: 'Ejemplo@gmail.com',
+                  icon: Icons.alternate_email,
                 ),
                 const SizedBox(
                   width: 100,
                   height: 20,
                 ),
-                PasswordField(),
+                PasswordField('Contraseña', textController2),
                 const SizedBox(
                   width: 100,
                   height: 20,
@@ -241,60 +209,6 @@ class _LoginButtonState extends State<LoginButton> {
           backgroundColor: isLoading
               ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
               : MaterialStateProperty.all(const Color(0xFFED8232))),
-    );
-  }
-}
-
-class PasswordField extends StatefulWidget {
-  PasswordField({Key? key}) : super(key: key);
-
-  @override
-  State<PasswordField> createState() => _PasswordFieldState();
-}
-
-class _PasswordFieldState extends State<PasswordField> {
-  bool passwordVisibility = false;
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: textController2,
-      obscureText: !passwordVisibility,
-      // onEditingComplete: () => {},
-      decoration: InputDecoration(
-        labelText: 'Contraseña',
-        floatingLabelStyle: TextStyle(color: kBlack),
-        contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: kInputBorder,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: kInputBorder,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        prefixIcon: Icon(
-          Icons.lock,
-          color: kInputBorder,
-        ),
-        suffixIcon: InkWell(
-          onTap: () => setState(
-            () => passwordVisibility = !passwordVisibility,
-          ),
-          child: Icon(
-            passwordVisibility
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
-            color: kInputBorder,
-            size: 22,
-          ),
-        ),
-      ),
     );
   }
 }

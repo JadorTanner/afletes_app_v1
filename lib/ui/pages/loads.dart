@@ -102,7 +102,7 @@ onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
       if (images.isNotEmpty) {
         for (var element in images) {
           attachments.add(Image.network(
-            imgUrl + element['filename'],
+            loadImgUrl + element['filename'],
             fit: BoxFit.cover,
           ));
         }
@@ -542,8 +542,8 @@ class _LoadsMapState extends State<LoadsMap>
 
   setLoadsMarkers(Position position,
       [bool fromTap = false, bool pop = false]) async {
-    // Uint8List bytes = (await AssetBundle(Uri.parse(imgurl))
-    //   .load(imgurl))
+    // Uint8List bytes = (await AssetBundle(Uri.parse(loadImgUrl))
+    //   .load(loadImgUrl))
     //   .buffer
     //   .asUint8List();
     BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(

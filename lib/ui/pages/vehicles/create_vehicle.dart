@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
+import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
@@ -269,9 +270,9 @@ class DatosGenerales extends StatelessWidget {
               left: 0,
               right: 0,
               child: Row(
-                children: const [
+                children: [
                   Flexible(
-                    child: NextPageButton(),
+                    child: NextPageButton(pageController),
                   ),
                 ],
               ),
@@ -393,12 +394,12 @@ class Documentos extends StatelessWidget {
             left: 0,
             right: 0,
             child: Row(
-              children: const [
+              children: [
                 Flexible(
-                  child: PrevPageButton(),
+                  child: PrevPageButton(pageController),
                 ),
                 Flexible(
-                  child: NextPageButton(),
+                  child: NextPageButton(pageController),
                 ),
               ],
             ),
@@ -497,8 +498,8 @@ class Documentos2 extends StatelessWidget {
             right: 0,
             child: Row(
               children: [
-                const Flexible(
-                  child: PrevPageButton(),
+                Flexible(
+                  child: PrevPageButton(pageController),
                 ),
                 Flexible(
                   child: SendButton(),
@@ -797,7 +798,6 @@ class _MarcaSelectState extends State<MarcaSelect> {
               value = newValue!;
               marcaController.text = newValue;
             });
-            // print(newValue);
           },
           items: brandsSelectList,
         )
@@ -878,78 +878,6 @@ class Load_TimePickerState extends State<LoadTimePicker> {
       onFocus: () => _selectTime(context),
       showCursor: true,
       readOnly: true,
-    );
-  }
-}
-
-//COMPONENTES
-
-class NextPageButton extends StatelessWidget {
-  const NextPageButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => pageController.nextPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor: MaterialStateProperty.all<Color>(
-          const Color(0xFFF58633),
-        ),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Siguiente',
-            style: TextStyle(color: Colors.white),
-          ),
-          Icon(
-            Icons.navigate_next,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class PrevPageButton extends StatelessWidget {
-  const PrevPageButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => pageController.previousPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(
-            const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor:
-            MaterialStateProperty.all<Color>(const Color(0xFF101010)),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0)),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.navigate_before, color: Colors.white),
-          Text(
-            'Atrás',
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
-      ),
     );
   }
 }

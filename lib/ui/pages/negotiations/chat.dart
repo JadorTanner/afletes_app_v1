@@ -51,7 +51,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   FocusManager.instance.primaryFocus?.unfocus();
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
-  print(response.body);
   if (response.statusCode == 200) {
     Map jsonResp = jsonDecode(response.body);
     List listMessages = jsonResp['data']['messages'];
