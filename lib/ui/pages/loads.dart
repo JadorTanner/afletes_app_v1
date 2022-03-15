@@ -537,8 +537,9 @@ class _LoadsMapState extends State<LoadsMap>
           LatLng(position.latitude, position.longitude)));
     });
     setLoadsMarkers(position);
-  } //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
+  }
 
+  //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
   setLoadsMarkers(Position position,
       [bool fromTap = false, bool pop = false]) async {
     // Uint8List bytes = (await AssetBundle(Uri.parse(loadImgUrl))

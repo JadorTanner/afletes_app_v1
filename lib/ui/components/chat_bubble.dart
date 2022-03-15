@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class MessageBubbleReceived extends StatelessWidget {
-  MessageBubbleReceived(this.message, {this.isImage = false, Key? key})
+  MessageBubbleReceived(this.message, this.time,
+      {this.isImage = false, Key? key})
       : super(key: key);
   String message;
+  String time;
   bool isImage;
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,85 @@ class MessageBubbleReceived extends StatelessWidget {
                     bottomRight: Radius.circular(18),
                   ),
                 ),
-                child: isImage
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    (isImage
+                        ? GestureDetector(
+                            onTap: () => showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: InteractiveViewer(
+                                        panEnabled: true,
+                                        minScale: 0.5,
+                                        maxScale: 4,
+                                        clipBehavior: Clip.none,
+                                        child: Image.network(message)))),
+                            child: Image.network(
+                              message,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return Center(
+                                    child: Container(
+                                  color: Colors.grey,
+                                  width: 300,
+                                  height: 200,
+                                ));
+                              },
+                            ))
+                        : Text(
+                            message,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                          )),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      time.split(' ')[1],
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]),
+    );
+  }
+}
+
+class MessageBubbleSent extends StatelessWidget {
+  MessageBubbleSent(this.message, this.time, {this.isImage = false, Key? key})
+      : super(key: key);
+  String message;
+  String time;
+  bool isImage;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.cyan[900],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child:
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                isImage
                     ? GestureDetector(
                         onTap: () => showDialog(
                             context: context,
@@ -63,69 +143,16 @@ class MessageBubbleReceived extends StatelessWidget {
                     : Text(
                         message,
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 14),
+                            const TextStyle(color: Colors.white, fontSize: 18),
                       ),
-              ),
-            ),
-          ]),
-    );
-  }
-}
-
-class MessageBubbleSent extends StatelessWidget {
-  MessageBubbleSent(this.message, {this.isImage = false, Key? key})
-      : super(key: key);
-  String message;
-  bool isImage;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.cyan[900],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(18),
+                const SizedBox(
+                  height: 5,
                 ),
-              ),
-              child: isImage
-                  ? GestureDetector(
-                      onTap: () => showDialog(
-                          context: context,
-                          builder: (context) => Dialog(
-                              backgroundColor: Colors.transparent,
-                              child: InteractiveViewer(
-                                  panEnabled: true,
-                                  minScale: 0.5,
-                                  maxScale: 4,
-                                  clipBehavior: Clip.none,
-                                  child: Image.network(message)))),
-                      child: Image.network(
-                        message,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return Center(
-                              child: Container(
-                            color: Colors.grey,
-                            width: 300,
-                            height: 200,
-                          ));
-                        },
-                      ))
-                  : Text(
-                      message,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
+                Text(
+                  time.split(' ')[1],
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ]),
             ),
           ),
           CustomPaint(painter: CustomShape(const Color(0xFF006435))),

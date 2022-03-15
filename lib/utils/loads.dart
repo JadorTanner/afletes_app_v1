@@ -80,6 +80,27 @@ class Load {
     this.attachments = const [],
   });
 
+  static Load fromJSON(Map json) {
+    return Load(
+      id: json['id'] ?? 1,
+      product: json['product'] ?? '',
+      description: json['description'] ?? '',
+      initialOffer: double.parse(json['initial_offer']).toInt(),
+      weight: double.parse(json['weight'] ?? '0.0'),
+      vehicleQuantity: json['vehicles_quantity'] ?? 1,
+      helpersQuantity: json['helpers_quantity'] ?? 0,
+      loadWait: json['wait_in_origin'].toString(),
+      deliveryWait: json['wait_in_destination'].toString(),
+      observations: json['observations'] ?? '',
+      volumen: double.parse(json['volume'] ?? '0.0'),
+      pickUpDate: json['pickup_at'] ?? '',
+      pickUpTime: json['pickup_time'] ?? '',
+      isUrgent: json['is_urgent'] == 'true',
+      addressFrom: json['address'] ?? '',
+      destinAddress: json['destination_address'] ?? '',
+    );
+  }
+
   Future createLoad(Map body, List<XFile> imagenes,
       {context, update = false, loadId = 0}) async {
     try {

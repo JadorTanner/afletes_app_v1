@@ -108,6 +108,15 @@ class _VehiclesListState extends State<VehiclesList> {
     super.initState();
   }
 
+//OBTIENE LA POSICIÓN DEL USUARIO
+  getPosition() async {
+    position = await Geolocator.getCurrentPosition();
+    setState(() {
+      mapController.animateCamera(CameraUpdate.newLatLng(
+          LatLng(position.latitude, position.longitude)));
+    });
+  }
+
   onVehicleTap(int id, BuildContext context) async {
     try {
       Api api = Api();
@@ -502,6 +511,8 @@ class _VehiclesListState extends State<VehiclesList> {
 
     bitmapIcon = BitmapDescriptor.fromBytes(
         await getBytesFromAsset('assets/img/camion3.png', 5));
+
+    getPosition();
 
     setMapStyles();
     // mapController.setMapStyle('');

@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
@@ -10,6 +11,8 @@ import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/loads.dart';
+import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
@@ -29,6 +32,9 @@ late bool toPay = false;
 late bool paid = false;
 late bool canVote = false;
 late int loadState = 0;
+
+late Load load;
+late Vehicle vehicle;
 
 TextEditingController commentController = TextEditingController();
 
@@ -56,12 +62,14 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   if (response.statusCode == 200) {
     Map jsonResp = jsonDecode(response.body);
     List listMessages = jsonResp['data']['messages'];
+    ChatProvider chatProvider = context.read<ChatProvider>();
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
-        context.read<ChatProvider>().addMessage(
+        chatProvider.addMessage(
             id,
             ChatMessage(
                 message['img_url'] ?? message['message'],
+                message['created_at'],
                 message['sender_id'],
                 message['id'],
                 message['img_url'] != null));
@@ -69,50 +77,59 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     }
     receiverId = jsonResp['data']['negotiation']
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
-    context.read<ChatProvider>().setCanOffer(false);
-    context.read<ChatProvider>().setPaid(false);
-    context.read<ChatProvider>().setCanVote(false);
-    context.read<ChatProvider>().setShowDefaultMessages(false);
-    context.read<ChatProvider>().setToPay(false);
+    chatProvider.setCanOffer(false);
+    chatProvider.setPaid(false);
+    chatProvider.setCanVote(false);
+    chatProvider.setShowDefaultMessages(false);
+    chatProvider.setToPay(false);
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
     switch (jsonResp['data']['negotiation_state']['id']) {
       case 1:
-        context.read<ChatProvider>().setCanOffer(true);
-        context.read<ChatProvider>().setPaid(false);
-        context.read<ChatProvider>().setCanVote(false);
-        context.read<ChatProvider>().setShowDefaultMessages(false);
-        context.read<ChatProvider>().setToPay(false);
+        chatProvider.setCanOffer(true);
+        chatProvider.setPaid(false);
+        chatProvider.setCanVote(false);
+        chatProvider.setShowDefaultMessages(false);
+        chatProvider.setToPay(false);
         break;
       case 2:
-        context.read<ChatProvider>().setCanOffer(false);
-        context.read<ChatProvider>().setPaid(false);
-        context.read<ChatProvider>().setCanVote(false);
-        context.read<ChatProvider>().setShowDefaultMessages(false);
-        context.read<ChatProvider>().setToPay(true);
+        chatProvider.setCanOffer(false);
+        chatProvider.setPaid(false);
+        chatProvider.setCanVote(false);
+        chatProvider.setShowDefaultMessages(false);
+        chatProvider.setToPay(true);
         break;
       case 6:
-        context.read<ChatProvider>().setCanOffer(true);
-        context.read<ChatProvider>().setPaid(false);
-        context.read<ChatProvider>().setToPay(false);
+        chatProvider.setCanOffer(true);
+        chatProvider.setPaid(false);
+        chatProvider.setToPay(false);
         break;
       case 8:
-        context.read<ChatProvider>().setCanOffer(false);
-        context.read<ChatProvider>().setPaid(true);
-        context.read<ChatProvider>().setShowDefaultMessages(true);
+        chatProvider.setCanOffer(false);
+        chatProvider.setPaid(true);
+        chatProvider.setShowDefaultMessages(true);
         break;
       default:
-        context.read<ChatProvider>().setCanOffer(false);
+        chatProvider.setCanVote(false);
+        chatProvider.setToPay(false);
+        chatProvider.setCanOffer(false);
+        chatProvider.setPaid(false);
+        chatProvider.setShowDefaultMessages(false);
     }
-    // if (context.read<ChatProvider>().paid) {
+    // if (chatProvider.paid) {
     //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
     // }
-    context
-        .read<ChatProvider>()
-        .setLoadState(jsonResp['data']['load_state']['id']);
-    if (jsonResp['data']['load_state']['id'] == 13) {
-      context.read<ChatProvider>().setShowDefaultMessages(false);
+    chatProvider.setLoadState(jsonResp['data']['load_state']['id']);
+    chatProvider.setLoadId(jsonResp['data']['load']['id']);
+    if (chatProvider.loadState == 13) {
+      chatProvider.setCanVote(false);
+      chatProvider.setToPay(false);
+      chatProvider.setCanOffer(false);
+      chatProvider.setPaid(false);
+      chatProvider.setShowDefaultMessages(false);
     }
-    context.read<ChatProvider>().setLoadId(jsonResp['data']['load']['id']);
+
+    load = Load.fromJSON(jsonResp['data']['load']);
+    log(response.body);
   }
   return [];
   // } catch (e) {
@@ -155,7 +172,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
       chat.addMessage(
           id,
           ChatMessage(isLocation ? mapImgUrl : jsonResp['data']['message'],
-              user.id, id, isLocation));
+              jsonResp['data']['created_at'], user.id, id, isLocation));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(jsonResp['message']),
@@ -197,8 +214,10 @@ Future setLoadState(int negotiationId, int loadId, int state,
 
     Map jsonResp = jsonDecode(response.body);
     if (jsonResp['success']) {
-      chat.addMessage(negotiationId,
-          ChatMessage(jsonResp['data']['message'], user.id, negotiationId));
+      chat.addMessage(
+          negotiationId,
+          ChatMessage(jsonResp['data']['message'],
+              jsonResp['data']['created_at'], user.id, negotiationId));
       chat.setLoadState(state);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -287,14 +306,74 @@ class _NegotiationChatState extends State<NegotiationChat> {
                 left: 20,
                 right: 20,
               ),
-              child: Column(
+              child: Stack(
                 children: [
-                  const Expanded(
-                    // height: MediaQuery.of(context).size.height * 0.75,
-                    child: ChatPanel(),
+                  Column(
+                    children: [
+                      const Expanded(
+                        // height: MediaQuery.of(context).size.height * 0.75,
+                        child: ChatPanel(),
+                      ),
+                      OfferInputSection(widget: widget),
+                      ButtonsSection(widget: widget)
+                    ],
                   ),
-                  OfferInputSection(widget: widget),
-                  ButtonsSection(widget: widget)
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: IconButton(
+                      onPressed: () => {
+                        showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            insetPadding: const EdgeInsets.all(20),
+                            child: ListView(
+                              padding: const EdgeInsets.all(20),
+                              children: [
+                                Text('Información de la carga',
+                                    style:
+                                        Theme.of(context).textTheme.headline5),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                Text('Producto: ' + load.product),
+                                Text('Descripción: ' + load.description),
+                                Text('Peso: ' + load.weight.toString()),
+                                Text('Volumen: ' + load.volumen.toString()),
+                                Text('Fecha de servicio: ' +
+                                    load.pickUpDate +
+                                    ' a las ' +
+                                    load.pickUpTime),
+                                Text('Cantidad de vehículos: ' +
+                                    load.vehicleQuantity.toString()),
+                                Text('Cantidad de ayudantes: ' +
+                                    load.helpersQuantity.toString()),
+                                Text('Tiempo de espera (origen): ' +
+                                    load.loadWait.toString()),
+                                Text('Tiempo de espera (descarga): ' +
+                                    load.deliveryWait.toString()),
+                                Text('Oferta inicial: ' +
+                                    load.initialOffer.toString()),
+                                Text('Observaciones: ' + load.observations),
+                                const Divider(),
+                                Text('Información del vehículo',
+                                    style:
+                                        Theme.of(context).textTheme.headline5),
+                                const SizedBox(
+                                  height: 20,
+                                ),
+                                Text('')
+                              ],
+                            ),
+                          ),
+                        ),
+                      },
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 30,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -314,12 +393,14 @@ class _NegotiationChatState extends State<NegotiationChat> {
 }
 
 class ButtonsSection extends StatelessWidget {
-  const ButtonsSection({
+  ButtonsSection({
     Key? key,
     required this.widget,
   }) : super(key: key);
 
   final NegotiationChat widget;
+
+  ButtonStyle buttonStyle = ButtonStyle();
 
   @override
   Widget build(BuildContext context) {
@@ -336,13 +417,20 @@ class ButtonsSection extends StatelessWidget {
           //MUESTRA SOLO SI ES TRANSPORTISTA
           if (user.isCarrier) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {
                   setLoadState(widget.id, context.read<ChatProvider>().loadId,
                       9, context, context.read<ChatProvider>())
                 },
-                icon: const Icon(Icons.location_on),
-                label: const Text('En camino a recogida'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.location_on),
+                    Text('En camino a recogida')
+                  ],
+                ),
               ),
             ];
           }
@@ -351,23 +439,37 @@ class ButtonsSection extends StatelessWidget {
           //MUESTRA SOLO SI ES TRANSPORTISTA
           if (user.isCarrier) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {
                   setLoadState(widget.id, context.read<ChatProvider>().loadId,
                       11, context, context.read<ChatProvider>())
                 },
-                icon: const Icon(Icons.arrow_forward_ios_rounded),
-                label: const Text('Recogido y en camino a destino'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.arrow_forward_ios_rounded),
+                    Text('Recogido y en camino a destino'),
+                  ],
+                ),
               ),
             ];
           }
           //MUESTRA SOLO SI ES GENERADOR
           if (user.isLoadGenerator) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {},
-                icon: const Icon(Icons.location_searching_rounded),
-                label: const Text('Ver ubicación del transportista'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.location_searching_rounded),
+                    Text('Ver ubicación del transportista'),
+                  ],
+                ),
               ),
             ];
           }
@@ -376,13 +478,20 @@ class ButtonsSection extends StatelessWidget {
           //MUESTRA SOLO SI ES TRANSPORTISTA
           if (user.isCarrier) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {
                   setLoadState(widget.id, context.read<ChatProvider>().loadId,
                       12, context, context.read<ChatProvider>())
                 },
-                icon: const Icon(Icons.check),
-                label: const Text('Entregado'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.check),
+                    Text('Entregado'),
+                  ],
+                ),
               ),
             ];
           }
@@ -391,14 +500,21 @@ class ButtonsSection extends StatelessWidget {
           //MUESTRA SOLO SI ES GENERADOR
           if (user.isLoadGenerator) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {
                   setLoadState(widget.id, context.read<ChatProvider>().loadId,
                       13, context, context.read<ChatProvider>()),
                   context.read<ChatProvider>().setCanVote(false),
                 },
-                icon: const Icon(Icons.check),
-                label: const Text('Confirmar entrega'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.check),
+                    Text('Confirmar entrega'),
+                  ],
+                ),
               ),
             ];
           }
@@ -407,7 +523,8 @@ class ButtonsSection extends StatelessWidget {
           //MUESTRA SOLO SI ES GENERADOR
           if (canVote) {
             children = [
-              TextButton.icon(
+              TextButton(
+                style: buttonStyle,
                 onPressed: () => {
                   showDialog(
                       context: context,
@@ -462,9 +579,15 @@ class ButtonsSection extends StatelessWidget {
                             ),
                           ))
                 },
-                icon: const Icon(Icons.star),
-                label: Text('Votar al ' +
-                    (user.isCarrier ? 'generador' : 'transportista')),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.star),
+                    Text('Votar al ' +
+                        (user.isCarrier ? 'generador' : 'transportista')),
+                  ],
+                ),
               ),
             ];
           }
@@ -513,23 +636,41 @@ class ButtonsSection extends StatelessWidget {
           ];
         }
       } else {
-        //Si está en negociación
-        children = [
-          TextButton.icon(
-            onPressed: () => acceptNegotiation(widget.id, context),
-            icon: const Icon(Icons.check),
-            label: const Text('Aceptar'),
-          ),
-          TextButton.icon(
-            onPressed: () => cancelNegotiation(widget.id, context),
-            icon: const Icon(Icons.cancel),
-            label: const Text('Rechazar'),
-          ),
-        ];
+        if (loadState == 2) {
+          //Si está en negociación
+          children = [
+            TextButton(
+              style: buttonStyle,
+              onPressed: () => acceptNegotiation(widget.id, context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  Icon(Icons.check),
+                  Text('Aceptar'),
+                ],
+              ),
+            ),
+            TextButton(
+              style: buttonStyle,
+              onPressed: () => cancelNegotiation(widget.id, context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  Icon(Icons.cancel),
+                  Text('Rechazar'),
+                ],
+              ),
+            ),
+          ];
+        } else {
+          children = [];
+        }
       }
     }
     return Row(
-      children: children,
+      children: children.map((e) => Flexible(flex: 1, child: e)).toList(),
     );
   }
 }
@@ -644,9 +785,10 @@ class _ChatPanelState extends State<ChatPanel> {
         (index) => chat[index].senderId != user.id
             ? MessageBubbleReceived(
                 chat[index].message,
+                chat[index].time,
                 isImage: chat[index].isImage,
               )
-            : MessageBubbleSent(chat[index].message,
+            : MessageBubbleSent(chat[index].message, chat[index].time,
                 isImage: chat[index].isImage),
       ),
     );

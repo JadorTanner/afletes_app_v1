@@ -20,7 +20,8 @@ class Vehicle {
       vtoMunicipal,
       vtoDinatran,
       vtoSenacsa,
-      vtoSeguro;
+      vtoSeguro,
+      brandName;
   bool situacion, esActivo, senacsa, dinatran, seguro;
   List imgs;
   User? owner;
@@ -41,6 +42,7 @@ class Vehicle {
     this.vtoDinatran = '',
     this.vtoSenacsa = '',
     this.vtoSeguro = '',
+    this.brandName = '',
     this.situacion = false,
     this.esActivo = false,
     this.dinatran = false,
@@ -49,6 +51,19 @@ class Vehicle {
     this.imgs = const [],
     this.owner,
   });
+
+  Vehicle fromJSON(Map data) {
+    return Vehicle(
+      id: data['id'],
+      licensePlate: data['license_plate'],
+      maxCapacity: double.parse(data['max_capacity'].toString()),
+      yearOfProd: data['year_of_production'],
+      model: data['model'],
+      brand: data['brand_id'],
+      brandName: data['brand_name'],
+      score: data['score'],
+    );
+  }
 
   createVehicle(
     body,

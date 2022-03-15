@@ -67,10 +67,10 @@ class Negotiation {
 }
 
 class ChatMessage {
-  String message;
+  String message, time;
   int senderId, negotiationId;
   bool isImage;
 
-  ChatMessage(this.message, this.senderId, this.negotiationId,
+  ChatMessage(this.message, this.time, this.senderId, this.negotiationId,
       [this.isImage = false]);
 }
