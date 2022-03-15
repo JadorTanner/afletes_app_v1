@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:flutter/material.dart';

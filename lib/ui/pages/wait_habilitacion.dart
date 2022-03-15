@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

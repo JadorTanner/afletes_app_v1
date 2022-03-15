@@ -4,12 +4,11 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseApp extends StatefulWidget {
-  BaseApp(this.body, {this.title = '', this.floatingButton = null, Key? key})
+  BaseApp(this.body, {this.title = '', this.floatingButton, Key? key})
       : super(key: key);
   Widget body;
   String title;

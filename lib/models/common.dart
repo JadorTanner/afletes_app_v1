@@ -1,14 +1,13 @@
-import 'dart:convert';
+// ignore_for_file: non_constant_identifier_names
 
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Category {
   int? id;
   String name;
   Category({
-    this.id = null,
+    this.id,
     this.name = '',
   });
 }
@@ -17,7 +16,7 @@ class StateModel {
   int? id;
   String name;
   StateModel({
-    this.id = null,
+    this.id,
     this.name = '',
   });
 }
@@ -26,8 +25,8 @@ class City {
   int? id, state_id;
   String name;
   City({
-    this.id = null,
-    this.state_id = null,
+    this.id,
+    this.state_id,
     this.name = '',
   });
 }
@@ -48,7 +47,7 @@ class Negotiation {
       this.fecha = '',
       this.state = '',
       this.withPerson = '',
-      this.negotiationLoad = null});
+      this.negotiationLoad});
 
   //TIPOS DE MENSAJES
   // 1 - Mensaje de oferta

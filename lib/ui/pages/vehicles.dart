@@ -1,11 +1,11 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
-import 'package:afletes_app_v1/ui/components/car_card.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
@@ -24,7 +24,7 @@ List<Vehicle> vehicles = [];
 late Position position;
 
 class Vehicles extends StatefulWidget {
-  Vehicles({this.id = null, Key? key}) : super(key: key);
+  Vehicles({this.id, Key? key}) : super(key: key);
 
   int? id;
 
@@ -33,7 +33,7 @@ class Vehicles extends StatefulWidget {
 }
 
 class _VehiclesState extends State<Vehicles> {
-  Future<List> getVehicles(String url, [int? id = null]) async {
+  Future<List> getVehicles(String url, [int? id]) async {
     try {
       vehicles.clear();
       Response response = await Api().getData(url + 'page=' + page.toString());
@@ -80,7 +80,7 @@ class _VehiclesState extends State<Vehicles> {
             return RefreshIndicator(
                 backgroundColor: const Color(0xFFEBE3CD),
                 color: Colors.white,
-                child: VehiclesList(),
+                child: const VehiclesList(),
                 onRefresh: () async {
                   // await getVehicles();
                   setState(() {});
@@ -94,7 +94,7 @@ class _VehiclesState extends State<Vehicles> {
 }
 
 class VehiclesList extends StatefulWidget {
-  VehiclesList({Key? key}) : super(key: key);
+  const VehiclesList({Key? key}) : super(key: key);
 
   @override
   State<VehiclesList> createState() => _VehiclesListState();
@@ -123,16 +123,12 @@ class _VehiclesListState extends State<VehiclesList> {
         //   id: data['id']
         // );
 
-        TextStyle textoInformacion = const TextStyle(fontSize: 12);
-
         if (images.isNotEmpty) {
           for (var element in images) {
             attachments.add(Image.network(vehicleImgUrl + element['path']));
           }
         }
         late BuildContext bottomSheetContext;
-        late BuildContext loadsContext;
-        late BuildContext loadingContext;
         bottomSheetContext = context;
         showModalBottomSheet(
           context: bottomSheetContext,
@@ -200,7 +196,7 @@ class _VehiclesListState extends State<VehiclesList> {
                           context: context,
                           builder: (context) => Dialog(
                             child: FutureBuilder<Map>(
-                              initialData: {},
+                              initialData: const {},
                               future: Future(() async {
                                 try {
                                   Api api = Api();
@@ -352,8 +348,6 @@ class _VehiclesListState extends State<VehiclesList> {
                                                                     index]['id'],
                                                                 'vehicle_id': id
                                                               });
-                                                          loadingContext =
-                                                              context;
                                                           // showDialog(
                                                           //     context:
                                                           //         context,
@@ -438,7 +432,7 @@ class _VehiclesListState extends State<VehiclesList> {
                           ),
                         )
                       },
-                      icon: Icon(Icons.check),
+                      icon: const Icon(Icons.check),
                     )
                   ],
                 ),

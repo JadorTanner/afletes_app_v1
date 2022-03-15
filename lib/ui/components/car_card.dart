@@ -1,4 +1,4 @@
-import 'dart:convert';
+// ignore_for_file: must_be_immutable, prefer_typing_uninitialized_variables
 
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
@@ -41,7 +41,7 @@ class _CarCard2State extends State<CarCard2> {
         ),
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 115,
               width: 270,
               // decoration: const BoxDecoration(

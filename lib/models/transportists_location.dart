@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class TransportistsLocProvider extends ChangeNotifier {
-  List<TransportistLocation> _transportists = [];
+  final List<TransportistLocation> _transportists = [];
   List<TransportistLocation> get transportists => _transportists;
 
   addTransportist(TransportistLocation transportist) {

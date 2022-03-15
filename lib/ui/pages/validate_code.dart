@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/pages/login.dart';
@@ -33,8 +35,8 @@ class ValidateCode extends StatelessWidget {
                 style: Theme.of(context).textTheme.headline6,
                 textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.all(20),
+              const Padding(
+                padding: EdgeInsets.all(20),
                 child: CodeInput(),
               ),
               ButtonBar(
@@ -62,7 +64,7 @@ class ValidateCode extends StatelessWidget {
 }
 
 class CodeInput extends StatefulWidget {
-  CodeInput({Key? key}) : super(key: key);
+  const CodeInput({Key? key}) : super(key: key);
 
   @override
   State<CodeInput> createState() => _CodeInputState();

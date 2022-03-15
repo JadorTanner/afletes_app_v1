@@ -1,4 +1,5 @@
-import 'package:afletes_app_v1/utils/globals.dart';
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -19,7 +20,7 @@ class MessageBubbleReceived extends StatelessWidget {
               alignment: Alignment.center,
               transform: Matrix4.rotationY(pi),
               child: CustomPaint(
-                painter: CustomShape(Color(0xFFE5E5E5)),
+                painter: CustomShape(const Color(0xFFE5E5E5)),
               ),
             ),
             Flexible(

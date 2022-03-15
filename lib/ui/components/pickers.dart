@@ -1,7 +1,8 @@
+// ignore_for_file: must_be_immutable, prefer_typing_uninitialized_variables
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/common.dart';
-import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -205,7 +206,6 @@ class _StateAndCityPickerState extends State<StateAndCityPicker> {
       Api api = Api();
 
       Response response = await api.getData('get-states');
-      print(response.body);
       if (response.statusCode == 200) {
         Map jsonResponse = jsonDecode(response.body);
         // states = jsonResponse['data'];

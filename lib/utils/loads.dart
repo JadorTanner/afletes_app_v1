@@ -81,7 +81,7 @@ class Load {
   });
 
   Future createLoad(Map body, List<XFile> imagenes,
-      {context = null, update = false, loadId = 0}) async {
+      {context, update = false, loadId = 0}) async {
     try {
       Api api = Api();
       if (update) {
@@ -90,7 +90,6 @@ class Load {
 
       var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
 
-      String token = await api.getToken();
       MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
       Map headers = api.setHeaders();
       headers.forEach((key, value) {
@@ -100,10 +99,10 @@ class Load {
         request.fields[key] = value.toString();
       });
 
-      imagenes.forEach((file) async {
+      for (var file in imagenes) {
         request.files
             .add(await MultipartFile.fromPath('imagenes[]', file.path));
-      });
+      }
       BuildContext loadingContext = context;
       StreamedResponse response = await request.send();
       ScaffoldMessenger.of(context).showSnackBar(

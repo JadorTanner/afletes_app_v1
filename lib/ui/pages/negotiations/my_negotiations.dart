@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
@@ -61,7 +60,7 @@ Future<List<Negotiation>> getNegotiations() async {
 }
 
 class MyNegotiations extends StatefulWidget {
-  MyNegotiations({Key? key}) : super(key: key);
+  const MyNegotiations({Key? key}) : super(key: key);
 
   @override
   State<MyNegotiations> createState() => _MyNegotiationsState();

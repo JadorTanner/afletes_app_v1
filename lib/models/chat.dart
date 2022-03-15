@@ -9,7 +9,7 @@ class ChatProvider extends ChangeNotifier {
   int _loadId = 0;
   int get loadId => _loadId;
 
-  List<ChatMessage> _messages = [];
+  final List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => _messages;
 
   bool _canOffer = true;
@@ -50,9 +50,9 @@ class ChatProvider extends ChangeNotifier {
   }
 
   setMessages(List<ChatMessage> newMessages) {
-    newMessages.forEach((message) {
+    for (var message in newMessages) {
       _messages.insert(0, message);
-    });
+    }
     notifyListeners();
   }
 

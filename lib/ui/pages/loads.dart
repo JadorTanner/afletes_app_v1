@@ -1,8 +1,7 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, unused_local_variable, must_call_super
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
@@ -23,18 +22,18 @@ GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
 late PageController pageController;
 
-Future<List<Load>> getLoads([callback = null]) async {
+Future<List<Load>> getLoads([callback]) async {
   try {
     Response response = await Api().getData('user/find-loads');
 
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
-      loads.forEach((element) {
+      for (var element in loads) {
         animatedListKey.currentState != null
             ? animatedListKey.currentState!
                 .removeItem(0, (context, animation) => const SizedBox.shrink())
             : null;
-      });
+      }
       loads.clear();
       if (jsonResponse['success']) {
         if (jsonResponse['data']['data'].length > 0) {
@@ -491,7 +490,7 @@ class _LoadsState extends State<Loads> {
           future: getLoads(),
           builder: (context, snapshot) =>
               snapshot.connectionState == ConnectionState.done
-                  ? LoadsMap()
+                  ? const LoadsMap()
                   : const Center(child: CircularProgressIndicator()),
         ),
       ),
@@ -504,7 +503,7 @@ class _LoadsState extends State<Loads> {
 }
 
 class LoadsMap extends StatefulWidget {
-  LoadsMap({Key? key}) : super(key: key);
+  const LoadsMap({Key? key}) : super(key: key);
   @override
   State<LoadsMap> createState() => _LoadsMapState();
 }
@@ -513,7 +512,7 @@ class _LoadsMapState extends State<LoadsMap>
     with AutomaticKeepAliveClientMixin {
   late GoogleMapController mapController;
 
-  Set<Polyline> _polylines = Set<Polyline>();
+  final Set<Polyline> _polylines = <Polyline>{};
   List<LatLng> polylineCoordinates = [];
   late PolylinePoints polylinePoints;
   //ESTILOS DEL MAPA
@@ -632,10 +631,10 @@ class _LoadsMapState extends State<LoadsMap>
     );
 
     if (result.points.isNotEmpty) {
-      result.points.forEach((pointLatLng) {
+      for (var pointLatLng in result.points) {
         polylineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
-      });
+      }
 
       mapController.animateCamera(
         CameraUpdate.newLatLngBounds(
@@ -729,6 +728,5 @@ class _LoadsMapState extends State<LoadsMap>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }

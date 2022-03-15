@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -180,8 +182,8 @@ class _PaymentState extends State<Payment> {
                                           'Compruebe su conexión a internet')));
                             }
                           },
-                          icon: Icon(Icons.attach_money),
-                          label: Text('Realizar el pago'))
+                          icon: const Icon(Icons.attach_money),
+                          label: const Text('Realizar el pago'))
                     ],
                   )
                 ]);
@@ -232,7 +234,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
         ),
         widget.saldoTransportista != null
             ? RadioListTile(
-                title: Text('Efectivo'),
+                title: const Text('Efectivo'),
                 value: 1,
                 groupValue: selectedMethod,
                 onChanged: (int? newVal) {
@@ -243,7 +245,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
                 })
             : const SizedBox.shrink(),
         RadioListTile(
-            title: Text('Bancard'),
+            title: const Text('Bancard'),
             value: 2,
             groupValue: selectedMethod,
             onChanged: (int? newVal) {

@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_init_to_null, must_be_immutable
+// ignore_for_file: avoid_init_to_null, must_be_immutable, prefer_typing_uninitialized_variables
 
 import 'dart:convert';
 import 'dart:io';
@@ -86,7 +86,7 @@ Future getBrands() async {
 }
 
 class CreateVehicle extends StatefulWidget {
-  CreateVehicle({Key? key}) : super(key: key);
+  const CreateVehicle({Key? key}) : super(key: key);
 
   @override
   State<CreateVehicle> createState() => _CreateVehicleState();
@@ -118,8 +118,6 @@ class _CreateVehicleState extends State<CreateVehicle> {
       imagenesNetwork.clear();
       if (args['imgs'].isNotEmpty) {
         List.generate(args['imgs'].length, (index) async {
-          Response image =
-              await get(Uri.parse(vehicleImgUrl + args['imgs'][index]['path']));
           imagenesNetwork.add(args['imgs'][index]['path']);
           // imagePickerKey.currentState != null
           //     ? imagePickerKey.currentState!.setState(() {})
@@ -141,7 +139,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(RegisterVehicleForm());
+    return BaseApp(const RegisterVehicleForm());
   }
 }
 
@@ -157,10 +155,10 @@ class RegisterVehicleForm extends StatelessWidget {
           return PageView(
             controller: pageController,
             physics: const NeverScrollableScrollPhysics(),
-            children: [
+            children: const [
               DatosGenerales(),
-              const Documentos(),
-              const Documentos2(),
+              Documentos(),
+              Documentos2(),
             ],
           );
         } else {
@@ -172,7 +170,7 @@ class RegisterVehicleForm extends StatelessWidget {
 }
 
 class DatosGenerales extends StatelessWidget {
-  DatosGenerales({Key? key}) : super(key: key);
+  const DatosGenerales({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +211,7 @@ class DatosGenerales extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     //Marca
-                    Flexible(
+                    const Flexible(
                       child: MarcaSelect(),
                     ),
                     const SizedBox(
@@ -234,7 +232,7 @@ class DatosGenerales extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Flexible(
+                    const Flexible(
                       child: MeasurementUnit(),
                     ),
                     const SizedBox(
@@ -501,7 +499,7 @@ class Documentos2 extends StatelessWidget {
                 Flexible(
                   child: PrevPageButton(pageController),
                 ),
-                Flexible(
+                const Flexible(
                   child: SendButton(),
                 ),
               ],
@@ -514,7 +512,7 @@ class Documentos2 extends StatelessWidget {
 }
 
 class SendButton extends StatefulWidget {
-  SendButton({Key? key}) : super(key: key);
+  const SendButton({Key? key}) : super(key: key);
 
   @override
   State<SendButton> createState() => _SendButtonState();
@@ -705,7 +703,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
 }
 
 class MeasurementUnit extends StatefulWidget {
-  MeasurementUnit({Key? key}) : super(key: key);
+  const MeasurementUnit({Key? key}) : super(key: key);
 
   @override
   State<MeasurementUnit> createState() => _MeasurementUnitState();
@@ -758,7 +756,7 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
 }
 
 class MarcaSelect extends StatefulWidget {
-  MarcaSelect({Key? key}) : super(key: key);
+  const MarcaSelect({Key? key}) : super(key: key);
 
   @override
   State<MarcaSelect> createState() => _MarcaSelectState();
@@ -852,10 +850,10 @@ class LoadTimePicker extends StatefulWidget {
   TextEditingController controller;
   String title;
   @override
-  State<LoadTimePicker> createState() => Load_TimePickerState();
+  State<LoadTimePicker> createState() => LoadTimePickerState();
 }
 
-class Load_TimePickerState extends State<LoadTimePicker> {
+class LoadTimePickerState extends State<LoadTimePicker> {
   TimeOfDay selectedTime = TimeOfDay.now();
 
   Future<void> _selectTime(BuildContext context) async {

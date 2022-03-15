@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
@@ -6,14 +5,10 @@ import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -35,6 +30,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: ListView(
         children: [
           Align(
@@ -42,7 +38,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height * 0.6,
-              decoration: const BoxDecoration(color: Colors.orange),
+              decoration: const BoxDecoration(color: Colors.white),
+              child: Image.asset(
+                'assets/icons/logo-naranja.png',
+                width: 50,
+                height: 50,
+              ),
             ),
           ),
           Padding(
@@ -66,7 +67,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   width: 100,
                   height: 20,
                 ),
-                LoginButton(),
+                const LoginButton(),
                 const SizedBox(
                   width: 100,
                   height: 20,

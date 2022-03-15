@@ -53,7 +53,7 @@ class Vehicle {
   createVehicle(
     body,
     List<XFile> imagenes, {
-    context = null,
+    context,
     update = false,
     vehicleId = 0,
     String greenCard = '',
@@ -78,7 +78,6 @@ class Vehicle {
     var fullUrl =
         apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
-    String token = await api.getToken();
     MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
     Map headers = api.setHeaders();
     headers.forEach((key, value) {
@@ -126,9 +125,9 @@ class Vehicle {
           .add(await MultipartFile.fromPath('insurance_attachment', insurance));
     }
 
-    imagenes.forEach((file) async {
+    for (var file in imagenes) {
       request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
-    });
+    }
 
     // showDialog(
     //   context: context,

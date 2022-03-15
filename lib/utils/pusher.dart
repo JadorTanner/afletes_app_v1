@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
@@ -9,7 +11,6 @@ import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';

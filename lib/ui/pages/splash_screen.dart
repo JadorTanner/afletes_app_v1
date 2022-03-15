@@ -9,7 +9,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
-  SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -34,10 +34,6 @@ class _SplashScreenState extends State<SplashScreen> {
             );
             Geolocator.getPositionStream(locationSettings: locationSettings)
                 .listen((Position? position) {
-              String posicion = 'POSICION: ' +
-                  (position == null
-                      ? 'Unknown'
-                      : '${position.latitude.toString()}, ${position.longitude.toString()}');
               Api api = Api();
               api.postData('update-location', {
                 'latitude': position!.latitude,

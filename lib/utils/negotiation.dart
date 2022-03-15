@@ -1,6 +1,3 @@
-import 'package:afletes_app_v1/utils/api.dart';
-import 'package:http/http.dart';
-
 class Negotiation {
   int id, transportistId, vehicleId, generatorId, loadId;
   String state;
@@ -13,15 +10,7 @@ class Negotiation {
       this.state = ''});
 
   startNegotiation() async {
-    try {
-      Api api = Api();
-
-      Response response = await api.postData('negotiation/start-negotiation', {
-        'load_id': 4,
-        'vehicle_id': 1,
-        'initial_offer': 1200000,
-      });
-    } catch (e) {
+    try {} catch (e) {
       return false;
     }
   }

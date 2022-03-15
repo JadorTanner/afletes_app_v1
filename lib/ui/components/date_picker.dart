@@ -1,5 +1,6 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:afletes_app_v1/ui/components/form_field.dart';
-import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

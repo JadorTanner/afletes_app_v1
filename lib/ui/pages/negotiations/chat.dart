@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
@@ -135,7 +137,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
       mapImgUrl =
           "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$googleMapKey";
       message =
-          """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="${mapImgUrl}" ><br>Mi ubicación</a>""";
+          """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
     }
     Api api = Api();
     Response response = await api.postData('negotiation/send-message', {
@@ -287,7 +289,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
               ),
               child: Column(
                 children: [
-                  Expanded(
+                  const Expanded(
                     // height: MediaQuery.of(context).size.height * 0.75,
                     child: ChatPanel(),
                   ),
@@ -424,7 +426,7 @@ class ButtonsSection extends StatelessWidget {
                                   const SizedBox(
                                     height: 20,
                                   ),
-                                  Stars(),
+                                  const Stars(),
                                   const SizedBox(
                                     height: 20,
                                   ),
@@ -442,13 +444,6 @@ class ButtonsSection extends StatelessWidget {
                                   TextButton(
                                     onPressed: () async {
                                       try {
-                                        Api api = Api();
-                                        Response response =
-                                            await api.postData('user/vote', {
-                                          'negotiation_id': widget.id,
-                                          'score': voteStars,
-                                          'comment': commentController.text,
-                                        });
                                         context
                                             .read<ChatProvider>()
                                             .setCanVote(false);
@@ -631,7 +626,7 @@ class OfferInputSection extends StatelessWidget {
 }
 
 class ChatPanel extends StatefulWidget {
-  ChatPanel({Key? key}) : super(key: key);
+  const ChatPanel({Key? key}) : super(key: key);
 
   @override
   State<ChatPanel> createState() => _ChatPanelState();
@@ -682,7 +677,7 @@ class PillButton extends StatelessWidget {
 }
 
 class Stars extends StatefulWidget {
-  Stars({Key? key}) : super(key: key);
+  const Stars({Key? key}) : super(key: key);
 
   @override
   State<Stars> createState() => _StarsState();

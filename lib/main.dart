@@ -15,7 +15,6 @@ import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +108,8 @@ void main() async {
             create: (context) => TransportistsLocProvider()),
         ChangeNotifierProvider<User>(create: (context) => User()),
         ChangeNotifierProvider<ChatProvider>(
-            create: (context) => ChatProvider()),
+          create: (context) => ChatProvider(),
+        ),
       ],
       child: const AfletesApp(),
     ),
@@ -255,16 +255,16 @@ class _AfletesAppState extends State<AfletesApp> {
       initialRoute: '/splash_screen',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/splash_screen': (context) => SplashScreen(),
+        '/splash_screen': (context) => const SplashScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/loads': (context) => const Loads(),
         '/vehicles': (context) => Vehicles(),
-        '/my-loads': (context) => MyLoadsPage(),
+        '/my-loads': (context) => const MyLoadsPage(),
         '/create-load': (context) => const CreateLoadPage(),
-        '/create-vehicle': (context) => CreateVehicle(),
-        '/my-vehicles': (context) => MyVehiclesPage(),
-        '/my-negotiations': (context) => MyNegotiations(),
+        '/create-vehicle': (context) => const CreateVehicle(),
+        '/my-vehicles': (context) => const MyVehiclesPage(),
+        '/my-negotiations': (context) => const MyNegotiations(),
       },
       navigatorKey: navigatorKey,
     );

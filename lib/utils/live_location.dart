@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LiveShareLocationPage extends StatefulWidget {
-  LiveShareLocationPage({Key? key}) : super(key: key);
+  const LiveShareLocationPage({Key? key}) : super(key: key);
 
   @override
   State<LiveShareLocationPage> createState() => _LiveShareLocationPageState();
