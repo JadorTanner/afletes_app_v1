@@ -547,7 +547,7 @@ class _LoadsMapState extends State<LoadsMap>
     //   .buffer
     //   .asUint8List();
     BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(
-        await getBytesFromAsset('assets/img/load-marker-icon.png', 30));
+        await getBytesFromAsset('assets/img/load-marker-icon.png', 50));
     markers.clear();
     loads.asMap().forEach((key, load) {
       markers.add(
@@ -570,21 +570,23 @@ class _LoadsMapState extends State<LoadsMap>
       );
     });
     if (fromTap) {
-      setState(() {
-        _polylines.clear();
-        polylineCoordinates.clear();
-        if (pop) {
-          Navigator.pop(context);
-        }
-      });
+      _polylines.clear();
+      polylineCoordinates.clear();
+      if (pop) {
+        Navigator.pop(context);
+      }
     }
+    setState(() {});
   }
 
 //MUESTRA PINES DE ORIGEN Y DESTINO
   setLoadMarkerInfo(
       Load load, Position position, BuildContext bottomSheetContext) async {
-    BitmapDescriptor bitmapIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(), 'assets/img/load-marker-icon.png');
+    // BitmapDescriptor bitmapIcon = await BitmapDescriptor.fromAssetImage(
+    //     const ImageConfiguration(), 'assets/img/load-marker-icon.png');
+
+    BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(
+        await getBytesFromAsset('assets/img/load-marker-icon.png', 50));
     LatLng originLatLng = LatLng(
       double.parse(load.latitudeFrom),
       double.parse(load.longitudeFrom),

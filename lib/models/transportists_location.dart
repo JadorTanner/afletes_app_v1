@@ -10,18 +10,21 @@ class TransportistsLocProvider extends ChangeNotifier {
   }
 
   updateLocation(int transportistId, int vehicleId, double latitude,
-      double longitude, double heading,
+      double longitude, double? heading,
       [String name = '']) {
     int index = _transportists.indexWhere((t) =>
         ((t.transportistId == transportistId) && (t.vehicleId == vehicleId)));
+    print('DATOS DE UPDATE OR CREATE');
+    print(index);
+    print(heading);
     if (index != -1) {
       _transportists[index].latitude = latitude;
       _transportists[index].longitude = longitude;
-      _transportists[index].heading = heading;
+      _transportists[index].heading = (heading ?? 0.0);
       notifyListeners();
     } else {
-      addTransportist(TransportistLocation(
-          latitude, longitude, heading, transportistId, name, vehicleId));
+      addTransportist(TransportistLocation(latitude, longitude,
+          (heading ?? 0.0), transportistId, name, vehicleId));
     }
   }
 
