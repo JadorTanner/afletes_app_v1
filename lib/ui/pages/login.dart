@@ -138,15 +138,13 @@ class _LoginButtonState extends State<LoginButton> {
                 setState(() {
                   isLoading = !isLoading;
                 });
-                print(context.read<PusherApi>().pusher.getSocketId());
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
 
                 //TOKEN PARA MENSAJES PUSH
-                String? token = await FirebaseMessaging.instance.getToken();
-                print('firebase token: ' + (token ?? 'token'));
                 try {
+                  String? token = await FirebaseMessaging.instance.getToken();
                   await Api().postData('user/set-device-token',
                       {'id': user['id'], 'device_token': token ?? ''});
                 } catch (e) {
@@ -162,46 +160,24 @@ class _LoginButtonState extends State<LoginButton> {
                         accuracy: LocationAccuracy.best,
                         distanceFilter: 5,
                       );
-                      PusherApi().init(context);
+                      PusherApi().init(
+                          context, context.read<TransportistsLocProvider>());
                       Geolocator.getPositionStream(
                               locationSettings: locationSettings)
                           .listen((Position? position) {
-                        Api api = Api();
-                        api.postData('update-location', {
-                          'latitude': position!.latitude,
-                          'longitude': position.longitude,
-                          'heading': position.heading,
-                        });
+                        if (position != null) {
+                          Api api = Api();
+                          api.postData('update-location', {
+                            'latitude': position.latitude,
+                            'longitude': position.longitude,
+                            'heading': position.heading,
+                          });
+                        }
                       });
                       Navigator.of(context).pushReplacementNamed('/loads');
                     } else {
-                      PusherApi().init(context);
-                      Channel transportistsLocationChannel = context
-                          .read<PusherApi>()
-                          .pusher
-                          .subscribe("transportist-location");
-                      context.read<PusherApi>().bindEvent(
-                          transportistsLocationChannel,
-                          'App\\Events\\TransportistLocationEvent',
-                          (PusherEvent? event) async {
-                        if (event != null) {
-                          if (event.data != null) {
-                            Map data = jsonDecode(event.data!.toString());
-                            context
-                                .read<TransportistsLocProvider>()
-                                .updateLocation(
-                                  data['user_id'],
-                                  data['vehicle_id'],
-                                  data['latitude'],
-                                  data['longitude'],
-                                  data['heading'] != null
-                                      ? data['heading'].toDouble()
-                                      : 0.0,
-                                  data['name'],
-                                );
-                          }
-                        }
-                      });
+                      PusherApi().init(context,
+                          context.read<TransportistsLocProvider>(), true);
                       Navigator.of(context).pushReplacementNamed('/vehicles');
                     }
                   } else {

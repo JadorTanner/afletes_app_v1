@@ -32,10 +32,12 @@ class PusherApi extends ChangeNotifier {
   Channel? transportistsLocationChannel;
 
   disconnect() {
+    pusher.cancelEventChannelStream();
     pusher.disconnect();
   }
 
-  init(BuildContext context, [bool fromPage = false]) async {
+  init(BuildContext context, TransportistsLocProvider transportistsLocProvider,
+      [bool isGenerator = false]) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     // if (!fromPage) {
@@ -141,6 +143,30 @@ class PusherApi extends ChangeNotifier {
     //   //EVENTOS DE UBICACION DE TRANSPORTISTAS
 
     // }
+
+    if (isGenerator) {
+      Channel transportistsLocationChannel =
+          pusher.subscribe("transportist-location");
+      bindEvent(transportistsLocationChannel,
+          'App\\Events\\TransportistLocationEvent', (PusherEvent? event) async {
+        if (event != null) {
+          if (event.data != null) {
+            Map data = jsonDecode(event.data.toString());
+            print('DATOS DE PARTE DEL GENERADOR');
+            print(data);
+            // TransportistsLocProvider().updateLocation(transportistId, vehicleId, latitude, longitude, heading)
+            transportistsLocProvider.updateLocation(
+              data['user_id'] ?? 0,
+              data['vehicle_id'] ?? 0,
+              data['latitude'] ?? '0.0',
+              data['longitude'] ?? '0.0',
+              data['heading'] ?? 0.0,
+              data['name'] ?? '',
+            );
+          }
+        }
+      });
+    }
     notifyListeners();
   }
 

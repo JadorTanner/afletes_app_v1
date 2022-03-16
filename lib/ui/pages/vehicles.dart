@@ -103,7 +103,6 @@ class _VehiclesListState extends State<VehiclesList> {
   final listViewController = ScrollController();
   @override
   void initState() {
-    PusherApi().init(context, true);
     super.initState();
   }
 
@@ -549,6 +548,7 @@ class _VehiclesListState extends State<VehiclesList> {
     List<TransportistLocation> transportists =
         context.watch<TransportistsLocProvider>().transportists;
     setMarkers(transportists);
+    print(transportists);
     return Stack(
       children: [
         GoogleMap(
