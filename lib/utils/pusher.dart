@@ -36,7 +36,8 @@ class PusherApi extends ChangeNotifier {
     pusher.disconnect();
   }
 
-  init(BuildContext context, [bool isGenerator = false]) async {
+  init(BuildContext context, TransportistsLocProvider transportistsLocProvider,
+      [bool isGenerator = false]) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     // if (!fromPage) {
@@ -154,7 +155,7 @@ class PusherApi extends ChangeNotifier {
             print('DATOS DE PARTE DEL GENERADOR');
             print(data);
             // TransportistsLocProvider().updateLocation(transportistId, vehicleId, latitude, longitude, heading)
-            Provider.of<TransportistsLocProvider>(context).updateLocation(
+            transportistsLocProvider.updateLocation(
               data['user_id'] ?? 0,
               data['vehicle_id'] ?? 0,
               data['latitude'] ?? '0.0',

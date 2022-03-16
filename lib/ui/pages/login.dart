@@ -160,7 +160,8 @@ class _LoginButtonState extends State<LoginButton> {
                         accuracy: LocationAccuracy.best,
                         distanceFilter: 5,
                       );
-                      PusherApi().init(context);
+                      PusherApi().init(
+                          context, context.read<TransportistsLocProvider>());
                       Geolocator.getPositionStream(
                               locationSettings: locationSettings)
                           .listen((Position? position) {
@@ -175,7 +176,8 @@ class _LoginButtonState extends State<LoginButton> {
                       });
                       Navigator.of(context).pushReplacementNamed('/loads');
                     } else {
-                      PusherApi().init(context, true);
+                      PusherApi().init(context,
+                          context.read<TransportistsLocProvider>(), true);
                       Navigator.of(context).pushReplacementNamed('/vehicles');
                     }
                   } else {
