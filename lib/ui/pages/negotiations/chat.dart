@@ -16,6 +16,7 @@ import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -59,31 +60,35 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   FocusManager.instance.primaryFocus?.unfocus();
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
+  ChatProvider chatProvider = context.read<ChatProvider>();
+
+  chatProvider.setCanOffer(false);
+  chatProvider.setPaid(false);
+  chatProvider.setCanVote(false);
+  chatProvider.setShowDefaultMessages(false);
+  chatProvider.setToPay(false);
   if (response.statusCode == 200) {
     Map jsonResp = jsonDecode(response.body);
     List listMessages = jsonResp['data']['messages'];
-    ChatProvider chatProvider = context.read<ChatProvider>();
+    List<ChatMessage> providerMessages = [];
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
-        chatProvider.addMessage(
-            id,
-            ChatMessage(
-                message['img_url'] ?? message['message'],
-                message['created_at'],
-                message['sender_id'],
-                message['id'],
-                message['img_url'] != null));
+        providerMessages.add(ChatMessage(
+            message['img_url'] ?? message['message'],
+            message['created_at'],
+            message['sender_id'],
+            message['id'],
+            message['img_url'] != null));
       });
+      chatProvider.setMessages(providerMessages);
     }
     receiverId = jsonResp['data']['negotiation']
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
-    chatProvider.setCanOffer(false);
-    chatProvider.setPaid(false);
-    chatProvider.setCanVote(false);
-    chatProvider.setShowDefaultMessages(false);
-    chatProvider.setToPay(false);
+    print('Estado de la negociación: ' +
+        jsonResp['data']['negotiation_state']['id'].toString());
+    chatProvider.setNegState(jsonResp['data']['negotiation_state']['id']);
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
-    switch (jsonResp['data']['negotiation_state']['id']) {
+    switch (chatProvider.negState) {
       case 1:
         chatProvider.setCanOffer(true);
         chatProvider.setPaid(false);
@@ -129,7 +134,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     }
 
     load = Load.fromJSON(jsonResp['data']['load']);
-    log(response.body);
   }
   return [];
   // } catch (e) {
@@ -186,18 +190,36 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
 }
 
 Future cancelNegotiation(id, context) async {
-  try {
-    Api api = Api();
-    Response response = await api.postData('negotiation/reject', {
-      'id': id,
-    });
-    if (response.statusCode == 200) {
-      context.read<ChatProvider>().setCanOffer(false);
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
-  }
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Desea cancelar la negociación?'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.check),
+          onPressed: () async {
+            try {
+              Api api = Api();
+              Response response = await api.postData('negotiation/reject', {
+                'id': id,
+              });
+              if (response.statusCode == 200) {
+                context.read<ChatProvider>().setCanOffer(false);
+              }
+              log(response.body);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Compruebe su conexión a internet')));
+            }
+          },
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        )
+      ],
+    ),
+  );
 }
 
 Future setLoadState(int negotiationId, int loadId, int state,
@@ -279,16 +301,6 @@ class NegotiationChat extends StatefulWidget {
 
 class _NegotiationChatState extends State<NegotiationChat> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return WillPopScope(
         child: FutureBuilder(
@@ -314,8 +326,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
                         // height: MediaQuery.of(context).size.height * 0.75,
                         child: ChatPanel(),
                       ),
-                      OfferInputSection(widget: widget),
-                      ButtonsSection(widget: widget)
+                      DynamicSection(widget)
                     ],
                   ),
                   Positioned(
@@ -377,18 +388,74 @@ class _NegotiationChatState extends State<NegotiationChat> {
                 ],
               ),
             ),
+            resizeToAvoidBottomInset: true,
           ),
         ),
         onWillPop: () => Future(() {
               context.read<ChatProvider>().setNegotiationId(0);
-              context.read<ChatProvider>().setCanOffer(false);
-              context.read<ChatProvider>().setPaid(false);
-              context.read<ChatProvider>().setCanVote(false);
-              context.read<ChatProvider>().setShowDefaultMessages(false);
-              context.read<ChatProvider>().setToPay(false);
+              // context.read<ChatProvider>().setCanOffer(false);
+              // context.read<ChatProvider>().setPaid(false);
+              // context.read<ChatProvider>().setCanVote(false);
+              // context.read<ChatProvider>().setShowDefaultMessages(false);
+              // context.read<ChatProvider>().setToPay(false);
 
               return true;
             }));
+  }
+}
+
+class DynamicSection extends StatefulWidget {
+  DynamicSection(this.widget, {Key? key}) : super(key: key);
+  NegotiationChat widget;
+  @override
+  State<DynamicSection> createState() => _DynamicSectionState();
+}
+
+class _DynamicSectionState extends State<DynamicSection> {
+  @override
+  Widget build(BuildContext context) {
+    // int negState = context.watch<ChatProvider>().negState;
+    // ChatProvider chatProvider = context.read();
+    // if (mounted) {
+    //   switch (negState) {
+    //     case 1:
+    //       chatProvider.setCanOffer(true);
+    //       chatProvider.setPaid(false);
+    //       chatProvider.setCanVote(false);
+    //       chatProvider.setShowDefaultMessages(false);
+    //       chatProvider.setToPay(false);
+    //       break;
+    //     case 2:
+    //       chatProvider.setCanOffer(false);
+    //       chatProvider.setPaid(false);
+    //       chatProvider.setCanVote(false);
+    //       chatProvider.setShowDefaultMessages(false);
+    //       chatProvider.setToPay(true);
+    //       break;
+    //     case 6:
+    //       chatProvider.setCanOffer(true);
+    //       chatProvider.setPaid(false);
+    //       chatProvider.setToPay(false);
+    //       break;
+    //     case 8:
+    //       chatProvider.setCanOffer(false);
+    //       chatProvider.setPaid(true);
+    //       chatProvider.setShowDefaultMessages(true);
+    //       break;
+    //     default:
+    //       chatProvider.setCanVote(false);
+    //       chatProvider.setToPay(false);
+    //       chatProvider.setCanOffer(false);
+    //       chatProvider.setPaid(false);
+    //       chatProvider.setShowDefaultMessages(false);
+    //   }
+    // }
+    return Column(
+      children: [
+        OfferInputSection(widget: widget.widget),
+        ButtonsSection(widget: widget.widget)
+      ],
+    );
   }
 }
 
@@ -409,7 +476,11 @@ class ButtonsSection extends StatelessWidget {
     loadState = context.watch<ChatProvider>().loadState;
     canVote = context.watch<ChatProvider>().canVote;
 
-    List<Widget> children = [];
+    List<Widget> children = [
+      const SizedBox(
+        height: 20,
+      )
+    ];
     //Si la negociación está pagada
     if (paid) {
       switch (loadState) {
@@ -593,7 +664,11 @@ class ButtonsSection extends StatelessWidget {
           }
           break;
         default:
-          children = [];
+          children = [
+            const SizedBox(
+              height: 20,
+            )
+          ];
       }
     } else {
       //Si la negociación no está pagada
@@ -636,7 +711,9 @@ class ButtonsSection extends StatelessWidget {
           ];
         }
       } else {
-        if (loadState == 2) {
+        print('Puede ofertar? ' + (canOffer ? 'Sí' : 'No'));
+        print('Estado de la carga ' + loadState.toString());
+        if (loadState == 2 && canOffer) {
           //Si está en negociación
           children = [
             TextButton(
@@ -665,7 +742,11 @@ class ButtonsSection extends StatelessWidget {
             ),
           ];
         } else {
-          children = [];
+          children = [
+            const SizedBox(
+              height: 20,
+            )
+          ];
         }
       }
     }

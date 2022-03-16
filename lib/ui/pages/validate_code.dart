@@ -166,6 +166,7 @@ class ReturnBackState extends State<ReturnBack> {
             await SharedPreferences.getInstance();
         sharedPreferences.remove('user');
         sharedPreferences.remove('token');
+        sharedPreferences.clear();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

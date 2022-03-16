@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
@@ -9,6 +10,8 @@ import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
+import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -57,6 +60,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   'Email',
                   hint: 'Ejemplo@gmail.com',
                   icon: Icons.alternate_email,
+                  type: TextInputType.emailAddress,
                 ),
                 const SizedBox(
                   width: 100,
@@ -127,21 +131,21 @@ class _LoginButtonState extends State<LoginButton> {
               setState(() {
                 isLoading = !isLoading;
               });
+
               bool isLogged = await User()
                   .login(context, textController1.text, textController2.text);
               if (isLogged) {
                 setState(() {
                   isLoading = !isLoading;
                 });
-
-                PusherApi().init(context);
-
+                print(context.read<PusherApi>().pusher.getSocketId());
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
 
                 //TOKEN PARA MENSAJES PUSH
                 String? token = await FirebaseMessaging.instance.getToken();
+                print('firebase token: ' + (token ?? 'token'));
                 try {
                   await Api().postData('user/set-device-token',
                       {'id': user['id'], 'device_token': token ?? ''});
@@ -158,6 +162,7 @@ class _LoginButtonState extends State<LoginButton> {
                         accuracy: LocationAccuracy.best,
                         distanceFilter: 5,
                       );
+                      PusherApi().init(context);
                       Geolocator.getPositionStream(
                               locationSettings: locationSettings)
                           .listen((Position? position) {
@@ -170,6 +175,33 @@ class _LoginButtonState extends State<LoginButton> {
                       });
                       Navigator.of(context).pushReplacementNamed('/loads');
                     } else {
+                      PusherApi().init(context);
+                      Channel transportistsLocationChannel = context
+                          .read<PusherApi>()
+                          .pusher
+                          .subscribe("transportist-location");
+                      context.read<PusherApi>().bindEvent(
+                          transportistsLocationChannel,
+                          'App\\Events\\TransportistLocationEvent',
+                          (PusherEvent? event) async {
+                        if (event != null) {
+                          if (event.data != null) {
+                            Map data = jsonDecode(event.data!.toString());
+                            context
+                                .read<TransportistsLocProvider>()
+                                .updateLocation(
+                                  data['user_id'],
+                                  data['vehicle_id'],
+                                  data['latitude'],
+                                  data['longitude'],
+                                  data['heading'] != null
+                                      ? data['heading'].toDouble()
+                                      : 0.0,
+                                  data['name'],
+                                );
+                          }
+                        }
+                      });
                       Navigator.of(context).pushReplacementNamed('/vehicles');
                     }
                   } else {

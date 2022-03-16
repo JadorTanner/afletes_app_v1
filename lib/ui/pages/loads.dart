@@ -717,7 +717,7 @@ class _LoadsMapState extends State<LoadsMap>
               onPressed: () async {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(
-                      LatLng(position.latitude, position.longitude), 11),
+                      LatLng(position.latitude, position.longitude), 14),
                 );
               },
               icon: const Icon(Icons.location_searching_rounded),

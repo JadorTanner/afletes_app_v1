@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
@@ -729,6 +730,7 @@ class RegisterButtonState extends State<RegisterButton> {
                             });
                         ScaffoldMessenger.of(context).clearSnackBars();
                         Map responseBody = jsonDecode(stringResponse);
+                        print(responseBody['data']);
                         if (responseBody['success']) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -742,17 +744,23 @@ class RegisterButtonState extends State<RegisterButton> {
                           //TOKEN PARA MENSAJES PUSH
                           String? token =
                               await FirebaseMessaging.instance.getToken();
-                          if (token != null) {
-                            await Api().postData('user/set-device-token', {
-                              'id': responseBody['data']['user']['id'],
-                              'device_token': token
-                            });
-                          }
+
+                          print('firebase token: ' + (token ?? 'token'));
 
                           sharedPreferences.setString(
                               'user', jsonEncode(responseBody['data']['user']));
                           sharedPreferences.setString(
                               'token', responseBody['data']['token']);
+
+                          if (token != null) {
+                            Response response = await Api().postData(
+                                'user/set-device-token', {
+                              'id': responseBody['data']['user']['id'],
+                              'device_token': token
+                            });
+
+                            print(response.body);
+                          }
 
                           if (responseBody['data']['user']['is_carrier']) {
                             Navigator.of(context).pushReplacement(

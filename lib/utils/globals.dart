@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 //casa
-// String baseUrl = 'http://181.120.66.16:8000/';
+String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
 // String baseUrl = 'http://192.168.1.152:8000/';
 //producción
-String baseUrl = 'https://www.afletes.com/';
+// String baseUrl = 'https://www.afletes.com/';
 
 String apiUrl = baseUrl + 'api/';
 
@@ -20,6 +20,8 @@ Color kGrey = const Color(0xFFC5C5C5);
 Color kInputBorder = const Color(0xFFBDBDBD);
 Color kBlack = const Color(0xFF101010);
 Color primaryOrange = const Color(0xFFED8232);
+
+RegExp htmlTagRegExp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
 
 currencyFormat(int amount,
     [String symbol = 'Gs.', String decimals = ',', String thousands = '.']) {

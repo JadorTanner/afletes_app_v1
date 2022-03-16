@@ -75,7 +75,7 @@ class MessageBubbleReceived extends StatelessWidget {
                       height: 5,
                     ),
                     Text(
-                      time.split(' ')[1],
+                      time.split(' ')[1].substring(0, 5),
                       style: const TextStyle(fontSize: 12),
                     ),
                   ],
@@ -149,7 +149,7 @@ class MessageBubbleSent extends StatelessWidget {
                   height: 5,
                 ),
                 Text(
-                  time.split(' ')[1],
+                  time.split(' ')[1].substring(0, 5),
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ]),

@@ -32,46 +32,45 @@ class Vehicles extends StatefulWidget {
   _VehiclesState createState() => _VehiclesState();
 }
 
-class _VehiclesState extends State<Vehicles> {
-  Future<List> getVehicles(String url, [int? id]) async {
-    try {
-      vehicles.clear();
-      Response response = await Api().getData(url + 'page=' + page.toString());
-      if (response.statusCode == 200) {
-        Map jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success']) {
-          if (jsonResponse['data']['data'].length > 0) {
-            for (var vehicle in jsonResponse['data']['data']) {
-              vehicles.add(Vehicle(
-                  id: vehicle['id'],
-                  licensePlate: vehicle['license_plate'],
-                  senacsa:
-                      vehicle['senacsa_authorization_attachment_id'] != null,
-                  dinatran:
-                      vehicle['dinatran_authorization_attachment_id'] != null,
-                  model: vehicle['model'],
-                  score: vehicle['score'],
-                  owner: vehicle['created_by'] != null
-                      ? User(fullName: vehicle['created_by']['full_name'])
-                      : null,
-                  seguro: vehicle['insurance_attachment_id'] != null,
-                  imgs: vehicle['vehicleattachments'] ?? ''));
-            }
+Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
+  try {
+    vehicles.clear();
+    Response response = await Api().getData(url + 'page=' + page.toString());
+    if (response.statusCode == 200) {
+      Map jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success']) {
+        if (jsonResponse['data']['data'].length > 0) {
+          for (var vehicle in jsonResponse['data']['data']) {
+            vehicles.add(Vehicle(
+                id: vehicle['id'],
+                licensePlate: vehicle['license_plate'],
+                senacsa: vehicle['senacsa_authorization_attachment_id'] != null,
+                dinatran:
+                    vehicle['dinatran_authorization_attachment_id'] != null,
+                model: vehicle['model'],
+                score: vehicle['score'],
+                owner: vehicle['created_by'] != null
+                    ? User(fullName: vehicle['created_by']['full_name'])
+                    : null,
+                seguro: vehicle['insurance_attachment_id'] != null,
+                imgs: vehicle['vehicleattachments'] ?? ''));
           }
         }
       }
-
-      return vehicles;
-    } catch (e) {
-      return [];
     }
-  }
 
+    return vehicles;
+  } catch (e) {
+    return [];
+  }
+}
+
+class _VehiclesState extends State<Vehicles> {
   @override
   Widget build(BuildContext context) {
     return BaseApp(
       FutureBuilder(
-        future: getVehicles('user/find-vehicles?', widget.id),
+        future: getVehicles('user/find-vehicles'),
         initialData: const [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -550,15 +549,59 @@ class _VehiclesListState extends State<VehiclesList> {
     List<TransportistLocation> transportists =
         context.watch<TransportistsLocProvider>().transportists;
     setMarkers(transportists);
-    return GoogleMap(
-      key: widget.key,
-      onMapCreated: (controller) => _onMapCreated(controller, transportists),
-      myLocationEnabled: true,
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(-25.27705190025039, -57.63737049639007),
-        zoom: 14,
-      ),
-      markers: markers.map((e) => e).toSet(),
+    return Stack(
+      children: [
+        GoogleMap(
+          key: widget.key,
+          onMapCreated: (controller) =>
+              _onMapCreated(controller, transportists),
+          myLocationEnabled: true,
+          initialCameraPosition: const CameraPosition(
+            target: LatLng(-25.27705190025039, -57.63737049639007),
+            zoom: 14,
+          ),
+          markers: markers.map((e) => e).toSet(),
+          buildingsEnabled: false,
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+        ),
+        // Positioned(
+        //   bottom: 60,
+        //   right: 30,
+        //   child: Container(
+        //     decoration: const BoxDecoration(
+        //         color: Colors.white,
+        //         borderRadius: BorderRadius.all(Radius.circular(50))),
+        //     child: IconButton(
+        //       color: kBlack,
+        //       onPressed: () async {
+        //         vehicles = await getVehicles('user/find-vehicles');
+        //         setState(() {});
+        //       },
+        //       icon: const Icon(Icons.refresh),
+        //     ),
+        //   ),
+        // ),
+        Positioned(
+          bottom: 60,
+          right: 30,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(50))),
+            child: IconButton(
+              color: kBlack,
+              onPressed: () async {
+                mapController.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                      LatLng(position.latitude, position.longitude), 14),
+                );
+              },
+              icon: const Icon(Icons.location_searching_rounded),
+            ),
+          ),
+        )
+      ],
     );
   }
 }

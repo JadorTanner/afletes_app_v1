@@ -8,10 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseApp extends StatefulWidget {
-  BaseApp(this.body, {this.title = '', this.floatingButton, Key? key})
+  BaseApp(this.body,
+      {this.title = '',
+      this.resizeToAvoidBottomInset = false,
+      this.floatingButton,
+      Key? key})
       : super(key: key);
   Widget body;
   String title;
+  bool resizeToAvoidBottomInset;
   FloatingActionButton? floatingButton;
   @override
   State<BaseApp> createState() => _BaseAppState();
@@ -30,6 +35,7 @@ class _BaseAppState extends State<BaseApp> {
       key: _key,
       backgroundColor: const Color(0xFFEBE3CD),
       extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
       drawer: Drawer(
         child: FutureBuilder(
           future: Future(() async {
@@ -123,9 +129,8 @@ class _BaseAppState extends State<BaseApp> {
                       DrawerItem('/my-negotiations', 'Mis negociaciones',
                           Icons.ac_unit),
                       const SizedBox(
-                        height: 15,
+                        height: 200,
                       ),
-                      const Spacer(),
                       TextButton(
                         onPressed: () => {user.logout(context)},
                         child: const Text(

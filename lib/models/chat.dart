@@ -1,4 +1,5 @@
 import 'package:afletes_app_v1/models/common.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/cupertino.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -30,6 +31,9 @@ class ChatProvider extends ChangeNotifier {
   int _loadState = 0;
   int get loadState => _loadState;
 
+  int _negState = 0;
+  int get negState => _negState;
+
   setNegotiationId(int id) {
     _negotiationId = id;
     notifyListeners();
@@ -37,8 +41,7 @@ class ChatProvider extends ChangeNotifier {
 
   addMessage(int id, ChatMessage message) {
     // if (id == negotiationId) {
-    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
-    message.message = message.message.replaceAll(exp, '');
+    message.message = message.message.replaceAll(htmlTagRegExp, '');
     _messages.insert(0, message);
     notifyListeners();
     // }
@@ -50,9 +53,11 @@ class ChatProvider extends ChangeNotifier {
   }
 
   setMessages(List<ChatMessage> newMessages) {
-    for (var message in newMessages) {
-      _messages.insert(0, message);
-    }
+    newMessages
+        .map((message) =>
+            message.message = message.message.replaceAll(htmlTagRegExp, ''))
+        .toList();
+    _messages.addAll(newMessages);
     notifyListeners();
   }
 
@@ -88,6 +93,11 @@ class ChatProvider extends ChangeNotifier {
 
   setLoadState(int newState) {
     _loadState = newState;
+    notifyListeners();
+  }
+
+  setNegState(int newState) {
+    _negState = newState;
     notifyListeners();
   }
 }
