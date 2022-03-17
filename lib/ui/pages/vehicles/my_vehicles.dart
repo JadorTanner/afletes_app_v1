@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -110,10 +111,29 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               ),
               children: [
                 TextButton.icon(
-                    onPressed: () => Navigator.of(context)
-                        .pushNamed('/create-vehicle', arguments: null),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Agregar vehículo')),
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed('/create-vehicle', arguments: null),
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsets>(
+                        const EdgeInsets.symmetric(vertical: 20)),
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      kBlack,
+                    ),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(0)),
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    'Agregar vehículo',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
                 ...items
               ],
             ),
