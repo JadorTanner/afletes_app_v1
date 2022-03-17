@@ -86,8 +86,22 @@ class _CarCard2State extends State<CarCard2> {
                     ),
                     const Spacer(flex: 1),
                     Row(
-                      children: List.generate(widget.vehicle.score,
-                          (index) => const StarFeedBack()),
+                      children: [
+                        ...List.generate(
+                          widget.vehicle.score,
+                          (index) => const Icon(
+                            Icons.star,
+                            color: Colors.yellow,
+                          ),
+                        ),
+                        ...List.generate(
+                          5 - widget.vehicle.score,
+                          (index) => const Icon(
+                            Icons.star_border,
+                            color: Colors.yellow,
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -130,14 +144,5 @@ class _CarCard2State extends State<CarCard2> {
         ),
       ),
     );
-  }
-}
-
-class StarFeedBack extends StatelessWidget {
-  const StarFeedBack({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Icon(Icons.star, color: Colors.yellow);
   }
 }

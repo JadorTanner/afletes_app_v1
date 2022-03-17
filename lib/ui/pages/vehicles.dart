@@ -1,6 +1,4 @@
 // ignore_for_file: must_be_immutable
-
-import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -11,7 +9,6 @@ import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
-import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -198,6 +195,32 @@ class _VehiclesListState extends State<VehiclesList> {
                         top: 40,
                       ),
                       child: Text(data['vehicle']['model'] ?? ''),
+                    ),
+                    Container(
+                      color: const Color(0xFFFFFFFF),
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 40,
+                      ),
+                      child: Row(
+                        children: [
+                          ...List.generate(
+                            int.parse(data['score'].toString()),
+                            (index) => const Icon(
+                              Icons.star,
+                              color: Colors.yellow,
+                            ),
+                          ),
+                          ...List.generate(
+                            (5 - int.parse(data['score'].toString())),
+                            (index) => const Icon(
+                              Icons.star_border,
+                              color: Colors.yellow,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     // Container(
                     //   color: const Color(0xFFFFFFFF),
