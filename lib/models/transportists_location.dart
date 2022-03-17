@@ -21,11 +21,11 @@ class TransportistsLocProvider extends ChangeNotifier {
       _transportists[index].latitude = latitude;
       _transportists[index].longitude = longitude;
       _transportists[index].heading = (heading ?? 0.0);
-      notifyListeners();
     } else {
       addTransportist(TransportistLocation(latitude, longitude,
           (heading ?? 0.0), transportistId, name, vehicleId));
     }
+    notifyListeners();
   }
 
   removeTransportist(int transportistId, int vehicleId) {

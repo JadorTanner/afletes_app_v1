@@ -158,9 +158,15 @@ class PusherApi extends ChangeNotifier {
             transportistsLocProvider.updateLocation(
               data['user_id'] ?? 0,
               data['vehicle_id'] ?? 0,
-              data['latitude'] ?? '0.0',
-              data['longitude'] ?? '0.0',
-              data['heading'] ?? 0.0,
+              double.parse((data['latitude'] != null
+                  ? data['latitude'].toString()
+                  : '0.0')),
+              double.parse((data['longitude'] != null
+                  ? data['longitude'].toString()
+                  : '0.0')),
+              double.parse((data['heading'] != null
+                  ? data['heading'].toString()
+                  : '0.0')),
               data['name'] ?? '',
             );
           }

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -132,11 +133,15 @@ class _VehiclesListState extends State<VehiclesList> {
 
         if (images.isNotEmpty) {
           for (var element in images) {
-            attachments.add(Image.network(vehicleImgUrl + element['path']));
+            attachments.add(Image.network(
+              vehicleImgUrl + element['path'],
+              fit: BoxFit.cover,
+            ));
           }
         }
         late BuildContext bottomSheetContext;
         bottomSheetContext = context;
+        log(response.body);
         showModalBottomSheet(
           context: bottomSheetContext,
           backgroundColor: Colors.transparent,
@@ -179,6 +184,12 @@ class _VehiclesListState extends State<VehiclesList> {
                         ),
                       ],
                     ),
+                    Text(data['vehicle']['license_plate']),
+                    Text(data['vehicle']['year_of_production'].toString()),
+                    Text(data['vehicle']['max_capacity'].toString()),
+                    Text(data['vehicle']['unidad_medida']),
+                    Text(data['votes_score'].toString()),
+                    Text(data['marca']['name']),
                     Container(
                       color: const Color(0xFFFFFFFF),
                       padding: const EdgeInsets.only(
@@ -186,7 +197,7 @@ class _VehiclesListState extends State<VehiclesList> {
                         right: 20,
                         top: 40,
                       ),
-                      child: Text(data['model'] ?? ''),
+                      child: Text(data['vehicle']['model'] ?? ''),
                     ),
                     // Container(
                     //   color: const Color(0xFFFFFFFF),
@@ -524,6 +535,8 @@ class _VehiclesListState extends State<VehiclesList> {
         await getBytesFromAsset('assets/img/camion3.png', 30));
     markers.clear();
     transportists.asMap().forEach((key, transportist) {
+      print(transportist.latitude);
+      print(transportist.longitude);
       markers.add(
         Marker(
           markerId: MarkerId(transportist.transportistId.toString() +
