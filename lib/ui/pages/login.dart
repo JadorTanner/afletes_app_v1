@@ -141,7 +141,7 @@ class _LoginButtonState extends State<LoginButton> {
                 SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 Map user = jsonDecode(sharedPreferences.getString('user')!);
-
+                print(user);
                 //TOKEN PARA MENSAJES PUSH
                 try {
                   String? token = await FirebaseMessaging.instance.getToken();

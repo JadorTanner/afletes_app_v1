@@ -16,27 +16,38 @@ class User extends ChangeNotifier {
   User get user => _user!;
 
   Map userData = {};
-  String firstName = '';
-  String lastName = '';
-  String fullName = '';
-  String email = '';
-  String documentNumber = '';
-  String legalName = '';
-  bool isCarrier = false;
-  bool isLoadGenerator = false;
-  int cityId = 0;
-  int id = 0;
-  String latitude = '';
-  String longitude = '';
-  String cellphone = '';
+  bool isCarrier = false, isLoadGenerator = false;
+  int cityId = 0, id = 0;
+  String latitude = '',
+      longitude = '',
+      cellphone = '',
+      phone = '',
+      street1 = '',
+      street2 = '',
+      houseNumber = '',
+      firstName = '',
+      lastName = '',
+      fullName = '',
+      email = '',
+      documentNumber = '',
+      legalName = '';
 
-  User userFromArray() {
+  User userFromArray([Map? data]) {
+    if (data != null) {
+      userData = data;
+    }
+
     return User(
       id: userData['id'],
       fullName: userData['full_name'],
       firstName: userData['first_name'],
       lastName: userData['last_name'],
       email: userData['email'],
+      legalName: userData['legal_name'],
+      documentNumber: userData['document_number'],
+      street1: userData['street1'],
+      street2: userData['street2'] ?? '',
+      houseNumber: userData['house_number'] ?? '',
       isCarrier: userData['is_carrier'],
       isLoadGenerator: userData['is_load_generator'],
     );
@@ -57,6 +68,10 @@ class User extends ChangeNotifier {
     this.latitude = '',
     this.longitude = '',
     this.cellphone = '',
+    this.phone = '',
+    this.street1 = '',
+    this.street2 = '',
+    this.houseNumber = '',
   });
 
   setUser(User newUser) {
@@ -75,8 +90,11 @@ class User extends ChangeNotifier {
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     String? userStored = localStorage.getString('user');
+    print('usuario guardado');
+    print(userStored);
     if (userStored != null) {
       Map userJson = jsonDecode(userStored);
+      print(userJson);
       notifyListeners();
       if (userJson['confirmed']) {
         if (userJson['habilitado']) {
@@ -94,14 +112,16 @@ class User extends ChangeNotifier {
       bool emailValid = RegExp(
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
           .hasMatch(email);
+      print(emailValid ? 'email valido' : 'email no valido');
       if (emailValid) {
         try {
           Api api = Api();
 
-          Response response = await api.auth({
+          Response response = await api.postData('login', {
             'email': email,
             'password': password,
-          }, 'login');
+          });
+          print(response.body);
           if (response.statusCode == 200) {
             Map responseBody = jsonDecode(response.body);
             if (responseBody['success']) {
@@ -117,6 +137,8 @@ class User extends ChangeNotifier {
           }
           return false;
         } catch (e) {
+          print('error');
+          print(e);
           return false;
         }
       } else {

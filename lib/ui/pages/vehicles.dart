@@ -181,21 +181,7 @@ class _VehiclesListState extends State<VehiclesList> {
                         ),
                       ],
                     ),
-                    Text(data['vehicle']['license_plate']),
-                    Text(data['vehicle']['year_of_production'].toString()),
-                    Text(data['vehicle']['max_capacity'].toString()),
-                    Text(data['vehicle']['unidad_medida']),
-                    Text(data['votes_score'].toString()),
-                    Text(data['marca']['name']),
-                    Container(
-                      color: const Color(0xFFFFFFFF),
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        top: 40,
-                      ),
-                      child: Text(data['vehicle']['model'] ?? ''),
-                    ),
+
                     Container(
                       color: const Color(0xFFFFFFFF),
                       padding: const EdgeInsets.only(
@@ -204,21 +190,61 @@ class _VehiclesListState extends State<VehiclesList> {
                         top: 40,
                       ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ...List.generate(
-                            int.parse(data['score'].toString()),
-                            (index) => const Icon(
-                              Icons.star,
-                              color: Colors.yellow,
-                            ),
+                          Text(
+                            data['vehicle']['license_plate'],
+                            style: Theme.of(context).textTheme.headline5,
                           ),
-                          ...List.generate(
-                            (5 - int.parse(data['score'].toString())),
-                            (index) => const Icon(
-                              Icons.star_border,
-                              color: Colors.yellow,
-                            ),
+                          Row(
+                            children: [
+                              ...List.generate(
+                                int.parse(data['votes_score'].toString()),
+                                (index) => const Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                ),
+                              ),
+                              ...List.generate(
+                                (5 - int.parse(data['votes_score'].toString())),
+                                (index) => const Icon(
+                                  Icons.star_border,
+                                  color: Colors.yellow,
+                                ),
+                              ),
+                            ],
                           ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        (data['vehicle']['insurance_attachment_id'] != null
+                            ? const Icon(Icons.security)
+                            : const SizedBox.shrink())
+                      ],
+                    ),
+
+                    Container(
+                      color: const Color(0xFFFFFFFF),
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 40,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Año de producción: ' +
+                              data['vehicle']['year_of_production'].toString()),
+                          Text('Capacidad máxima: ' +
+                              data['vehicle']['max_capacity'].toString() +
+                              ' ' +
+                              data['vehicle']['unidad_medida'] +
+                              's'),
+                          Text('Marca: ' + data['marca']['name']),
+                          Text('Modelo: ' + (data['vehicle']['model'] ?? '')),
                         ],
                       ),
                     ),
@@ -231,7 +257,10 @@ class _VehiclesListState extends State<VehiclesList> {
                     //       textoInformacion: textoInformacion,
                     //       intialOfferController: intialOfferController),
                     // ),
-                    IconButton(
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    TextButton.icon(
                       onPressed: () => {
                         showDialog(
                           context: context,
@@ -273,13 +302,16 @@ class _VehiclesListState extends State<VehiclesList> {
                                               style: TextStyle(fontSize: 24),
                                             ),
                                           ),
-                                          const Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              'Pulse sobre la flecha para negociar',
-                                              style: TextStyle(fontSize: 12),
-                                            ),
-                                          ),
+                                          snapshot.data!['data'].length > 0
+                                              ? const Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    'Pulse sobre la flecha para negociar',
+                                                    style:
+                                                        TextStyle(fontSize: 12),
+                                                  ),
+                                                )
+                                              : const SizedBox.shrink(),
                                           const SizedBox(
                                             height: 30,
                                           ),
@@ -473,7 +505,17 @@ class _VehiclesListState extends State<VehiclesList> {
                           ),
                         )
                       },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            const Color(0xFF101010)),
+                        foregroundColor: MaterialStateProperty.all<Color>(
+                            const Color(0xFFFFFFFF)),
+                        padding: MaterialStateProperty.all<EdgeInsets>(
+                            const EdgeInsets.symmetric(
+                                vertical: 18, horizontal: 10)),
+                      ),
                       icon: const Icon(Icons.check),
+                      label: Text('Negociar'),
                     )
                   ],
                 ),
@@ -584,7 +626,6 @@ class _VehiclesListState extends State<VehiclesList> {
     List<TransportistLocation> transportists =
         context.watch<TransportistsLocProvider>().transportists;
     setMarkers(transportists);
-    print(transportists);
     return Stack(
       children: [
         GoogleMap(

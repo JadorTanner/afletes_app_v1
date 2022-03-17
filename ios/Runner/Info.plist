@@ -54,7 +54,7 @@
 	<dict>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>www.afletes.com</key>
+			<key>https://www.afletes.com/</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>

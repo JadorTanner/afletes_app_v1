@@ -44,7 +44,7 @@ class _BaseAppState extends State<BaseApp> {
 
             String? userString = sharedPreferences.getString('user');
             if (userString != null) {
-              user = User(userData: jsonDecode(userString)).userFromArray();
+              user = User().userFromArray(jsonDecode(userString));
               return user;
             }
           }),

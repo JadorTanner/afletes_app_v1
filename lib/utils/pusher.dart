@@ -152,23 +152,26 @@ class PusherApi extends ChangeNotifier {
         if (event != null) {
           if (event.data != null) {
             Map data = jsonDecode(event.data.toString());
-            print('DATOS DE PARTE DEL GENERADOR');
-            print(data);
-            // TransportistsLocProvider().updateLocation(transportistId, vehicleId, latitude, longitude, heading)
-            transportistsLocProvider.updateLocation(
-              data['user_id'] ?? 0,
-              data['vehicle_id'] ?? 0,
-              double.parse((data['latitude'] != null
-                  ? data['latitude'].toString()
-                  : '0.0')),
-              double.parse((data['longitude'] != null
-                  ? data['longitude'].toString()
-                  : '0.0')),
-              double.parse((data['heading'] != null
-                  ? data['heading'].toString()
-                  : '0.0')),
-              data['name'] ?? '',
-            );
+            if (data['isLoggingOut']) {
+              transportistsLocProvider.removeTransportist(
+                  data['user_id'], data['vehicle_id']);
+            } else {
+              // TransportistsLocProvider().updateLocation(transportistId, vehicleId, latitude, longitude, heading)
+              transportistsLocProvider.updateLocation(
+                data['user_id'] ?? 0,
+                data['vehicle_id'] ?? 0,
+                double.parse((data['latitude'] != null
+                    ? data['latitude'].toString()
+                    : '0.0')),
+                double.parse((data['longitude'] != null
+                    ? data['longitude'].toString()
+                    : '0.0')),
+                double.parse((data['heading'] != null
+                    ? data['heading'].toString()
+                    : '0.0')),
+                data['name'] ?? '',
+              );
+            }
           }
         }
       });

@@ -131,6 +131,13 @@ class _AfletesAppState extends State<AfletesApp> {
   listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
+    if (user != null) {
+      Map data = jsonDecode(user);
+      PusherApi().disconnect();
+      PusherApi().init(context, context.read<TransportistsLocProvider>(),
+          data['is_load_generator']);
+    }
+
     NotificationsApi.onNotifications.stream.listen((event) {
       Map data = jsonDecode(event!);
       if (data['route'] == 'chat') {
@@ -169,6 +176,7 @@ class _AfletesAppState extends State<AfletesApp> {
     listenNotifications();
 
     _determinePosition();
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;

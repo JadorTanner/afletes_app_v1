@@ -1,5 +1,3 @@
-// ignore_for_file: must_be_immutable, avoid_init_to_null, prefer_typing_uninitialized_variables
-
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 
@@ -10,10 +8,12 @@ class CustomFormField extends StatelessWidget {
       this.radius = 10,
       this.type = TextInputType.text,
       this.autofocus = false,
-      this.showCursor = null,
+      this.showCursor,
       this.readOnly = false,
-      this.onFocus = null,
-      this.icon = null,
+      this.enabled = true,
+      this.onFocus,
+      this.onChange,
+      this.icon,
       this.defaultValue = '',
       this.hint = '',
       this.action = TextInputAction.next,
@@ -21,8 +21,10 @@ class CustomFormField extends StatelessWidget {
       : super(key: key);
   bool autofocus;
   bool? showCursor;
+  bool enabled;
   bool readOnly;
   var onFocus;
+  var onChange;
   TextEditingController controller;
   TextInputType type;
   int maxLength;
@@ -46,7 +48,14 @@ class CustomFormField extends StatelessWidget {
       controller: controller,
       keyboardType: type,
       textInputAction: action,
+      enabled: enabled,
       maxLength: maxLength != 255 ? maxLength : null,
+      // onChanged: (value) {
+      //   onChange(value) ?? () => {};
+      // },
+      onEditingComplete: () {
+        onChange(controller.text) ?? () => {};
+      },
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
@@ -108,9 +117,10 @@ class _PasswordFieldState extends State<PasswordField> {
         ),
         hintStyle: TextStyle(color: kInputBorder),
         floatingLabelStyle: TextStyle(color: kBlack),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 5,
-          horizontal: 20,
+        contentPadding: const EdgeInsets.only(
+          top: 5,
+          bottom: 5,
+          left: 20,
         ),
         hintText: 'Contraseña',
         prefixIcon: Icon(
