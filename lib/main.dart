@@ -212,10 +212,6 @@ class _AfletesAppState extends State<AfletesApp> {
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
         if (message.data['negotiation_id'] != null) {
-          // navigatorKey.currentState!.push(MaterialPageRoute(
-          //   builder: (context) =>
-          //       NegotiationChat(int.parse(message.data['negotiation_id'])),
-          // ));
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -235,27 +231,6 @@ class _AfletesAppState extends State<AfletesApp> {
           }
         }
       }
-
-      // if (navigatorKey.currentState != null) {
-      //   //SI EXISTE NEGOCIACION ID, LLEVA AL CHAT
-      //   if (message.data['negotiation_id'] != null) {
-      //     navigatorKey.currentState!.push(MaterialPageRoute(
-      //       builder: (context) =>
-      //           NegotiationChat(int.parse(message.data['negotiation_id'])),
-      //     ));
-      //   } else {
-      //     if (user != null) {
-      //       //SI EXISTE USUARIO, LLEVA A BUSCAR CARGAS O VEHICULOS
-      //       navigatorKey.currentState!.pushReplacementNamed(
-      //           jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
-      //     } else {
-      //       //SI NO EXISTE USUARIO, LLEVA A LOGIN
-      //       navigatorKey.currentState!.push(MaterialPageRoute(
-      //         builder: (context) => const LoginPage(),
-      //       ));
-      //     }
-      //   }
-      // }
     });
   }
 

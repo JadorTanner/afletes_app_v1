@@ -19,13 +19,6 @@ class Api {
     return token;
   }
 
-  auth(data, targetURL) async {
-    var fullUrl = _url + targetURL;
-    print(fullUrl);
-    return await http.post(Uri.parse(fullUrl),
-        body: jsonEncode(data), headers: setHeaders());
-  }
-
   getData(targetURL) async {
     var fullUrl = _url + targetURL;
     print(fullUrl);

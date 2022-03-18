@@ -18,10 +18,10 @@ Future<bool> login(BuildContext context, String email, String password) async {
     if (emailValid) {
       try {
         Api api = Api();
-        Response response = await api.auth({
+        Response response = await api.postData('login', {
           'email': email,
           'password': password,
-        }, 'login');
+        });
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
@@ -61,23 +61,6 @@ Future register(body) async {
   try {
     Api api = Api();
 
-    // String type,
-    // String name,
-    // String lastName,
-    // String email,
-    // String password,
-    // String passwordConfirmation,
-    // int docNumber,
-    // String razon,
-    // String cellPhone,
-    // String phone,
-    // int stateId,
-    // int cityId,
-    // String address,
-    // String secAddress,
-    // String houseNumber,
-    // String ciPicture,
-    // String ciPictureBack
     if (body.type) {
       return false;
     }
