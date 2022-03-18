@@ -352,7 +352,7 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
           return RefreshIndicator(
               child: ListView(
                 padding: const EdgeInsets.only(
-                  top: 60,
+                  top: 80,
                   bottom: 20,
                   left: 20,
                   right: 20,

@@ -16,7 +16,7 @@ class NotificationsApi {
 
   static Future init({bool initScheduled = false}) async {
     const settings = InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@mipmap/launcher_icon'),
         iOS: IOSInitializationSettings());
     await _notifications.initialize(
       settings,

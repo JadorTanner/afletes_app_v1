@@ -106,7 +106,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               padding: const EdgeInsets.only(
                 left: 20,
                 right: 20,
-                top: 60,
+                top: 80,
                 bottom: 20,
               ),
               children: [

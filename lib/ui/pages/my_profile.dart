@@ -7,6 +7,7 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,13 +84,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
               padding: const EdgeInsets.all(20),
               children: [
                 CircleAvatar(
+                  backgroundColor: kGrey,
                   minRadius: 60,
                   child: Text(
                     widget.user.fullName
                         .split(' ')
                         .map((e) => e.length > 2 ? e.substring(0, 1) : '')
                         .join(''),
-                    style: const TextStyle(fontSize: 20),
+                    style: const TextStyle(fontSize: 40, color: Colors.white),
                   ),
                 ),
                 const SizedBox(
