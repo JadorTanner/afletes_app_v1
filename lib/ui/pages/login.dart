@@ -25,9 +25,80 @@ TextEditingController textController1 = TextEditingController();
 TextEditingController textController2 = TextEditingController();
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  loginFunction() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+
+    bool isLogged =
+        await User().login(context, textController1.text, textController2.text);
+    if (isLogged) {
+      setState(() {
+        isLoading = !isLoading;
+      });
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      Map user = jsonDecode(sharedPreferences.getString('user')!);
+      //TOKEN PARA MENSAJES PUSH
+      try {
+        String? token = await FirebaseMessaging.instance.getToken();
+        await Api().postData('user/set-device-token',
+            {'id': user['id'], 'device_token': token ?? ''});
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ha ocurrido un error')));
+      }
+      if (user['confirmed']) {
+        if (user['habilitado']) {
+          if (user['is_carrier']) {
+            //ENVIAR UBICACION CUANDO CAMBIE
+            LocationSettings locationSettings = const LocationSettings(
+              accuracy: LocationAccuracy.best,
+              distanceFilter: 5,
+            );
+            PusherApi().init(context, context.read<TransportistsLocProvider>());
+            Geolocator.getPositionStream(locationSettings: locationSettings)
+                .listen((Position? position) {
+              if (position != null) {
+                Api api = Api();
+                api.postData('update-location', {
+                  'latitude': position.latitude,
+                  'longitude': position.longitude,
+                  'heading': position.heading,
+                });
+              }
+            });
+            Navigator.of(context).pushReplacementNamed('/loads');
+          } else {
+            PusherApi()
+                .init(context, context.read<TransportistsLocProvider>(), true);
+            Navigator.of(context).pushReplacementNamed('/vehicles');
+          }
+        } else {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => const WaitHabilitacion(),
+          ));
+        }
+      } else {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const ValidateCode(),
+        ));
+      }
+    } else {
+      setState(() {
+        isLoading = !isLoading;
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Ha ocurrido un error')));
+    }
   }
 
   @override
@@ -61,23 +132,53 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   hint: 'Ejemplo@gmail.com',
                   icon: Icons.alternate_email,
                   type: TextInputType.emailAddress,
+                  enabled: !isLoading,
                 ),
                 const SizedBox(
                   width: 100,
                   height: 20,
                 ),
-                PasswordField('Contraseña', textController2),
+                PasswordField(
+                  'Contraseña',
+                  textController2,
+                  enabled: !isLoading,
+                  onSubmit: () async {
+                    loginFunction();
+                  },
+                ),
                 const SizedBox(
                   width: 100,
                   height: 20,
                 ),
-                const LoginButton(),
+                // const LoginButton(),
+                TextButton.icon(
+                  onPressed: (isLoading ? null : loginFunction),
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.app_registration,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                  label: const Text('Iniciar Sesión',
+                      style: TextStyle(color: Colors.white)),
+                  style: ButtonStyle(
+                      backgroundColor: isLoading
+                          ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
+                          : MaterialStateProperty.all(const Color(0xFFED8232))),
+                ),
                 const SizedBox(
                   width: 100,
                   height: 20,
                 ),
-                const Text('He olvidado mi contraseña',
-                    textAlign: TextAlign.center),
+                // const Text('He olvidado mi contraseña',
+                //     textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -113,14 +214,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 }
 
-class LoginButton extends StatefulWidget {
-  const LoginButton({Key? key}) : super(key: key);
+/* class LoginButton extends StatefulWidget {
+  const LoginButton(this.isLoading, {Key? key}) : super(key: key);
   @override
   State<LoginButton> createState() => _LoginButtonState();
 }
 
 class _LoginButtonState extends State<LoginButton> {
-  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -221,3 +321,4 @@ class _LoginButtonState extends State<LoginButton> {
     );
   }
 }
+ */

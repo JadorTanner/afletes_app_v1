@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
-
+import 'dart:developer';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -17,6 +17,7 @@ Future<List<Load>> getMyLoads() async {
   try {
     Response response = await Api().getData('user/my-loads');
     loads.clear();
+    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
@@ -76,6 +77,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
 
     Response response = await api.getData('load/load-info?id=' + id.toString());
     Map jsonResponse = jsonDecode(response.body);
+    print(response.body);
     if (jsonResponse['success']) {
       Map data = jsonResponse['data'];
       List images = data['attachments'] ?? [];
@@ -219,6 +221,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
                               'esperaDescarga': load.deliveryWait,
                               'observaciones': load.observations,
                               'isUrgent': load.isUrgent,
+                              'imgs': images
                             });
                           },
                           style: ButtonStyle(
@@ -299,6 +302,7 @@ onLoadTap(int id, BuildContext context, Load load) async {
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Compruebe su conexión a internet')));
+    print(e);
   }
 }
 
@@ -355,10 +359,32 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
                 ),
                 children: [
                   TextButton.icon(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed('/create-load'),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Agregar carga')),
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/create-load'),
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all<EdgeInsets>(
+                          const EdgeInsets.symmetric(vertical: 20)),
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                        kBlack,
+                      ),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(0)),
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Agregar carga',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ...items
                 ],
               ),
@@ -396,27 +422,38 @@ class LoadCard extends StatelessWidget {
                 SizedBox(
                     width: 150,
                     child: hasData
-                        ? Image.network(
-                            loads[index].attachments.isNotEmpty
-                                ? loadImgUrl +
-                                    loads[index].attachments[0]['filename']
-                                : 'https://magazine.medlineplus.gov/images/uploads/main_images/red-meat-v2.jpg',
-                            loadingBuilder: (context, child,
-                                ImageChunkEvent? loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              }
-                              return Center(
-                                  child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ));
-                            },
-                            fit: BoxFit.fitWidth,
-                          )
+                        ? (loads[index].attachments.isNotEmpty
+                            ? Image.network(
+                                loadImgUrl +
+                                    loads[index].attachments[0]['filename'],
+                                loadingBuilder: (context, child,
+                                    ImageChunkEvent? loadingProgress) {
+                                  print(loadingProgress);
+                                  if (loadingProgress == null) {
+                                    return child;
+                                  }
+                                  return Center(
+                                      child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ));
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(
+                                  child: Image.asset(
+                                    'assets/img/noimage.png',
+                                  ),
+                                ),
+                                fit: BoxFit.fitWidth,
+                              )
+                            : Image.asset(
+                                'assets/img/noimage.png',
+                                fit: BoxFit.fitWidth,
+                              ))
                         : const SizedBox.shrink()),
                 // ),
                 Padding(
@@ -477,23 +514,30 @@ class _ImageViewerState extends State<ImageViewer> {
           onPageChanged: (value) => setState(() {
             currentImage = value;
           }),
-          children: List.generate(
-              widget.attachments.length,
-              (index) => GestureDetector(
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (context) => Dialog(
-                        child: InteractiveViewer(
-                          panEnabled: true,
-                          minScale: 0.5,
-                          maxScale: 4,
-                          clipBehavior: Clip.none,
-                          child: widget.attachments[index],
+          children: widget.attachments.isNotEmpty
+              ? List.generate(
+                  widget.attachments.length,
+                  (index) => GestureDetector(
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            child: InteractiveViewer(
+                              panEnabled: true,
+                              minScale: 0.5,
+                              maxScale: 4,
+                              clipBehavior: Clip.none,
+                              child: widget.attachments[index],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    child: widget.attachments[index],
-                  )),
+                        child: widget.attachments[index],
+                      ))
+              : [
+                  Image.asset(
+                    'assets/img/noimage.png',
+                    fit: BoxFit.cover,
+                  ),
+                ],
         ),
         Positioned(
           bottom: 70,

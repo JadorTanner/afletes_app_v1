@@ -94,7 +94,10 @@ class Vehicle {
         apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
     MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
-    Map headers = api.setHeaders();
+
+    SharedPreferences sha = await SharedPreferences.getInstance();
+    String token = sha.getString('token')!;
+    Map headers = api.setHeaders(token);
     headers.forEach((key, value) {
       request.headers[key] = value;
     });
@@ -155,7 +158,9 @@ class Vehicle {
     //   ),
     // );
     StreamedResponse response = await request.send();
-    Map responseBody = jsonDecode(await response.stream.bytesToString());
+    String stringResponse = await response.stream.bytesToString();
+    print(stringResponse);
+    Map responseBody = jsonDecode(stringResponse);
     if (response.statusCode == 200) {
       Navigator.pop(context);
       if (responseBody['success']) {

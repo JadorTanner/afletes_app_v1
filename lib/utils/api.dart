@@ -77,9 +77,9 @@ class Api {
     return request.send();
   }
 
-  setHeaders() => {
+  setHeaders([tokenParam]) => {
         'Content-type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer ' + (token ?? tokenParam),
       };
 }

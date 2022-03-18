@@ -106,7 +106,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               padding: const EdgeInsets.only(
                 left: 20,
                 right: 20,
-                top: 40,
+                top: 60,
                 bottom: 20,
               ),
               children: [
@@ -129,10 +129,13 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                     Icons.add,
                     color: Colors.white,
                   ),
-                  label: Text(
+                  label: const Text(
                     'Agregar vehículo',
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                   ),
+                ),
+                const SizedBox(
+                  height: 20,
                 ),
                 ...items
               ],

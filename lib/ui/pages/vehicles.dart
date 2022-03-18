@@ -33,12 +33,12 @@ class Vehicles extends StatefulWidget {
 Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
   try {
     vehicles.clear();
-    Response response = await Api().getData(url + 'page=' + page.toString());
+    Response response = await Api().getData(url);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
-        if (jsonResponse['data']['data'].length > 0) {
-          for (var vehicle in jsonResponse['data']['data']) {
+        if (jsonResponse['data'].length > 0) {
+          for (var vehicle in jsonResponse['data']) {
             vehicles.add(Vehicle(
                 id: vehicle['id'],
                 licensePlate: vehicle['license_plate'],

@@ -9,6 +9,7 @@ import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/location_service.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ import 'package:image_picker/image_picker.dart';
 
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
+List imagenesNetwork = [];
 
 bool hasLoadData = false;
 int loadId = 0;
@@ -149,6 +151,10 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         esperaDescargaController.text = arguments['esperaDescarga'].toString();
         observacionesController.text = arguments['observaciones'];
         isUrgentController.text = arguments['isUrgent'].toString();
+        imagenes.clear();
+        imagenesNetwork.clear();
+        print(arguments['imgs']);
+        imagenesNetwork = arguments['imgs'];
       } else {
         loadId = 0;
         imagenes.clear();
@@ -183,25 +189,28 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(FutureBuilder(
-      future: getCategories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return PageView(
-            controller: pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const [
-              DatosGenerales(),
-              DatosUbicacion(),
-              DatosUbicacionDelivery(),
-              PaginaFinal(),
-            ],
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      },
-    ));
+    return BaseApp(
+      FutureBuilder(
+        future: getCategories(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return PageView(
+              controller: pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: const [
+                DatosGenerales(),
+                DatosUbicacion(),
+                DatosUbicacionDelivery(),
+                PaginaFinal(),
+              ],
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        },
+      ),
+      resizeToAvoidBottomInset: true,
+    );
   }
 }
 
@@ -346,7 +355,7 @@ class DatosGenerales extends StatelessWidget {
                   Flexible(
                     child: NextPageButton(
                       pageController,
-                      validator: (callback) {
+                      validator: () {
                         if (productController.text == '') {
                           return false;
                         }
@@ -368,7 +377,6 @@ class DatosGenerales extends StatelessWidget {
                         if (descriptionController.text == '') {
                           return false;
                         }
-                        callback();
                         return true;
                       },
                     ),
@@ -394,85 +402,218 @@ class ImagesPicker extends StatefulWidget {
 
 class _ImagesPickerState extends State<ImagesPicker> {
   int currentImage = 0;
+  int totalIndex = 0;
   PageController imagePageController = PageController();
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        List<XFile>? imgs = await _picker.pickMultiImage();
-        imagenes = imgs ?? [];
-        if (imagenes.isNotEmpty) {
-          setState(() {
-            // imagePageController.jumpToPage(0);
-          });
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height * 0.4,
-        decoration: BoxDecoration(
-          color: imagenes.isNotEmpty ? Colors.transparent : Colors.grey[200],
-          borderRadius: const BorderRadius.all(
-            Radius.circular(20),
-          ),
+    return Container(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height * 0.4,
+      decoration: BoxDecoration(
+        color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+            ? Colors.transparent
+            : Colors.grey[200],
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
         ),
-        child: imagenes.isNotEmpty
-            ? Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  PageView(
+      ),
+      child: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+          ? Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                PageView(
                     controller: imagePageController,
                     onPageChanged: (value) => setState(() {
-                      currentImage = value;
-                    }),
-                    children: List.generate(
-                      imagenes.length,
-                      (index) => InteractiveViewer(
-                          panEnabled: true,
-                          minScale: 0.5,
-                          maxScale: 4,
-                          clipBehavior: Clip.none,
-                          child: Image.file(
-                            File(imagenes[index].path),
-                          )),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
+                          currentImage = value;
+                        }),
+                    children: [
+                      ...List.generate(
+                        imagenesNetwork.length,
+                        (index) => SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                      child: InteractiveViewer(
+                                        panEnabled: true,
+                                        minScale: 0.5,
+                                        maxScale: 4,
+                                        clipBehavior: Clip.none,
+                                        child: Image.network(loadImgUrl +
+                                            imagenesNetwork[index]['filename']),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  color: Colors.white,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.4,
+                                  child: Image.network(
+                                    loadImgUrl +
+                                        imagenesNetwork[index]['filename'],
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                child: TextButton(
+                                  onPressed: () async {
+                                    Api api = Api();
+
+                                    Response response = await api.postData(
+                                      'load/load-image-delete',
+                                      {
+                                        'id': imagenesNetwork[index]['id'],
+                                      },
+                                    );
+
+                                    print(response.body);
+
+                                    imagenesNetwork.removeAt(index);
+                                    setState(() {});
+                                  },
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.close,
+                                      color: kBlack,
+                                    ),
+                                  ),
+                                ),
+                                top: 20,
+                                right: 20,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      ...List.generate(
                         imagenes.length,
-                        (index) => Container(
-                          width: 10,
-                          height: 10,
-                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                          decoration: BoxDecoration(
+                        (index) => Stack(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => Dialog(
+                                    child: InteractiveViewer(
+                                      panEnabled: true,
+                                      minScale: 0.5,
+                                      maxScale: 4,
+                                      clipBehavior: Clip.none,
+                                      child: Image.file(
+                                        File(imagenes[index].path),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: SizedBox(
+                                width: double.infinity,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: Image.file(
+                                  File(imagenes[index].path),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 20,
+                              right: 20,
+                              child: TextButton(
+                                onPressed: () async {
+                                  imagenes.removeAt(index);
+                                  setState(() {});
+                                },
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.close,
+                                    color: kBlack,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          List<XFile>? imgs = await _picker.pickMultiImage();
+                          imagenes.addAll((imgs ?? []));
+                          if (imagenes.isNotEmpty) {
+                            setState(() {
+                              // imagePageController.jumpToPage(0);
+                            });
+                          }
+                        },
+                        child: Container(
+                          color: Colors.grey,
+                          child: const Icon(
+                            Icons.add,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ]),
+                Positioned(
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      (imagenes.length + imagenesNetwork.length + 1),
+                      (index) => Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        decoration: BoxDecoration(
+                          color: index == currentImage
+                              ? const Color(0xFF686868)
+                              : const Color(0xFFEEEEEE),
+                          border: Border.all(
                             color: index == currentImage
                                 ? const Color(0xFF686868)
                                 : const Color(0xFFEEEEEE),
-                            border: Border.all(
-                              color: index == currentImage
-                                  ? const Color(0xFF686868)
-                                  : const Color(0xFFEEEEEE),
-                            ),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(20),
-                            ),
+                          ),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(20),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              )
-            : const Center(
-                child: Icon(
-                  Icons.add_a_photo,
+                ),
+              ],
+            )
+          : GestureDetector(
+              onTap: () async {
+                List<XFile>? imgs = await _picker.pickMultiImage();
+                imagenes.addAll((imgs ?? []));
+                if (imagenes.isNotEmpty) {
+                  if (mounted) {
+                    setState(() {
+                      // imagePageController.jumpToPage(0);
+                    });
+                  }
+                }
+              },
+              child: Container(
+                color: Colors.grey,
+                child: const Icon(
+                  Icons.add,
                   size: 50,
+                  color: Colors.white,
                 ),
               ),
-      ),
+            ),
     );
   }
 }
@@ -1236,65 +1377,7 @@ class PaginaFinal extends StatelessWidget {
                 Flexible(
                   child: PrevPageButton(pageController),
                 ),
-                Flexible(
-                    child: TextButton(
-                  style: ButtonStyle(
-                    padding: MaterialStateProperty.all<EdgeInsets>(
-                        const EdgeInsets.symmetric(vertical: 20)),
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                      const Color(0xFFF58633),
-                    ),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(0)),
-                      ),
-                    ),
-                  ),
-                  onPressed: () async {
-                    Load load = Load();
-                    load.createLoad({
-                      'description': descriptionController.text,
-                      'vehicle_type_id': 1,
-                      'product_category_id': categoriaController.text,
-                      'product': productController.text,
-                      'vehicles_quantity': vehiculosController.text,
-                      'helpers_quantity': ayudantesController.text,
-                      'weight': pesoController.text,
-                      'measurement_unit_id': unidadMedidaController.text,
-                      'initial_offer': ofertaInicialController.text,
-                      'state_id': originStateController.text,
-                      'city_id': originCityController.text,
-                      'address': originAddressController.text,
-                      'latitude':
-                          originCoordsController.text.split(',')[0].toString(),
-                      'longitude':
-                          originCoordsController.text.split(',')[1].toString(),
-                      'destination_state_id': destinStateController.text,
-                      'destination_city_id': destinCityController.text,
-                      'destination_address': destinAddressController.text,
-                      'destination_latitude':
-                          destinCoordsController.text.split(',')[0].toString(),
-                      'destination_longitude':
-                          destinCoordsController.text.split(',')[1].toString(),
-                      'pickup_at': loadDateController.text,
-                      'pickup_time': loadHourController.text,
-                      'payment_term_after_delivery': 1,
-                      'wait_in_origin': esperaCargaController.text,
-                      'wait_in_destination': esperaDescargaController.text,
-                      'observatios': observacionesController.text,
-                      'is_urgent': isUrgentController.text == '1',
-                      'loadId': loadId
-                    }, imagenes,
-                        context: context, update: hasLoadData, loadId: loadId);
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text('Enviar', style: TextStyle(color: Colors.white)),
-                      Icon(Icons.upload, color: Colors.white)
-                    ],
-                  ),
-                ))
+                Flexible(child: EnviarButton())
               ],
             ),
           )
@@ -1332,6 +1415,93 @@ class _IsUrgentState extends State<IsUrgent> {
           ),
         )
       ],
+    );
+  }
+}
+
+class EnviarButton extends StatefulWidget {
+  EnviarButton({Key? key}) : super(key: key);
+
+  @override
+  State<EnviarButton> createState() => _EnviarButtonState();
+}
+
+class _EnviarButtonState extends State<EnviarButton> {
+  bool isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color(0xFFF58633),
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      onPressed: isLoading
+          ? () {}
+          : () async {
+              setState(() {
+                isLoading = !isLoading;
+              });
+              Load load = Load();
+              print(imagenes);
+              load.createLoad({
+                'description': descriptionController.text,
+                'vehicle_type_id': 1,
+                'product_category_id': categoriaController.text,
+                'product': productController.text,
+                'vehicles_quantity': vehiculosController.text,
+                'helpers_quantity': ayudantesController.text,
+                'weight': pesoController.text,
+                'measurement_unit_id': unidadMedidaController.text,
+                'initial_offer': ofertaInicialController.text,
+                'state_id': originStateController.text,
+                'city_id': originCityController.text,
+                'address': originAddressController.text,
+                'latitude':
+                    originCoordsController.text.split(',')[0].toString(),
+                'longitude':
+                    originCoordsController.text.split(',')[1].toString(),
+                'destination_state_id': destinStateController.text,
+                'destination_city_id': destinCityController.text,
+                'destination_address': destinAddressController.text,
+                'destination_latitude':
+                    destinCoordsController.text.split(',')[0].toString(),
+                'destination_longitude':
+                    destinCoordsController.text.split(',')[1].toString(),
+                'pickup_at': loadDateController.text,
+                'pickup_time': loadHourController.text,
+                'payment_term_after_delivery': 1,
+                'wait_in_origin': esperaCargaController.text,
+                'wait_in_destination': esperaDescargaController.text,
+                'observatios': observacionesController.text,
+                'is_urgent': isUrgentController.text == '1',
+                'loadId': loadId
+              }, imagenes,
+                  context: context, update: hasLoadData, loadId: loadId);
+              setState(() {
+                isLoading = !isLoading;
+              });
+            },
+      child: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text('Enviar', style: TextStyle(color: Colors.white)),
+                Icon(Icons.upload, color: Colors.white)
+              ],
+            ),
     );
   }
 }

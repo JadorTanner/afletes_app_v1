@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
+import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -17,10 +18,20 @@ class _DatePickerState extends State<DatePicker> {
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2015, 8),
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+            data: ThemeData.light().copyWith(
+              primaryColor: primaryOrange.withAlpha(100),
+              colorScheme: ColorScheme.light(primary: primaryOrange),
+              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            ),
+            child: child!);
+      },
+    );
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;

@@ -8,6 +8,7 @@ class CustomFormField extends StatelessWidget {
       this.radius = 10,
       this.type = TextInputType.text,
       this.autofocus = false,
+      this.focus,
       this.showCursor,
       this.readOnly = false,
       this.enabled = true,
@@ -23,6 +24,7 @@ class CustomFormField extends StatelessWidget {
   bool? showCursor;
   bool enabled;
   bool readOnly;
+  FocusNode? focus;
   var onFocus;
   var onChange;
   TextEditingController controller;
@@ -45,6 +47,7 @@ class CustomFormField extends StatelessWidget {
       showCursor: showCursor,
       readOnly: readOnly,
       autofocus: autofocus,
+      focusNode: focus ?? FocusNode(),
       controller: controller,
       keyboardType: type,
       textInputAction: action,
@@ -54,7 +57,12 @@ class CustomFormField extends StatelessWidget {
       //   onChange(value) ?? () => {};
       // },
       onEditingComplete: () {
-        onChange(controller.text) ?? () => {};
+        action == TextInputAction.next
+            ? FocusScope.of(context).nextFocus()
+            : (action == TextInputAction.done
+                ? FocusScope.of(context).unfocus()
+                : null);
+        onChange != null ? onChange(controller.text) : () => {};
       },
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -88,11 +96,18 @@ class CustomFormField extends StatelessWidget {
 
 class PasswordField extends StatefulWidget {
   PasswordField(this.label, this.controller,
-      {this.action = TextInputAction.done, Key? key})
+      {this.action = TextInputAction.done,
+      this.enabled = true,
+      this.onSubmit,
+      this.focus,
+      Key? key})
       : super(key: key);
   TextEditingController controller;
   String label;
   TextInputAction action;
+  bool enabled;
+  FocusNode? focus;
+  var onSubmit;
   @override
   State<PasswordField> createState() => _PasswordFieldState();
 }
@@ -105,7 +120,10 @@ class _PasswordFieldState extends State<PasswordField> {
       controller: widget.controller,
       obscureText: passwordVisibility,
       textInputAction: widget.action,
+      focusNode: widget.focus ?? FocusNode(),
       // onEditingComplete: () => {},
+      enabled: widget.enabled,
+      onSubmitted: (text) => widget.onSubmit(),
       decoration: InputDecoration(
         labelText: widget.label,
         floatingLabelBehavior: FloatingLabelBehavior.always,

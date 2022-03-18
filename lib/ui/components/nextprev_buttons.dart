@@ -10,8 +10,21 @@ class NextPageButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => pageController.nextPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      onPressed: () async {
+        if (validator != null) {
+          if (validator()) {
+            pageController.nextPage(
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.ease);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Complete todos los datos requeridos')));
+          }
+        } else {
+          pageController.nextPage(
+              duration: const Duration(milliseconds: 100), curve: Curves.ease);
+        }
+      },
       style: ButtonStyle(
         padding: MaterialStateProperty.all<EdgeInsets>(
             const EdgeInsets.symmetric(vertical: 20)),

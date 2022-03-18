@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
@@ -235,14 +234,14 @@ class PrimeraParte extends StatelessWidget {
                 const SizedBox(width: 100, height: separacion),
                 CustomFormField(
                   firstName,
-                  'Nombre',
+                  'Nombre *',
                   icon: Icons.person,
                   hint: 'José',
                 ),
                 const SizedBox(width: 100, height: separacion),
                 CustomFormField(
                   lastName,
-                  'Apellido',
+                  'Apellido *',
                   icon: Icons.person,
                   hint: 'Gonzalez',
                 ),
@@ -252,7 +251,7 @@ class PrimeraParte extends StatelessWidget {
                     Flexible(
                         child: CustomFormField(
                       cellphone,
-                      'Celular',
+                      'Celular *',
                       icon: Icons.phone_android,
                       hint: '0981222333',
                     )),
@@ -306,7 +305,7 @@ class PrimeraParte extends StatelessWidget {
                 const SizedBox(width: 100, height: separacion),
                 CustomFormField(
                   email,
-                  'Email',
+                  'Email *',
                   icon: Icons.alternate_email,
                   hint: 'ejemplo@gmail.com',
                 ),
@@ -327,7 +326,18 @@ class PrimeraParte extends StatelessWidget {
             ),
             Flexible(
               flex: 1,
-              child: NextPageButton(pageController),
+              child: NextPageButton(
+                pageController,
+                validator: () {
+                  return (documentNumber.text != '' &&
+                      firstName.text != '' &&
+                      lastName.text != '' &&
+                      cellphone.text != '' &&
+                      cityId.text != '' &&
+                      street1.text != '' &&
+                      email.text != '');
+                },
+              ),
             ),
           ],
         ),
@@ -417,23 +427,25 @@ class _SegundaParteState extends State<SegundaParte> {
           ),
         ),
         Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                flex: 1,
-                child: PrevPageButton(pageController),
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              color: const Color(0xFFF58633),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: PrevPageButton(pageController),
+                  ),
+                  const Flexible(
+                    flex: 1,
+                    child: RegisterButton(),
+                  ),
+                ],
               ),
-              const Flexible(
-                flex: 1,
-                child: RegisterButton(),
-              ),
-            ],
-          ),
-        ),
+            )),
       ],
     );
   }
@@ -584,20 +596,6 @@ class _CitiesPickerState extends State<CitiesPicker> {
             child: Text(newCities[index]['name']),
           ),
         ));
-  }
-}
-
-class TransportistForm extends StatefulWidget {
-  const TransportistForm({Key? key}) : super(key: key);
-
-  @override
-  State<TransportistForm> createState() => _TransportistFormState();
-}
-
-class _TransportistFormState extends State<TransportistForm> {
-  @override
-  Widget build(BuildContext context) {
-    return const Text('formulario transportista');
   }
 }
 
@@ -809,7 +807,9 @@ class RegisterButtonState extends State<RegisterButton> {
             ),
           )
         : const Center(
-            child: CircularProgressIndicator(),
+            child: Flexible(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
           );
   }
 }

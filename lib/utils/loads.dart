@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Load {
   int id,
@@ -112,7 +113,10 @@ class Load {
       var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
 
       MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
-      Map headers = api.setHeaders();
+      SharedPreferences sha = await SharedPreferences.getInstance();
+      String token = sha.getString('token')!;
+      Map headers = api.setHeaders(token);
+      print(headers);
       headers.forEach((key, value) {
         request.headers[key] = value;
       });
@@ -126,18 +130,10 @@ class Load {
       }
       BuildContext loadingContext = context;
       StreamedResponse response = await request.send();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
       String stringResponse = await response.stream.bytesToString();
+      print(stringResponse);
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).clearSnackBars();
         Map responseBody = jsonDecode(stringResponse);
-        Navigator.pop(loadingContext);
         if (responseBody['success']) {
           if (context != null) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -159,6 +155,7 @@ class Load {
         }
       }
     } catch (e) {
+      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Compruebe su conexión a internet')));
       return false;

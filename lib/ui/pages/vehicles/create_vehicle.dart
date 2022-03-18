@@ -18,7 +18,7 @@ import 'package:image_picker/image_picker.dart';
 
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
-List<String> imagenesNetwork = [];
+List imagenesNetwork = [];
 
 bool hasVehicleData = false;
 int vehicleId = 0;
@@ -101,6 +101,8 @@ class _CreateVehicleState extends State<CreateVehicle> {
   }
 
   setValues(args) async {
+    imagenes.clear();
+    imagenesNetwork.clear();
     if (args != null) {
       hasVehicleData = true;
       vehicleId = args['id'];
@@ -114,15 +116,15 @@ class _CreateVehicleState extends State<CreateVehicle> {
       vtoDinatranController.text = args['vtoDinatran'];
       vtoSenacsaController.text = args['vtoSenacsa'];
       vtoSeguroController.text = args['vtoSeguro'];
-      imagenes.clear();
-      imagenesNetwork.clear();
       if (args['imgs'].isNotEmpty) {
-        List.generate(args['imgs'].length, (index) async {
+        print(args['imgs']);
+        imagenesNetwork = args['imgs'];
+        /* List.generate(args['imgs'].length, (index) async {
           imagenesNetwork.add(args['imgs'][index]['path']);
           // imagePickerKey.currentState != null
           //     ? imagePickerKey.currentState!.setState(() {})
           //     : null;
-        });
+        }); */
       }
     } else {
       hasVehicleData = false;
@@ -609,6 +611,225 @@ class ImagesPicker extends StatefulWidget {
 
 class _ImagesPickerState extends State<ImagesPicker> {
   int currentImage = 0;
+  int totalIndex = 0;
+  PageController imagePageController = PageController();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height * 0.4,
+      decoration: BoxDecoration(
+        color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+            ? Colors.transparent
+            : Colors.grey[200],
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
+        ),
+      ),
+      child: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+          ? Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                PageView(
+                    controller: imagePageController,
+                    onPageChanged: (value) => setState(() {
+                          currentImage = value;
+                        }),
+                    children: [
+                      ...List.generate(imagenesNetwork.length, (index) {
+                        print(imagenesNetwork[index]['path']);
+                        return SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                      child: InteractiveViewer(
+                                        panEnabled: true,
+                                        minScale: 0.5,
+                                        maxScale: 4,
+                                        clipBehavior: Clip.none,
+                                        child: Image.network(vehicleImgUrl +
+                                            imagenesNetwork[index]['path']),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  color: Colors.white,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.4,
+                                  child: Image.network(
+                                    vehicleImgUrl +
+                                        imagenesNetwork[index]['path'],
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                child: TextButton(
+                                  onPressed: () async {
+                                    Api api = Api();
+
+                                    Response response = await api.postData(
+                                      'vehicles/vehicle-image-delete',
+                                      {
+                                        'id': imagenesNetwork[index]['id'],
+                                      },
+                                    );
+
+                                    print(response.body);
+                                    if (response.statusCode == 200) {
+                                      imagenesNetwork.removeAt(index);
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.close,
+                                      color: kBlack,
+                                    ),
+                                  ),
+                                ),
+                                top: 20,
+                                right: 20,
+                              )
+                            ],
+                          ),
+                        );
+                      }),
+                      ...List.generate(
+                        imagenes.length,
+                        (index) => Stack(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => Dialog(
+                                    child: InteractiveViewer(
+                                      panEnabled: true,
+                                      minScale: 0.5,
+                                      maxScale: 4,
+                                      clipBehavior: Clip.none,
+                                      child: Image.file(
+                                        File(imagenes[index].path),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: SizedBox(
+                                width: double.infinity,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: Image.file(
+                                  File(imagenes[index].path),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 20,
+                              right: 20,
+                              child: TextButton(
+                                onPressed: () async {
+                                  imagenes.removeAt(index);
+                                  setState(() {});
+                                },
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.close,
+                                    color: kBlack,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          List<XFile>? imgs = await _picker.pickMultiImage();
+                          imagenes.addAll((imgs ?? []));
+                          if (imagenes.isNotEmpty) {
+                            setState(() {
+                              // imagePageController.jumpToPage(0);
+                            });
+                          }
+                        },
+                        child: Container(
+                          color: Colors.grey,
+                          child: const Icon(
+                            Icons.add,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ]),
+                Positioned(
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      (imagenes.length + imagenesNetwork.length + 1),
+                      (index) => Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        decoration: BoxDecoration(
+                          color: index == currentImage
+                              ? const Color(0xFF686868)
+                              : const Color(0xFFEEEEEE),
+                          border: Border.all(
+                            color: index == currentImage
+                                ? const Color(0xFF686868)
+                                : const Color(0xFFEEEEEE),
+                          ),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : GestureDetector(
+              onTap: () async {
+                List<XFile>? imgs = await _picker.pickMultiImage();
+                imagenes.addAll((imgs ?? []));
+                if (imagenes.isNotEmpty) {
+                  if (mounted) {
+                    setState(() {
+                      // imagePageController.jumpToPage(0);
+                    });
+                  }
+                }
+              },
+              child: Container(
+                color: Colors.grey,
+                child: const Icon(
+                  Icons.add,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+/* class _ImagesPickerState extends State<ImagesPicker> {
+  int currentImage = 0;
   PageController imagePageController = PageController();
 
   @override
@@ -619,89 +840,142 @@ class _ImagesPickerState extends State<ImagesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: imagePickerKey,
-      onTap: () async {
-        List<XFile>? imgs = await _picker.pickMultiImage();
-        imagenes = imgs ?? [];
-        if (imagenes.isNotEmpty) {
-          if (mounted) {
-            setState(() {
-              // imagePageController.jumpToPage(0);
-            });
-          }
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        height: 200,
-        color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
-            ? Colors.transparent
-            : Colors.grey[200],
-        child: (imagenesNetwork.isNotEmpty || imagenes.isNotEmpty)
-            ? Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  PageView(
-                    controller: imagePageController,
-                    onPageChanged: (value) => setState(() {
-                      currentImage = value;
-                    }),
-                    children: List.generate(
-                      imagenesNetwork.isNotEmpty
-                          ? imagenesNetwork.length
-                          : imagenes.length,
-                      (index) => imagenesNetwork.isNotEmpty
-                          ? Image.network(
-                              vehicleImgUrl + imagenesNetwork[index],
-                            )
-                          : Image.file(
-                              File(imagenes[index].path),
+    return Container(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height * 0.4,
+      color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+          ? Colors.transparent
+          : Colors.grey[200],
+      child: (imagenesNetwork.isNotEmpty || imagenes.isNotEmpty)
+          ? Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                PageView(
+                  controller: imagePageController,
+                  onPageChanged: (value) => setState(() {
+                    currentImage = value;
+                  }),
+                  children: [
+                    ...List.generate(
+                      imagenesNetwork.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              child: InteractiveViewer(
+                                panEnabled: true,
+                                minScale: 0.5,
+                                maxScale: 4,
+                                clipBehavior: Clip.none,
+                                child: Image.network(
+                                  vehicleImgUrl + imagenesNetwork[index],
+                                ),
+                              ),
                             ),
+                          );
+                        },
+                        child: Image.network(
+                          vehicleImgUrl + imagenesNetwork[index],
+                        ),
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        imagenesNetwork.isNotEmpty
-                            ? imagenesNetwork.length
-                            : imagenes.length,
-                        (index) => Container(
-                          width: 10,
-                          height: 10,
-                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                          decoration: BoxDecoration(
+                    ...List.generate(
+                      imagenes.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              child: InteractiveViewer(
+                                panEnabled: true,
+                                minScale: 0.5,
+                                maxScale: 4,
+                                clipBehavior: Clip.none,
+                                child: Image.file(
+                                  File(imagenes[index].path),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Image.file(
+                          File(imagenes[index].path),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        List<XFile>? imgs = await _picker.pickMultiImage();
+                        imagenes.addAll((imgs ?? []));
+                        if (imagenes.isNotEmpty) {
+                          setState(() {
+                            // imagePageController.jumpToPage(0);
+                          });
+                        }
+                      },
+                      child: Container(
+                        color: Colors.grey,
+                        child: const Icon(Icons.add),
+                      ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      (imagenes.length + imagenesNetwork.length + 1),
+                      (index) => Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        decoration: BoxDecoration(
+                          color: index == currentImage
+                              ? const Color(0xFF686868)
+                              : const Color(0xFFEEEEEE),
+                          border: Border.all(
                             color: index == currentImage
                                 ? const Color(0xFF686868)
                                 : const Color(0xFFEEEEEE),
-                            border: Border.all(
-                              color: index == currentImage
-                                  ? const Color(0xFF686868)
-                                  : const Color(0xFFEEEEEE),
-                            ),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(20),
-                            ),
+                          ),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(20),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              )
-            : const Center(
-                child: Icon(
-                  Icons.add_a_photo,
+                ),
+              ],
+            )
+          : GestureDetector(
+              key: imagePickerKey,
+              onTap: () async {
+                List<XFile>? imgs = await _picker.pickMultiImage();
+                imagenes.addAll((imgs ?? []));
+                if (imagenes.isNotEmpty) {
+                  if (mounted) {
+                    setState(() {
+                      // imagePageController.jumpToPage(0);
+                    });
+                  }
+                }
+              },
+              child: Container(
+                color: Colors.grey,
+                child: const Icon(
+                  Icons.add,
                   size: 50,
+                  color: Colors.white,
                 ),
               ),
-      ),
+            ),
     );
   }
 }
-
+ */
 class MeasurementUnit extends StatefulWidget {
   const MeasurementUnit({Key? key}) : super(key: key);
 
