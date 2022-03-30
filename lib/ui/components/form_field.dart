@@ -1,7 +1,7 @@
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
 
-class CustomFormField extends StatelessWidget {
+class CustomFormField extends StatefulWidget {
   CustomFormField(this.controller, this.label,
       {this.maxLength = 255,
       this.maxLines = 1,
@@ -37,53 +37,66 @@ class CustomFormField extends StatelessWidget {
   String defaultValue;
   String hint;
   TextInputAction action;
+  @override
+  State<CustomFormField> createState() => _CustomFormFieldState();
+}
+
+class _CustomFormFieldState extends State<CustomFormField> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.text = widget.defaultValue != ''
+        ? widget.defaultValue
+        : widget.controller.text;
+  }
 
   @override
   Widget build(BuildContext context) {
-    controller.text = controller.text != '' ? controller.text : defaultValue;
     return TextField(
-      onTap: onFocus,
-      maxLines: maxLines,
-      showCursor: showCursor,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      focusNode: focus ?? FocusNode(),
-      controller: controller,
-      keyboardType: type,
-      textInputAction: action,
-      enabled: enabled,
-      maxLength: maxLength != 255 ? maxLength : null,
+      onTap: widget.onFocus,
+      maxLines: widget.maxLines,
+      showCursor: widget.showCursor,
+      readOnly: widget.readOnly,
+      autofocus: widget.autofocus,
+      focusNode: widget.focus ?? FocusNode(),
+      controller: widget.controller,
+      keyboardType: widget.type,
+      textInputAction: widget.action,
+      enabled: widget.enabled,
+      maxLength: widget.maxLength != 255 ? widget.maxLength : null,
       // onChanged: (value) {
       //   onChange(value) ?? () => {};
       // },
       onEditingComplete: () {
-        action == TextInputAction.next
+        widget.action == TextInputAction.next
             ? FocusScope.of(context).nextFocus()
-            : (action == TextInputAction.done
+            : (widget.action == TextInputAction.done
                 ? FocusScope.of(context).unfocus()
                 : null);
-        onChange != null ? onChange(controller.text) : () => {};
+        widget.onChange != null
+            ? widget.onChange(widget.controller.text)
+            : () => {};
       },
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderSide: BorderSide(color: kInputBorder),
           borderRadius: BorderRadius.all(
-            Radius.circular(radius),
+            Radius.circular(widget.radius),
           ),
         ),
-        prefixIcon: icon != null
+        prefixIcon: widget.icon != null
             ? Icon(
-                icon,
+                widget.icon,
                 color: kInputBorder,
                 size: 22,
               )
             : null,
         focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: kBlack, style: BorderStyle.solid)),
-        hintText: hint,
+        hintText: widget.hint,
         hintStyle: TextStyle(color: kInputBorder),
-        label: Text(label),
+        label: Text(widget.label),
         floatingLabelStyle: TextStyle(color: kBlack),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 5,

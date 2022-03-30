@@ -238,12 +238,13 @@ class ValidateButtonState extends State<ValidateButton> {
                               isLoading = !isLoading,
                             });
                         if (responseBody['data']['user']['habilitado']) {
+                          SharedPreferences shared =
+                              await SharedPreferences.getInstance();
+
+                          shared.setString(
+                              'user', jsonEncode(responseBody['data']['user']));
                           if (responseBody['data']['user']['is_carrier']) {
                             if (responseBody['data']['cant_vehicles'] <= 0) {
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CreateVehicleAfterReg()));
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (context) =>

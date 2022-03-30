@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
@@ -37,67 +38,79 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       isLoading = !isLoading;
     });
 
-    bool isLogged =
-        await User().login(context, textController1.text, textController2.text);
-    if (isLogged) {
-      setState(() {
-        isLoading = !isLoading;
-      });
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      Map user = jsonDecode(sharedPreferences.getString('user')!);
-      //TOKEN PARA MENSAJES PUSH
-      try {
-        String? token = await FirebaseMessaging.instance.getToken();
-        await Api().postData('user/set-device-token',
-            {'id': user['id'], 'device_token': token ?? ''});
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ha ocurrido un error')));
-      }
-      if (user['confirmed']) {
-        if (user['habilitado']) {
-          if (user['is_carrier']) {
-            //ENVIAR UBICACION CUANDO CAMBIE
-            LocationSettings locationSettings = const LocationSettings(
-              accuracy: LocationAccuracy.best,
-              distanceFilter: 5,
-            );
-            PusherApi().init(context, context.read<TransportistsLocProvider>());
-            Geolocator.getPositionStream(locationSettings: locationSettings)
-                .listen((Position? position) {
-              if (position != null) {
-                Api api = Api();
-                api.postData('update-location', {
-                  'latitude': position.latitude,
-                  'longitude': position.longitude,
-                  'heading': position.heading,
-                });
-              }
-            });
-            Navigator.of(context).pushReplacementNamed('/loads');
+    if (textController1.text != '' && textController2.text != '') {
+      bool isLogged = await User()
+          .login(context, textController1.text, textController2.text);
+      if (isLogged) {
+        setState(() {
+          isLoading = !isLoading;
+        });
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        Map user = jsonDecode(sharedPreferences.getString('user')!);
+        //TOKEN PARA MENSAJES PUSH
+        try {
+          String? token = await FirebaseMessaging.instance.getToken();
+          await Api().postData('user/set-device-token',
+              {'id': user['id'], 'device_token': token ?? ''});
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ha ocurrido un error')));
+        }
+        if (user['confirmed']) {
+          if (user['habilitado']) {
+            if (user['is_carrier']) {
+              //ENVIAR UBICACION CUANDO CAMBIE
+              LocationSettings locationSettings = const LocationSettings(
+                accuracy: LocationAccuracy.best,
+                distanceFilter: 5,
+              );
+              PusherApi().init(
+                  context,
+                  context.read<TransportistsLocProvider>(),
+                  context.read<ChatProvider>());
+              Geolocator.getPositionStream(locationSettings: locationSettings)
+                  .listen((Position? position) {
+                if (position != null) {
+                  Api api = Api();
+                  api.postData('update-location', {
+                    'latitude': position.latitude,
+                    'longitude': position.longitude,
+                    'heading': position.heading,
+                  });
+                }
+              });
+              Navigator.of(context).pushReplacementNamed('/loads');
+            } else {
+              PusherApi().init(
+                  context,
+                  context.read<TransportistsLocProvider>(),
+                  context.read<ChatProvider>(),
+                  true);
+              Navigator.of(context).pushReplacementNamed('/vehicles');
+            }
           } else {
-            PusherApi()
-                .init(context, context.read<TransportistsLocProvider>(), true);
-            Navigator.of(context).pushReplacementNamed('/vehicles');
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => const WaitHabilitacion(),
+            ));
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => const WaitHabilitacion(),
+            builder: (context) => const ValidateCode(),
           ));
         }
       } else {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => const ValidateCode(),
-        ));
+        setState(() {
+          isLoading = !isLoading;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ha ocurrido un error')));
       }
     } else {
       setState(() {
         isLoading = !isLoading;
       });
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Ha ocurrido un error')));
     }
   }
 
@@ -213,112 +226,3 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 }
-
-/* class LoginButton extends StatefulWidget {
-  const LoginButton(this.isLoading, {Key? key}) : super(key: key);
-  @override
-  State<LoginButton> createState() => _LoginButtonState();
-}
-
-class _LoginButtonState extends State<LoginButton> {
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: (isLoading
-          ? null
-          : () async {
-              setState(() {
-                isLoading = !isLoading;
-              });
-
-              bool isLogged = await User()
-                  .login(context, textController1.text, textController2.text);
-              if (isLogged) {
-                setState(() {
-                  isLoading = !isLoading;
-                });
-                SharedPreferences sharedPreferences =
-                    await SharedPreferences.getInstance();
-                Map user = jsonDecode(sharedPreferences.getString('user')!);
-                print(user);
-                //TOKEN PARA MENSAJES PUSH
-                try {
-                  String? token = await FirebaseMessaging.instance.getToken();
-                  await Api().postData('user/set-device-token',
-                      {'id': user['id'], 'device_token': token ?? ''});
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ha ocurrido un error')));
-                }
-                if (user['confirmed']) {
-                  if (user['habilitado']) {
-                    if (user['is_carrier']) {
-                      //ENVIAR UBICACION CUANDO CAMBIE
-                      LocationSettings locationSettings =
-                          const LocationSettings(
-                        accuracy: LocationAccuracy.best,
-                        distanceFilter: 5,
-                      );
-                      PusherApi().init(
-                          context, context.read<TransportistsLocProvider>());
-                      Geolocator.getPositionStream(
-                              locationSettings: locationSettings)
-                          .listen((Position? position) {
-                        if (position != null) {
-                          Api api = Api();
-                          api.postData('update-location', {
-                            'latitude': position.latitude,
-                            'longitude': position.longitude,
-                            'heading': position.heading,
-                          });
-                        }
-                      });
-                      Navigator.of(context).pushReplacementNamed('/loads');
-                    } else {
-                      PusherApi().init(context,
-                          context.read<TransportistsLocProvider>(), true);
-                      Navigator.of(context).pushReplacementNamed('/vehicles');
-                    }
-                  } else {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => const WaitHabilitacion(),
-                    ));
-                  }
-                } else {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (context) => const ValidateCode(),
-                  ));
-                }
-              } else {
-                setState(() {
-                  isLoading = !isLoading;
-                });
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ha ocurrido un error')));
-              }
-            }),
-      icon: isLoading
-          ? const SizedBox(
-              width: 30,
-              height: 30,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-              ),
-            )
-          : const Icon(
-              Icons.app_registration,
-              color: Colors.white,
-              size: 30,
-            ),
-      label:
-          const Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
-      style: ButtonStyle(
-          backgroundColor: isLoading
-              ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
-              : MaterialStateProperty.all(const Color(0xFFED8232))),
-    );
-  }
-}
- */

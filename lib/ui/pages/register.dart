@@ -11,6 +11,7 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,12 +52,14 @@ Future getData(context) async {
           TextButton(
             onPressed: () =>
                 {userType.text = 'load_generator', Navigator.pop(context)},
-            child: const Text('Generador de carga'),
+            child: Text('Generador de carga',
+                style: TextStyle(color: primaryOrange)),
           ),
           TextButton(
             onPressed: () =>
                 {userType.text = 'carrier', Navigator.pop(context)},
-            child: const Text('Transportista'),
+            child:
+                Text('Transportista', style: TextStyle(color: primaryOrange)),
           ),
         ],
       ),
@@ -187,14 +190,16 @@ class RegisterPageState extends State<RegisterPagePage> {
   }
 }
 
-class PrimeraParte extends StatelessWidget {
-  const PrimeraParte({
-    Key? key,
-    required this.pageController,
-  }) : super(key: key);
+class PrimeraParte extends StatefulWidget {
+  PrimeraParte({required this.pageController, Key? key}) : super(key: key);
+  PageController pageController;
 
-  final PageController pageController;
+  @override
+  State<PrimeraParte> createState() => _PrimeraParteState();
+}
 
+class _PrimeraParteState extends State<PrimeraParte>
+    with AutomaticKeepAliveClientMixin {
   // static const double separacion = 15;
 
   @override
@@ -344,6 +349,9 @@ class PrimeraParte extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class SegundaParte extends StatefulWidget {
@@ -401,7 +409,6 @@ class _SegundaParteState extends State<SegundaParte> {
                   ),
                 ],
               ),
-              const Spacer(),
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
@@ -422,7 +429,6 @@ class _SegundaParteState extends State<SegundaParte> {
                   ],
                 ),
               ),
-              const Spacer()
             ],
           ),
         ),
@@ -686,113 +692,112 @@ class RegisterButtonState extends State<RegisterButton> {
                     setState(() => {
                           isLoading = !isLoading,
                         });
-                    try {
-                      Api api = Api();
+                    // try {
+                    Api api = Api();
 
-                      var fullUrl = apiUrl + 'register';
+                    var fullUrl = apiUrl + 'register';
 
-                      MultipartRequest request =
-                          MultipartRequest('POST', Uri.parse(fullUrl));
-                      Map headers = api.setHeaders();
-                      headers.forEach((key, value) {
-                        request.headers[key] = value;
-                      });
+                    MultipartRequest request =
+                        MultipartRequest('POST', Uri.parse(fullUrl));
+                    Map headers = api.setHeaders();
+                    headers.forEach((key, value) {
+                      request.headers[key] = value;
+                    });
 
-                      request.fields['user_type'] = userType.text;
-                      request.fields['first_name'] = firstName.text;
-                      request.fields['last_name'] = lastName.text;
-                      request.fields['legal_name'] = legalName.text;
-                      request.fields['document_number'] = documentNumber.text;
-                      request.fields['cellphone'] = cellphone.text;
-                      request.fields['phone'] = phone.text;
-                      request.fields['email'] = email.text;
-                      request.fields['street1'] = street1.text;
-                      request.fields['street2'] = street2.text;
-                      request.fields['house_number'] = houseNumber.text;
-                      request.fields['city_id'] = cityId.text;
-                      request.fields['password'] = password.text;
-                      request.fields['password_confirmation'] =
-                          passwordConfirmation.text;
+                    request.fields['user_type'] = userType.text;
+                    request.fields['first_name'] = firstName.text;
+                    request.fields['last_name'] = lastName.text;
+                    request.fields['legal_name'] = legalName.text;
+                    request.fields['document_number'] = documentNumber.text;
+                    request.fields['cellphone'] = cellphone.text;
+                    request.fields['phone'] = phone.text;
+                    request.fields['email'] = email.text;
+                    request.fields['street1'] = street1.text;
+                    request.fields['street2'] = street2.text;
+                    request.fields['house_number'] = houseNumber.text;
+                    request.fields['city_id'] = cityId.text;
+                    request.fields['password'] = password.text;
+                    request.fields['password_confirmation'] =
+                        passwordConfirmation.text;
 
-                      request.files.add(await MultipartFile.fromPath(
-                          'identity_card_attachment', cedulaFrente));
-                      request.files.add(await MultipartFile.fromPath(
-                          'identity_card_back_attachment', cedulaAtras));
-                      StreamedResponse response = await request.send();
-                      String stringResponse =
-                          await response.stream.bytesToString();
+                    request.files.add(await MultipartFile.fromPath(
+                        'identity_card_attachment', cedulaFrente));
+                    request.files.add(await MultipartFile.fromPath(
+                        'identity_card_back_attachment', cedulaAtras));
+                    StreamedResponse response = await request.send();
+                    String stringResponse =
+                        await response.stream.bytesToString();
 
-                      if (response.statusCode == 200) {
-                        setState(() => {
-                              isLoading = !isLoading,
-                            });
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        Map responseBody = jsonDecode(stringResponse);
-                        print(responseBody['data']);
-                        if (responseBody['success']) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              duration: const Duration(seconds: 1),
-                              content: Text(responseBody['message']),
-                            ),
-                          );
-                          SharedPreferences sharedPreferences =
-                              await SharedPreferences.getInstance();
+                    if (response.statusCode == 200) {
+                      setState(() => {
+                            isLoading = !isLoading,
+                          });
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      Map responseBody = jsonDecode(stringResponse);
+                      print(responseBody['data']);
+                      if (responseBody['success']) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            duration: const Duration(seconds: 1),
+                            content: Text(responseBody['message']),
+                          ),
+                        );
+                        SharedPreferences sharedPreferences =
+                            await SharedPreferences.getInstance();
 
-                          //TOKEN PARA MENSAJES PUSH
-                          String? token =
-                              await FirebaseMessaging.instance.getToken();
+                        //TOKEN PARA MENSAJES PUSH
+                        String? token =
+                            await FirebaseMessaging.instance.getToken();
 
-                          print('firebase token: ' + (token ?? 'token'));
+                        print('firebase token: ' + (token ?? 'token'));
 
-                          sharedPreferences.setString(
-                              'user', jsonEncode(responseBody['data']['user']));
-                          sharedPreferences.setString(
-                              'token', responseBody['data']['token']);
+                        sharedPreferences.setString(
+                            'user', jsonEncode(responseBody['data']['user']));
+                        sharedPreferences.setString(
+                            'token', responseBody['data']['token']);
 
-                          if (token != null) {
-                            Response response = await Api().postData(
-                                'user/set-device-token', {
-                              'id': responseBody['data']['user']['id'],
-                              'device_token': token
-                            });
+                        if (token != null) {
+                          Response response = await Api().postData(
+                              'user/set-device-token', {
+                            'id': responseBody['data']['user']['id'],
+                            'device_token': token
+                          });
 
-                            print(response.body);
-                          }
+                          print(response.body);
+                        }
 
-                          if (responseBody['data']['user']['is_carrier']) {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CreateVehicleAfterReg()));
-                          } else {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ValidateCode()));
-                          }
+                        if (responseBody['data']['user']['is_carrier']) {
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CreateVehicleAfterReg()));
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              duration: const Duration(seconds: 1),
-                              content: Text(responseBody['message']),
-                            ),
-                          );
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => const ValidateCode()));
                         }
                       } else {
-                        setState(() => {
-                              isLoading = !isLoading,
-                            });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            duration: const Duration(seconds: 1),
+                            content: Text(responseBody['message']),
+                          ),
+                        );
                       }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          duration: Duration(seconds: 1),
-                          content: Text('Compruebe su conexión a internet')));
-
+                    } else {
                       setState(() => {
                             isLoading = !isLoading,
                           });
                     }
+                    // } catch (e) {
+                    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    //       duration: Duration(seconds: 1),
+                    //       content: Text('Compruebe su conexión a internet')));
+
+                    //   setState(() => {
+                    //         isLoading = !isLoading,
+                    //       });
+                    // }
                   },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

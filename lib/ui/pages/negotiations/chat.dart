@@ -69,6 +69,14 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   chatProvider.setToPay(false);
   if (response.statusCode == 200) {
     Map jsonResp = jsonDecode(response.body);
+    vehicle = Vehicle(
+      id: jsonResp['data']['vehicle']['id'],
+      licensePlate: jsonResp['data']['vehicle']['license_plate'],
+      yearOfProd: jsonResp['data']['vehicle']['year_of_production'],
+      model: jsonResp['data']['vehicle']['model'],
+      maxCapacity: double.parse(jsonResp['data']['vehicle']['max_capacity']),
+      score: jsonResp['data']['vehicle']['stars'],
+    );
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
     if (listMessages.isNotEmpty) {
@@ -206,7 +214,7 @@ Future cancelNegotiation(id, context) async {
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
               }
-              log(response.body);
+              Navigator.of(context).pop();
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                   content: Text('Compruebe su conexión a internet')));
@@ -348,24 +356,57 @@ class _NegotiationChatState extends State<NegotiationChat> {
                                   height: 20,
                                 ),
                                 Text('Producto: ' + load.product),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Descripción: ' + load.description),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Peso: ' + load.weight.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Volumen: ' + load.volumen.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Fecha de servicio: ' +
                                     load.pickUpDate +
                                     ' a las ' +
                                     load.pickUpTime),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Cantidad de vehículos: ' +
                                     load.vehicleQuantity.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Cantidad de ayudantes: ' +
                                     load.helpersQuantity.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Tiempo de espera (origen): ' +
                                     load.loadWait.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Tiempo de espera (descarga): ' +
                                     load.deliveryWait.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Oferta inicial: ' +
                                     load.initialOffer.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 Text('Observaciones: ' + load.observations),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 const Divider(),
                                 Text('Información del vehículo',
                                     style:
@@ -373,7 +414,24 @@ class _NegotiationChatState extends State<NegotiationChat> {
                                 const SizedBox(
                                   height: 20,
                                 ),
-                                Text('')
+                                Text('Chapa: ' + vehicle.licensePlate),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text('Modelo: ' + vehicle.model),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text('Año de producción: ' +
+                                    vehicle.yearOfProd.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text('Capacidad máxima: ' +
+                                    vehicle.maxCapacity.toString()),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                               ],
                             ),
                           ),

@@ -40,12 +40,12 @@ class Api {
   postData(targetURL, body) async {
     var fullUrl = _url + targetURL;
     print(fullUrl);
-    await getToken();
+    String token = await getToken();
     try {
       return await http.post(
         Uri.parse(fullUrl),
         body: jsonEncode(body),
-        headers: setHeaders(),
+        headers: setHeaders(token),
       );
     } on SocketException catch (e) {
       NotificationsApi.showNotification(
@@ -58,10 +58,10 @@ class Api {
 
   postWithFiles(targetURL, Map body, List<XFile> files) async {
     var fullUrl = _url + targetURL;
-    await getToken();
+    String token = await getToken();
     http.MultipartRequest request =
         http.MultipartRequest('POST', Uri.parse(fullUrl));
-    Map headers = setHeaders();
+    Map headers = setHeaders(token);
     headers.forEach((key, value) {
       request.headers[key] = value;
     });
@@ -77,9 +77,13 @@ class Api {
     return request.send();
   }
 
-  setHeaders([tokenParam]) => {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + (token ?? tokenParam),
-      };
+  setHeaders([tokenParam]) {
+    print(token);
+    print(tokenParam);
+    return {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ' + (token ?? (tokenParam ?? '')),
+    };
+  }
 }

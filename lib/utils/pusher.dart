@@ -37,6 +37,7 @@ class PusherApi extends ChangeNotifier {
   }
 
   init(BuildContext context, TransportistsLocProvider transportistsLocProvider,
+      ChatProvider chat,
       [bool isGenerator = false]) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
@@ -59,20 +60,23 @@ class PusherApi extends ChangeNotifier {
         (PusherEvent? event) async {
       if (event != null) {
         if (event.data != null) {
-          print(event.data);
-          ChatProvider chat = context.read<ChatProvider>();
-          String data = event.data!;
-          Map jsonData = jsonDecode(data);
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
+          print(event.data);
+          print('usuario');
+          print(sharedPreferences.getString('user'));
+          String data = event.data.toString();
+          Map jsonData = jsonDecode(data);
           String? negotiationId = sharedPreferences.getString('negotiation_id');
           User user =
               User(userData: jsonDecode(sharedPreferences.getString('user')!))
                   .userFromArray();
-          Position position = await Geolocator.getCurrentPosition();
           if (user.id != jsonData['sender_id']) {
             if (user.id == jsonData['user_id']) {
+              print('user id');
+              print(user.id);
               if (jsonData['ask_location'] == true) {
+                Position position = await Geolocator.getCurrentPosition();
                 Map loc = {
                   'coords': {
                     'latitude': position.latitude,
