@@ -153,7 +153,6 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         isUrgentController.text = arguments['isUrgent'].toString();
         imagenes.clear();
         imagenesNetwork.clear();
-        print(arguments['imgs']);
         imagenesNetwork = arguments['imgs'];
       } else {
         loadId = 0;
@@ -472,8 +471,6 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                         'id': imagenesNetwork[index]['id'],
                                       },
                                     );
-
-                                    print(response.body);
 
                                     imagenesNetwork.removeAt(index);
                                     setState(() {});
@@ -1377,7 +1374,7 @@ class PaginaFinal extends StatelessWidget {
                 Flexible(
                   child: PrevPageButton(pageController),
                 ),
-                Flexible(child: EnviarButton())
+                const Flexible(child: EnviarButton())
               ],
             ),
           )
@@ -1420,7 +1417,7 @@ class _IsUrgentState extends State<IsUrgent> {
 }
 
 class EnviarButton extends StatefulWidget {
-  EnviarButton({Key? key}) : super(key: key);
+  const EnviarButton({Key? key}) : super(key: key);
 
   @override
   State<EnviarButton> createState() => _EnviarButtonState();
@@ -1446,12 +1443,11 @@ class _EnviarButtonState extends State<EnviarButton> {
       onPressed: isLoading
           ? () {}
           : () async {
-              setState(() {
-                isLoading = !isLoading;
-              });
+              isLoading = !isLoading;
+              setState(() {});
               Load load = Load();
               print(imagenes);
-              load.createLoad({
+              await load.createLoad({
                 'description': descriptionController.text,
                 'vehicle_type_id': 1,
                 'product_category_id': categoriaController.text,
@@ -1485,9 +1481,8 @@ class _EnviarButtonState extends State<EnviarButton> {
                 'loadId': loadId
               }, imagenes,
                   context: context, update: hasLoadData, loadId: loadId);
-              setState(() {
-                isLoading = !isLoading;
-              });
+              isLoading = !isLoading;
+              setState(() {});
             },
       child: isLoading
           ? const Center(

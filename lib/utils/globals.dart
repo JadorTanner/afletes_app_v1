@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 //casa
 // String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
-// String baseUrl = 'http://192.168.1.196:9000/';
+String baseUrl = 'http://192.168.1.152:8000/';
 //producción
-String baseUrl = 'https://www.afletes.com/';
+// String baseUrl = 'https://www.afletes.com/';
 
 String apiUrl = baseUrl + 'api/';
 

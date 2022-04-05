@@ -2,7 +2,6 @@
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class DatePicker extends StatefulWidget {
@@ -27,7 +26,8 @@ class _DatePickerState extends State<DatePicker> {
             data: ThemeData.light().copyWith(
               primaryColor: primaryOrange.withAlpha(100),
               colorScheme: ColorScheme.light(primary: primaryOrange),
-              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+              buttonTheme:
+                  const ButtonThemeData(textTheme: ButtonTextTheme.primary),
             ),
             child: child!);
       },

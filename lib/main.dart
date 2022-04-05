@@ -7,6 +7,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
+import 'package:afletes_app_v1/ui/pages/loads/pending_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
@@ -15,12 +16,12 @@ import 'package:afletes_app_v1/ui/pages/splash_screen.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/create_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/vehicles/my_vehicles.dart';
+import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
@@ -67,6 +68,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<Load>(create: (context) => Load()),
         ChangeNotifierProvider<TransportistsLocProvider>(
             create: (context) => TransportistsLocProvider()),
         ChangeNotifierProvider<User>(create: (context) => User()),
@@ -132,7 +134,6 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     NotificationsApi.init();
     listenNotifications();
@@ -241,6 +242,7 @@ class _AfletesAppState extends State<AfletesApp> {
         '/create-vehicle': (context) => const CreateVehicle(),
         '/my-vehicles': (context) => const MyVehiclesPage(),
         '/my-negotiations': (context) => const MyNegotiations(),
+        '/pending-loads': (context) => const PendingLoadsPage(),
       },
       navigatorKey: navigatorKey,
     );

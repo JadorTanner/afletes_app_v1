@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
-import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
+import 'package:afletes_app_v1/ui/components/load_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
@@ -18,6 +18,7 @@ import 'package:http/http.dart';
 import 'package:timelines/timelines.dart';
 
 List<Load> loads = [];
+List<Load> closedLoads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
 late PageController pageController;
@@ -25,6 +26,7 @@ late PageController pageController;
 Future<List<Load>> getLoads([callback]) async {
   try {
     Response response = await Api().getData('user/find-loads');
+    Position position = await Geolocator.getCurrentPosition();
 
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
@@ -57,9 +59,34 @@ Future<List<Load>> getLoads([callback]) async {
                 destinStateId: load['destination_state_id'],
                 weight: double.parse(load['weight']),
                 product: load['product'] ?? '',
+                pickUpDate: load['pickup_at'],
+                pickUpTime: load['pickup_time'],
                 attachments: load['attachments'] ?? [],
               ),
             );
+            double parsedLatitude = double.parse(loads[key].latitudeFrom);
+            double parsedLongitude = double.parse(loads[key].longitudeFrom);
+            double parsedDestinLatitude =
+                double.parse(loads[key].destinLatitude);
+            double parsedDestinLongitude =
+                double.parse(loads[key].destinLongitude);
+
+            if ((parsedLatitude <= (position.latitude + 1.00000000000000) &&
+                    parsedLatitude >= (position.latitude - 1.00000000000000)) &&
+                (parsedLongitude <= (position.longitude + 1.00000000000000) &&
+                    parsedLongitude >=
+                        (position.longitude - 1.00000000000000))) {
+              closedLoads.add(loads[key]);
+            }
+            // if (parsedDestinLatitude <=
+            //         (position.latitude + 0.00000000000100) &&
+            //     parsedDestinLatitude >=
+            //         (position.latitude - 0.00000000000100)) {}
+            // if (parsedDestinLongitude <=
+            //         (position.longitude + 0.00000000000100) &&
+            //     parsedDestinLongitude >=
+            //         (position.longitude - 0.00000000000100)) {}
+            print(closedLoads);
             animatedListKey.currentState != null
                 ? animatedListKey.currentState!
                     .insertItem(0, duration: const Duration(milliseconds: 100))
@@ -78,239 +105,6 @@ Future<List<Load>> getLoads([callback]) async {
     return loads;
   } catch (_) {
     return [];
-  }
-}
-
-onLoadTap(int id, BuildContext context, setLoadsMarkers) async {
-  try {
-    Api api = Api();
-
-    TextEditingController intialOfferController = TextEditingController();
-
-    Response response = await api.getData('load/load-info?id=' + id.toString());
-
-    Map jsonResponse = jsonDecode(response.body);
-    if (jsonResponse['success']) {
-      Map data = jsonResponse['data'];
-      List images = data['attachments'] ?? [];
-      List<Image> attachments = [];
-
-      TextStyle textoInformacion = const TextStyle(fontSize: 12);
-
-      intialOfferController.text = data['initial_offer'].toString();
-      if (images.isNotEmpty) {
-        for (var element in images) {
-          attachments.add(Image.network(
-            loadImgUrl + element['filename'],
-            fit: BoxFit.cover,
-          ));
-        }
-      }
-      Size size = MediaQuery.of(context).size;
-      await showBottomSheet(
-        context: context,
-        // barrierColor: Colors.transparent,
-        // isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        // enableDrag: true,
-        constraints: BoxConstraints(
-            minHeight: size.height * 0.1, maxHeight: size.height * 0.7),
-        builder: (context) => Stack(
-          children: [
-            Container(
-              clipBehavior: Clip.hardEdge,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 15),
-              child: ListView(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Stack(
-                    children: [
-                      SizedBox(
-                        height: 400,
-                        child: ImageViewer(attachments),
-                      ),
-                      Positioned(
-                        bottom: -2,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          width: double.infinity,
-                          height: 100,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Color(0xFFFFFFFF)],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    color: const Color(0xFFFFFFFF),
-                    padding: const EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      top: 40,
-                    ),
-                    child: Text(data['description'] ?? ''),
-                  ),
-                  Container(
-                    color: const Color(0xFFFFFFFF),
-                    padding: const EdgeInsets.all(20),
-                    child: LoadInformation(
-                        data: data,
-                        id: id,
-                        textoInformacion: textoInformacion,
-                        intialOfferController: intialOfferController),
-                  ),
-                  Container(
-                    color: const Color(0xFFFFFFFF),
-                    padding:
-                        const EdgeInsets.only(left: 20, right: 20, bottom: 40),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: TextField(
-                            controller: intialOfferController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color(0xFFBDBDBD),
-                                  width: 1,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
-                              label: Text('Oferta Inicial'),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        (data['load_state_id'] == 1
-                            ? TextButton.icon(
-                                onPressed: () async {
-                                  try {
-                                    Api api = Api();
-                                    Response response = await api.postData(
-                                        'negotiation/start-negotiation', {
-                                      'load_id': id,
-                                      'initial_offer':
-                                          intialOfferController.text
-                                    });
-                                    if (response.statusCode == 200) {
-                                      Map jsonResponse =
-                                          jsonDecode(response.body);
-                                      if (jsonResponse['success']) {
-                                        Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                          builder: (context) => NegotiationChat(
-                                              jsonResponse['data']
-                                                  ['negotiation_id']),
-                                        ));
-                                      }
-                                    }
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Compruebe su conexión a internet')));
-                                  }
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          const Color(0xFF101010)),
-                                  foregroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          const Color(0xFFFFFFFF)),
-                                  padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          const EdgeInsets.symmetric(
-                                              vertical: 18, horizontal: 10)),
-                                ),
-                                label: const Text('Negociar'),
-                                icon: const Icon(Icons.check),
-                              )
-                            : const SizedBox.shrink())
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              left: 160,
-              right: 160,
-              top: 10,
-              child: Container(
-                height: 5,
-                width: 2,
-                constraints: const BoxConstraints(maxWidth: 2),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: Color(0xFFC5C5C5),
-                ),
-              ),
-            ),
-            Positioned(
-              right: 30,
-              top: 20,
-              child: Container(
-                width: 35,
-                height: 35,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(50)),
-                ),
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
-                    Icons.close,
-                    size: 15,
-                  ),
-                ),
-              ),
-            ),
-            data['is_urgent']
-                ? Positioned(
-                    left: 30,
-                    top: 20,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.horizontal(
-                          right: Radius.circular(10),
-                          left: Radius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'URGENTE',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink()
-          ],
-        ),
-      ).closed.then((value) => setLoadsMarkers());
-      // .whenComplete(() {
-      //   setLoadsMarkers();
-      // });
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
   }
 }
 
@@ -547,7 +341,7 @@ class _LoadsMapState extends State<LoadsMap>
     //   .buffer
     //   .asUint8List();
     BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(
-        await getBytesFromAsset('assets/img/load-marker-icon.png', 50));
+        await getBytesFromAsset('assets/img/load-marker-icon.png', 70));
     markers.clear();
     loads.asMap().forEach((key, load) {
       markers.add(
@@ -562,8 +356,8 @@ class _LoadsMapState extends State<LoadsMap>
               title: load.product != '' ? load.product : load.addressFrom,
               snippet: 'Oferta inicial: ' + currencyFormat(load.initialOffer)),
           onTap: () {
-            onLoadTap(
-                load.id, context, () => setLoadsMarkers(position, true, false));
+            onLoadTap(load.id, context, load, true,
+                () => setLoadsMarkers(position, true, false));
             setLoadMarkerInfo(load, position, context);
           },
         ),
@@ -586,7 +380,7 @@ class _LoadsMapState extends State<LoadsMap>
     //     const ImageConfiguration(), 'assets/img/load-marker-icon.png');
 
     BitmapDescriptor bitmapIcon = BitmapDescriptor.fromBytes(
-        await getBytesFromAsset('assets/img/load-marker-icon.png', 50));
+        await getBytesFromAsset('assets/img/load-marker-icon.png', 70));
     LatLng originLatLng = LatLng(
       double.parse(load.latitudeFrom),
       double.parse(load.longitudeFrom),
@@ -690,7 +484,7 @@ class _LoadsMapState extends State<LoadsMap>
           zoomControlsEnabled: false,
         ),
         Positioned(
-          bottom: 60,
+          bottom: 60 * 4,
           right: 30,
           child: Container(
             decoration: const BoxDecoration(
@@ -708,7 +502,7 @@ class _LoadsMapState extends State<LoadsMap>
           ),
         ),
         Positioned(
-          bottom: 120,
+          bottom: 60 * 5,
           right: 30,
           child: Container(
             decoration: const BoxDecoration(
@@ -725,7 +519,79 @@ class _LoadsMapState extends State<LoadsMap>
               icon: const Icon(Icons.location_searching_rounded),
             ),
           ),
-        )
+        ),
+        Positioned(
+            child: DraggableScrollableSheet(
+          minChildSize: 0.2,
+          maxChildSize: 0.5,
+          initialChildSize: 0.2,
+          builder: (context, scrollController) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: kBlack,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Cargas cercanas',
+                    style: Theme.of(context).textTheme.headline6,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ...List.generate(
+                    loads.length,
+                    (index) => LoadCard(
+                      loads[index],
+                      hasData: true,
+                      isCarrier: true,
+                      onTap: () async {
+                        // setLoadMarkerInfo(loads[index], position, context);
+                      },
+                      onClose: () {
+                        setLoadsMarkers(position, true);
+
+                        _polylines.clear();
+                        polylineCoordinates.clear();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  loads.isEmpty
+                      ? const Text(
+                          'No hay cargas disponibles',
+                          textAlign: TextAlign.center,
+                        )
+                      : const SizedBox.shrink()
+                ],
+              ),
+            );
+          },
+        )),
       ],
     );
   }

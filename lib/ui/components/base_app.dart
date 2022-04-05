@@ -5,7 +5,9 @@ import 'dart:convert';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseApp extends StatefulWidget {
@@ -24,8 +26,6 @@ class BaseApp extends StatefulWidget {
 }
 
 class _BaseAppState extends State<BaseApp> {
-  late User user;
-
   late ThemeData theme;
 
   @override
@@ -37,162 +37,205 @@ class _BaseAppState extends State<BaseApp> {
       backgroundColor: const Color(0xFFEBE3CD),
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-      drawer: Drawer(
-        child: FutureBuilder(
-          future: Future(() async {
-            SharedPreferences sharedPreferences =
-                await SharedPreferences.getInstance();
-
-            String? userString = sharedPreferences.getString('user');
-            if (userString != null) {
-              user = User().userFromArray(jsonDecode(userString));
-              return user;
-            }
-          }),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return SafeArea(
-                  minimum: const EdgeInsets.all(15),
-                  child: ListView(
-                    children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      CircleAvatar(
-                        backgroundColor: theme.backgroundColor,
-                        minRadius: 60,
-                        child: Text(
-                          user.fullName
-                              .split(' ')
-                              .map((e) => e.length > 2 ? e.substring(0, 1) : '')
-                              .join(''),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                          ),
+      drawer: CustomDrawer(theme: theme),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            widget.body,
+            Positioned(
+              top: 40,
+              left: 20,
+              child: widget.floatingButton ?? const SizedBox.shrink(),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(top: 20, left: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.white,
+                  ),
+                  child: IconButton(
+                    onPressed: () => {_key.currentState!.openDrawer()},
+                    icon: const Icon(Icons.menu, size: 20),
+                  ),
+                ),
+                Navigator.canPop(context)
+                    ? Container(
+                        width: 40,
+                        height: 40,
+                        margin: const EdgeInsets.only(top: 20, right: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: Colors.white,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Text(user.fullName),
-                      Text(user.email),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        height: 1,
-                        color: theme.dividerColor,
-                      ),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      TextButton.icon(
-                        onPressed: () => {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => MyProfilePage(user),
-                          ))
-                        },
-                        icon: CircleAvatar(
-                          backgroundColor: kGrey,
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                          ),
+                        child: IconButton(
+                          onPressed: () => {Navigator.of(context).pop()},
+                          icon: const Icon(Icons.chevron_left, size: 20),
                         ),
-                        label: Container(
-                          padding: const EdgeInsets.all(15),
-                          width: double.infinity,
-                          child: Text(
-                            'Mi perfil',
-                            style: theme.textTheme.bodyText1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      DrawerItem(
-                          user.isCarrier ? '/my-vehicles' : '/my-loads',
-                          user.isCarrier ? 'Mis vehículos' : 'Mis cargas',
-                          Icons.local_activity),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      DrawerItem(
-                          user.isCarrier ? '/loads' : '/vehicles',
-                          user.isCarrier ? 'Buscar cargas' : 'Buscar vehículos',
-                          Icons.search),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      DrawerItem('/my-negotiations', 'Mis negociaciones',
-                          Icons.ac_unit),
-                      const SizedBox(
-                        height: 200,
-                      ),
-                      TextButton(
-                        onPressed: () => {user.logout(context)},
-                        child: const Text(
-                          'Cerrar sesión',
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                    ],
-                  ));
-            }
-            return const Text('usuario');
-          },
+                      )
+                    : const SizedBox.shrink()
+              ],
+            ),
+          ],
         ),
       ),
-      body: Stack(
-        children: [
-          widget.body,
-          Positioned(
-            top: 40,
-            left: 20,
-            child: widget.floatingButton ?? const SizedBox.shrink(),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                margin: const EdgeInsets.only(top: 20, left: 20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.white,
-                ),
-                child: IconButton(
-                  onPressed: () => {_key.currentState!.openDrawer()},
-                  icon: const Icon(Icons.menu, size: 20),
-                ),
-              ),
-              Navigator.canPop(context)
-                  ? Container(
-                      width: 40,
-                      height: 40,
-                      margin: const EdgeInsets.only(top: 20, right: 20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
+    );
+  }
+}
+
+class CustomDrawer extends StatefulWidget {
+  CustomDrawer({
+    Key? key,
+    required this.theme,
+  }) : super(key: key);
+  ThemeData theme;
+
+  @override
+  State<StatefulWidget> createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  late User user;
+  late Load loadProvider;
+  late ThemeData theme;
+  @override
+  void initState() {
+    super.initState();
+    theme = widget.theme;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadProvider = Provider.of<Load>(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: FutureBuilder(
+        future: Future(() async {
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
+
+          String? userString = sharedPreferences.getString('user');
+          if (userString != null) {
+            user = User().userFromArray(jsonDecode(userString));
+            return user;
+          }
+        }),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return SafeArea(
+              minimum: const EdgeInsets.all(15),
+              child: ListView(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  CircleAvatar(
+                    backgroundColor: theme.backgroundColor,
+                    minRadius: 60,
+                    child: Text(
+                      user.fullName
+                          .split(' ')
+                          .map((e) => e.length > 2 ? e.substring(0, 1) : '')
+                          .join(''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(user.fullName),
+                  Text(user.email),
+                  const SizedBox(
+                    height: 25,
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 1,
+                    color: theme.dividerColor,
+                  ),
+                  const SizedBox(
+                    height: 25,
+                  ),
+                  TextButton.icon(
+                    onPressed: () => {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => MyProfilePage(user),
+                      ))
+                    },
+                    icon: CircleAvatar(
+                      backgroundColor: kGrey,
+                      child: const Icon(
+                        Icons.person,
                         color: Colors.white,
                       ),
-                      child: IconButton(
-                        onPressed: () => {Navigator.of(context).pop()},
-                        icon: const Icon(Icons.chevron_left, size: 20),
+                    ),
+                    label: Container(
+                      padding: const EdgeInsets.all(15),
+                      width: double.infinity,
+                      child: Text(
+                        'Mi perfil',
+                        style: theme.textTheme.bodyText1,
                       ),
-                    )
-                  : const SizedBox.shrink()
-            ],
-          ),
-        ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  DrawerItem(
+                      user.isCarrier ? '/my-vehicles' : '/my-loads',
+                      user.isCarrier ? 'Mis vehículos' : 'Mis cargas',
+                      Icons.local_activity),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  DrawerItem(
+                      user.isCarrier ? '/loads' : '/vehicles',
+                      user.isCarrier ? 'Buscar cargas' : 'Buscar vehículos',
+                      Icons.search),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  DrawerItem(
+                      '/my-negotiations', 'Mis negociaciones', Icons.ac_unit),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  user.isCarrier && loadProvider.pendingLoads.isNotEmpty
+                      ? DrawerItem('/pending-loads', 'Cargas pendientes',
+                          Icons.all_inbox)
+                      : const SizedBox.shrink(),
+                  const SizedBox(
+                    height: 200,
+                  ),
+                  TextButton(
+                    onPressed: () => {user.logout(context)},
+                    child: const Text(
+                      'Cerrar sesión',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            );
+          }
+          return const Text('usuario');
+        },
       ),
     );
   }

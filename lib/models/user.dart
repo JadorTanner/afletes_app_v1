@@ -5,7 +5,6 @@ import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -90,11 +89,8 @@ class User extends ChangeNotifier {
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     String? userStored = localStorage.getString('user');
-    print('usuario guardado');
-    print(userStored);
     if (userStored != null) {
       Map userJson = jsonDecode(userStored);
-      print(userJson);
       notifyListeners();
       if (userJson['confirmed']) {
         if (userJson['habilitado']) {
@@ -112,7 +108,6 @@ class User extends ChangeNotifier {
       bool emailValid = RegExp(
               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
           .hasMatch(email);
-      print(emailValid ? 'email valido' : 'email no valido');
       if (emailValid) {
         try {
           Api api = Api();
@@ -121,7 +116,6 @@ class User extends ChangeNotifier {
             'email': email,
             'password': password,
           });
-          print(response.body);
           if (response.statusCode == 200) {
             Map responseBody = jsonDecode(response.body);
             if (responseBody['success']) {
@@ -137,8 +131,6 @@ class User extends ChangeNotifier {
           }
           return false;
         } catch (e) {
-          print('error');
-          print(e);
           return false;
         }
       } else {

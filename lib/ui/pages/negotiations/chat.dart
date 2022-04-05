@@ -1,13 +1,13 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
+import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
@@ -16,7 +16,6 @@ import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -525,7 +524,7 @@ class ButtonsSection extends StatelessWidget {
 
   final NegotiationChat widget;
 
-  ButtonStyle buttonStyle = ButtonStyle();
+  ButtonStyle buttonStyle = const ButtonStyle();
 
   @override
   Widget build(BuildContext context) {
@@ -808,8 +807,24 @@ class ButtonsSection extends StatelessWidget {
         }
       }
     }
-    return Row(
-      children: children.map((e) => Flexible(flex: 1, child: e)).toList(),
+    return Column(
+      children: [
+        TextButton(
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return const Dialog(
+                    child: VerTrayecto(),
+                  );
+                });
+          },
+          child: const Text('Ver trayecto'),
+        ),
+        Row(
+          children: children.map((e) => Flexible(flex: 1, child: e)).toList(),
+        )
+      ],
     );
   }
 }

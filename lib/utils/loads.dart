@@ -2,13 +2,12 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Load {
+class Load extends ChangeNotifier {
   int id,
       categoryId,
       vehicleQuantity,
@@ -43,6 +42,8 @@ class Load {
       product;
   bool isUrgent;
   List attachments;
+  final List<Load> _pendingLoads = [];
+  List<Load> get pendingLoads => _pendingLoads;
   Load({
     this.id = 0,
     this.categoryId = 0,
@@ -83,7 +84,7 @@ class Load {
 
   static Load fromJSON(Map json) {
     return Load(
-      id: json['id'] ?? 1,
+      id: json['id'] ?? 0,
       product: json['product'] ?? '',
       description: json['description'] ?? '',
       initialOffer: double.parse(json['initial_offer']).toInt(),
@@ -99,6 +100,10 @@ class Load {
       isUrgent: json['is_urgent'] == 'true',
       addressFrom: json['address'] ?? '',
       destinAddress: json['destination_address'] ?? '',
+      destinLatitude: json['destination_latitude'] ?? '',
+      destinLongitude: json['destination_longitude'] ?? '',
+      latitudeFrom: json['latitude'] ?? '',
+      longitudeFrom: json['longitude'] ?? '',
     );
   }
 
@@ -162,15 +167,35 @@ class Load {
     }
   }
 
-  Future edit() async {
-    return false;
+  getPendingLoad(BuildContext context) async {
+    Api api = Api();
+    Response response = await api.getData('load/pending-loads');
+
+    if (response.statusCode == 200) {
+      Map jsonData = jsonDecode(response.body);
+      if (jsonData['success']) {
+        List pendLoads = jsonData['data'];
+        for (var pendLoad in pendLoads) {
+          addPendingLoad(Load.fromJSON(pendLoad));
+        }
+      }
+      notifyListeners();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
+    }
   }
 
-  Future deleteImage() async {
-    return false;
+  addPendingLoad(Load load) {
+    _pendingLoads.add(load);
+    notifyListeners();
   }
 
-  Future showInfo() async {
-    return false;
+  removePendingLoad(Load load) {
+    _pendingLoads.removeWhere((Load item) => item.id == load.id);
+    notifyListeners();
   }
 }

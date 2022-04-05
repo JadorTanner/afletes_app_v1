@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class TransportistsLocProvider extends ChangeNotifier {
-  List<TransportistLocation> _transportists = [];
+  final List<TransportistLocation> _transportists = [];
   List<TransportistLocation> get transportists => _transportists;
 
   addTransportist(TransportistLocation transportist) {
@@ -14,9 +14,6 @@ class TransportistsLocProvider extends ChangeNotifier {
       [String name = '']) {
     int index = _transportists.indexWhere((t) =>
         ((t.transportistId == transportistId) && (t.vehicleId == vehicleId)));
-    print('DATOS DE UPDATE OR CREATE');
-    print(index);
-    print(heading);
     if (index != -1) {
       _transportists[index].latitude = latitude;
       _transportists[index].longitude = longitude;
