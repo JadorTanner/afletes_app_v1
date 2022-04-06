@@ -525,6 +525,7 @@ class _LoadsMapState extends State<LoadsMap>
           minChildSize: 0.2,
           maxChildSize: 0.5,
           initialChildSize: 0.2,
+          snap: true,
           builder: (context, scrollController) {
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -556,7 +557,7 @@ class _LoadsMapState extends State<LoadsMap>
                     height: 20,
                   ),
                   Text(
-                    'Cargas cercanas',
+                    'Cargas disponibles',
                     style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.center,
                   ),

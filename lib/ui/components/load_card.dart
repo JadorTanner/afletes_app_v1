@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
+import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -10,7 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 onLoadTap(int id, BuildContext context, Load load,
-    [bool isCarrier = false, var setLoadMarkers, var onClose]) async {
+    [bool isCarrier = false,
+    var setLoadMarkers,
+    var onClose,
+    bool isFinalOffer = false]) async {
   try {
     Map data = {};
     List<Image> attachments = [];
@@ -35,7 +39,9 @@ onLoadTap(int id, BuildContext context, Load load,
           data = jsonResponse['data'];
           images = data['attachments'] ?? [];
 
-          intialOfferController.text = data['initial_offer'].toString();
+          intialOfferController.text = isFinalOffer
+              ? (data['final_offer'] ?? 0).toString()
+              : data['initial_offer'].toString();
           if (images.isNotEmpty) {
             for (var element in images) {
               attachments.add(Image.network(
@@ -100,6 +106,7 @@ onLoadTap(int id, BuildContext context, Load load,
                     ),
                     Container(
                       color: const Color(0xFFFFFFFF),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(data['description'] ?? ''),
                     ),
                     Container(
@@ -111,6 +118,27 @@ onLoadTap(int id, BuildContext context, Load load,
                           textoInformacion: textoInformacion,
                           intialOfferController: intialOfferController),
                     ),
+                    isFinalOffer
+                        ? Container(
+                            color: const Color(0xFFFFFFFF),
+                            padding: const EdgeInsets.all(20),
+                            child: TextButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                          child: VerTrayecto(load),
+                                        ));
+                              },
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.location_on),
+                                  Text('Ver trayecto'),
+                                ],
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                     Container(
                       color: const Color(0xFFFFFFFF),
                       padding: const EdgeInsets.symmetric(horizontal: 20)
@@ -147,15 +175,18 @@ onLoadTap(int id, BuildContext context, Load load,
                               enabled: false,
                               controller: intialOfferController,
                               keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(
                                   borderSide: BorderSide(
                                     color: Color(0xFFBDBDBD),
                                     width: 1,
                                     style: BorderStyle.solid,
                                   ),
                                 ),
-                                label: Text('Oferta Inicial'),
+                                label: Text(
+                                  'Oferta ' +
+                                      (isFinalOffer ? 'Inicial' : 'Final'),
+                                ),
                               ),
                             ),
                           ),
@@ -346,12 +377,13 @@ class LoadCard extends StatelessWidget {
     this.load, {
     this.hasData = false,
     this.isCarrier = false,
+    this.isFinalOffer = false,
     this.onTap,
     this.onClose,
     Key? key,
   }) : super(key: key);
   Load? load;
-  bool hasData, isCarrier;
+  bool hasData, isCarrier, isFinalOffer;
   var onTap;
   var onClose;
   @override
@@ -362,7 +394,8 @@ class LoadCard extends StatelessWidget {
         child: GestureDetector(
           onTap: hasData
               ? () {
-                  onLoadTap(load!.id, context, load!, isCarrier, onTap);
+                  onLoadTap(load!.id, context, load!, isCarrier, onTap, () {},
+                      isFinalOffer);
                   if (onTap != null) {
                     print('ONTAP');
                     onTap();
@@ -438,7 +471,9 @@ class LoadCard extends StatelessWidget {
                                 painter: OpenPainter(50, 10, 10, 20),
                               ),
                         hasData
-                            ? Text(currencyFormat(load!.initialOffer))
+                            ? Text(currencyFormat(isFinalOffer
+                                ? load!.finalOffer
+                                : load!.initialOffer))
                             : CustomPaint(
                                 painter: OpenPainter(50, 10, 10, 20),
                               ),

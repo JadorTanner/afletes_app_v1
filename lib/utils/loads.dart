@@ -88,6 +88,7 @@ class Load extends ChangeNotifier {
       product: json['product'] ?? '',
       description: json['description'] ?? '',
       initialOffer: double.parse(json['initial_offer']).toInt(),
+      finalOffer: double.parse((json['final_offer'] ?? '0')).toInt(),
       weight: double.parse(json['weight'] ?? '0.0'),
       vehicleQuantity: json['vehicles_quantity'] ?? 1,
       helpersQuantity: json['helpers_quantity'] ?? 0,
@@ -170,11 +171,12 @@ class Load extends ChangeNotifier {
   getPendingLoad(BuildContext context) async {
     Api api = Api();
     Response response = await api.getData('load/pending-loads');
-
+    print('GETTING PENDING LOADS');
     if (response.statusCode == 200) {
       Map jsonData = jsonDecode(response.body);
       if (jsonData['success']) {
         List pendLoads = jsonData['data'];
+        _pendingLoads.clear();
         for (var pendLoad in pendLoads) {
           addPendingLoad(Load.fromJSON(pendLoad));
         }

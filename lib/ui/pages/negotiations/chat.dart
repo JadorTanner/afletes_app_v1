@@ -814,8 +814,8 @@ class ButtonsSection extends StatelessWidget {
             showDialog(
                 context: context,
                 builder: (context) {
-                  return const Dialog(
-                    child: VerTrayecto(),
+                  return Dialog(
+                    child: VerTrayecto(load),
                   );
                 });
           },
