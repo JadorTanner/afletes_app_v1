@@ -86,6 +86,7 @@ class _VehiclesState extends State<Vehicles> {
           return const Center(child: CircularProgressIndicator());
         },
       ),
+      isMap: true,
     );
   }
 }
@@ -515,7 +516,7 @@ class _VehiclesListState extends State<VehiclesList> {
                                 vertical: 18, horizontal: 10)),
                       ),
                       icon: const Icon(Icons.check),
-                      label: Text('Negociar'),
+                      label: const Text('Negociar'),
                     )
                   ],
                 ),

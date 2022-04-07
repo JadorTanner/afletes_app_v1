@@ -11,7 +11,6 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -544,7 +543,7 @@ class _SendButtonState extends State<SendButton> {
                 isLoading = !isLoading;
               });
               Vehicle vehicle = Vehicle();
-              vehicle.createVehicle(
+              await vehicle.createVehicle(
                 {
                   'license_plate': chapaController.text,
                   'vehicle_brand_id': marcaController.text,

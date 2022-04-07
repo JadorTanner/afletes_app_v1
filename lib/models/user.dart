@@ -245,22 +245,13 @@ class User extends ChangeNotifier {
   Future logout(BuildContext context) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     try {
-      Response response = await Api().getData('logout');
+      await Api().getData('logout');
 
       sharedPreferences.clear();
-      if (response.statusCode == 200) {
-        if (jsonDecode(response.body)['success']) {
-          sharedPreferences.remove('user');
-          sharedPreferences.remove('token');
-          context.read<PusherApi>().disconnect();
-          Navigator.of(context).pushReplacementNamed('/login');
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
+      sharedPreferences.remove('user');
+      sharedPreferences.remove('token');
+      context.read<PusherApi>().disconnect();
+      Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
       return false;
     }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
@@ -18,7 +19,8 @@ class Load extends ChangeNotifier {
       destinStateId,
       destinCityId,
       stateId,
-      finalOffer;
+      finalOffer,
+      negotiationId;
   double weight, volumen;
   String description,
       measurement,
@@ -58,6 +60,7 @@ class Load extends ChangeNotifier {
     this.finalOffer = 0,
     this.weight = 0,
     this.volumen = 0,
+    this.negotiationId = 0,
     this.description = '',
     this.measurement = '',
     this.stateFrom = '',
@@ -105,6 +108,7 @@ class Load extends ChangeNotifier {
       destinLongitude: json['destination_longitude'] ?? '',
       latitudeFrom: json['latitude'] ?? '',
       longitudeFrom: json['longitude'] ?? '',
+      negotiationId: json['negotiation_id'] ?? 0,
     );
   }
 
@@ -174,11 +178,18 @@ class Load extends ChangeNotifier {
     print('GETTING PENDING LOADS');
     if (response.statusCode == 200) {
       Map jsonData = jsonDecode(response.body);
+      log(response.body);
       if (jsonData['success']) {
         List pendLoads = jsonData['data'];
         _pendingLoads.clear();
         for (var pendLoad in pendLoads) {
-          addPendingLoad(Load.fromJSON(pendLoad));
+          print(pendLoad['negotiation_load']);
+          if (pendLoad['negotiation_load'] != null) {
+            Map loadData = pendLoad['negotiation_load'];
+            loadData['negotiation_id'] = pendLoad['id'];
+            print(loadData);
+            _pendingLoads.add(Load.fromJSON(loadData));
+          }
         }
       }
       notifyListeners();

@@ -14,12 +14,13 @@ class BaseApp extends StatefulWidget {
   BaseApp(this.body,
       {this.title = '',
       this.resizeToAvoidBottomInset = false,
+      this.isMap = false,
       this.floatingButton,
       Key? key})
       : super(key: key);
   Widget body;
   String title;
-  bool resizeToAvoidBottomInset;
+  bool resizeToAvoidBottomInset, isMap;
   FloatingActionButton? floatingButton;
   @override
   State<BaseApp> createState() => _BaseAppState();
@@ -63,7 +64,7 @@ class _BaseAppState extends State<BaseApp> {
                     icon: const Icon(Icons.menu, size: 20),
                   ),
                 ),
-                Navigator.canPop(context)
+                Navigator.canPop(context) && !widget.isMap
                     ? Container(
                         width: 40,
                         height: 40,
@@ -211,7 +212,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   const SizedBox(
                     height: 15,
                   ),
-                  user.isCarrier && loadProvider.pendingLoads.isNotEmpty
+                  user.isCarrier
                       ? DrawerItem('/pending-loads', 'Cargas pendientes',
                           Icons.all_inbox)
                       : const SizedBox.shrink(),

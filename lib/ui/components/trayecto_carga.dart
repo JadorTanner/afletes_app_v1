@@ -1,3 +1,4 @@
+import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -101,6 +102,9 @@ class _StateTrayectoMap extends State<TrayectoMap> {
             title: 'Origen',
             snippet: widget.load.addressFrom,
           ),
+          icon: BitmapDescriptor.fromBytes(
+            await getBytesFromAsset('assets/img/start.png', 50),
+          ),
         ),
       );
       _markers.add(
@@ -110,6 +114,9 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           infoWindow: InfoWindow(
             title: 'Destino',
             snippet: widget.load.destinAddress,
+          ),
+          icon: BitmapDescriptor.fromBytes(
+            await getBytesFromAsset('assets/img/finish.png', 50),
           ),
         ),
       );
@@ -130,6 +137,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           points: polylineCoordinates,
         ));
       });
+      mapController.showMarkerInfoWindow(marcadorOrigen);
       mapController.animateCamera(
         CameraUpdate.newLatLngBounds(
           LatLngBounds(

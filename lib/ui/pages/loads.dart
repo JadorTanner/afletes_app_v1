@@ -287,6 +287,7 @@ class _LoadsState extends State<Loads> {
                   ? const LoadsMap()
                   : const Center(child: CircularProgressIndicator()),
         ),
+        isMap: true,
       ),
       onWillPop: () => Future(() {
         Navigator.pop(context);

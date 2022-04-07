@@ -242,7 +242,37 @@ onLoadTap(int id, BuildContext context, Load load,
                                       label: const Text('Negociar'),
                                       icon: const Icon(Icons.check),
                                     )
-                                  : const SizedBox.shrink())
+                                  : (load.negotiationId != 0
+                                      ? TextButton.icon(
+                                          onPressed: () async {
+                                            Navigator.of(context).pop();
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    NegotiationChat(
+                                                        load.negotiationId),
+                                              ),
+                                            );
+                                          },
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                        Color>(
+                                                    const Color(0xFF101010)),
+                                            foregroundColor:
+                                                MaterialStateProperty.all<
+                                                        Color>(
+                                                    const Color(0xFFFFFFFF)),
+                                            padding: MaterialStateProperty.all<
+                                                    EdgeInsets>(
+                                                const EdgeInsets.symmetric(
+                                                    vertical: 18,
+                                                    horizontal: 10)),
+                                          ),
+                                          label: const Text('Ver chat'),
+                                          icon: const Icon(Icons.check),
+                                        )
+                                      : const SizedBox.shrink()))
                               : TextButton.icon(
                                   onPressed: () async {
                                     //LLEVA AL DETALLE DE LA CARGA
