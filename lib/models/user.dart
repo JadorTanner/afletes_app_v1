@@ -49,6 +49,8 @@ class User extends ChangeNotifier {
       houseNumber: userData['house_number'] ?? '',
       isCarrier: userData['is_carrier'],
       isLoadGenerator: userData['is_load_generator'],
+      cellphone: userData['cellphone'] ?? '',
+      phone: userData['phone'] ?? '',
     );
   }
 

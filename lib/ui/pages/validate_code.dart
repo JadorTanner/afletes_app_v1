@@ -42,10 +42,12 @@ class ValidateCode extends StatelessWidget {
               ButtonBar(
                 alignment: MainAxisAlignment.center,
                 children: [
-                  ReturnBack(
-                    text: 'Volver a inicio',
+                  Flexible(
+                    child: ReturnBack(
+                      text: 'Volver a inicio',
+                    ),
                   ),
-                  ValidateButton()
+                  Flexible(child: ValidateButton())
                 ],
               ),
               Row(
@@ -195,86 +197,76 @@ class ValidateButtonState extends State<ValidateButton> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      child: !isLoading
-          ? TextButton(
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFFED8232)),
-                padding: MaterialStateProperty.all(const EdgeInsets.all(15)),
-                shape: MaterialStateProperty.all(
-                  const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(100),
-                    ),
-                  ),
-                ),
-              ),
-              // onPressed: () => {
-              //       setState(() => {
-              //             isLoading = !isLoading,
-              //           }),
-              //       Future.delayed(const Duration(seconds: 3))
-              //           .then((value) => setState(() => {
-              //                 isLoading = !isLoading,
-              //               }))
-              //     },
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      setState(() => {
-                            isLoading = !isLoading,
-                          });
-                      Api api = Api();
-                      Response response = await api.postData(
-                          'user/verify-code', {'code': codeController.text});
-                      Map responseBody = jsonDecode(response.body);
-                      if (responseBody['success']) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('verificado con éxito')));
-                        setState(() => {
-                              isLoading = !isLoading,
-                            });
-                        if (responseBody['data']['user']['habilitado']) {
-                          SharedPreferences shared =
-                              await SharedPreferences.getInstance();
+    return TextButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(const Color(0xFFED8232)),
+        padding: MaterialStateProperty.all(const EdgeInsets.all(15)),
+        shape: MaterialStateProperty.all(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(100),
+            ),
+          ),
+        ),
+      ),
+      // onPressed: () => {
+      //       setState(() => {
+      //             isLoading = !isLoading,
+      //           }),
+      //       Future.delayed(const Duration(seconds: 3))
+      //           .then((value) => setState(() => {
+      //                 isLoading = !isLoading,
+      //               }))
+      //     },
+      onPressed: isLoading
+          ? null
+          : () async {
+              setState(() => {
+                    isLoading = !isLoading,
+                  });
+              Api api = Api();
+              Response response = await api
+                  .postData('user/verify-code', {'code': codeController.text});
+              Map responseBody = jsonDecode(response.body);
+              if (responseBody['success']) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('verificado con éxito')));
+                setState(() => {
+                      isLoading = !isLoading,
+                    });
+                SharedPreferences shared =
+                    await SharedPreferences.getInstance();
 
-                          shared.setString(
-                              'user', jsonEncode(responseBody['data']['user']));
-                          if (responseBody['data']['user']['is_carrier']) {
-                            if (responseBody['data']['cant_vehicles'] <= 0) {
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CreateVehicleAfterReg()));
-                            } else {
-                              Navigator.of(context)
-                                  .pushReplacementNamed('/loads');
-                            }
-                          } else {
-                            Navigator.of(context)
-                                .pushReplacementNamed('/vehicles');
-                          }
-                        } else {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const WaitHabilitacion()));
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(responseBody['message'])));
-                        setState(() => {
-                              isLoading = !isLoading,
-                            });
-                      }
-                    },
-              child: Text(
-                widget.text,
-                style: const TextStyle(color: Colors.white),
-              ))
+                shared.setString(
+                    'user', jsonEncode(responseBody['data']['user']));
+                if (responseBody['data']['user']['habilitado']) {
+                  if (responseBody['data']['user']['is_carrier']) {
+                    if (responseBody['data']['cant_vehicles'] <= 0) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => const CreateVehicleAfterReg()));
+                    } else {
+                      Navigator.of(context).pushReplacementNamed('/loads');
+                    }
+                  } else {
+                    Navigator.of(context).pushReplacementNamed('/vehicles');
+                  }
+                } else {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => const WaitHabilitacion()));
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(responseBody['message'])));
+                setState(() => {
+                      isLoading = !isLoading,
+                    });
+              }
+            },
+      child: !isLoading
+          ? Text(
+              widget.text,
+              style: const TextStyle(color: Colors.white),
+            )
           : const Center(
               child: CircularProgressIndicator(),
             ),

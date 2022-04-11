@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
-import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
 import 'package:flutter/material.dart';
@@ -325,6 +324,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 const SizedBox(
                   height: 20,
                 ),
+                const Text('Confirma tu contraseña para guardar los cambios'),
+                const SizedBox(
+                  height: 20,
+                ),
                 Row(
                   children: [
                     Flexible(
@@ -351,13 +354,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 child: Row(
                   children: [
                     Flexible(
-                        child: canUpdate
-                            ? UpdateButton(() {
-                                setState(() {
-                                  canUpdate = false;
-                                });
-                              })
-                            : const SizedBox.shrink())
+                      child: UpdateButton(
+                        () {
+                          setState(() {
+                            canUpdate = false;
+                          });
+                        },
+                      ),
+                    )
                   ],
                 ))
           ],

@@ -672,133 +672,134 @@ class RegisterButtonState extends State<RegisterButton> {
 
   @override
   Widget build(BuildContext context) {
-    return !isLoading
-        ? TextButton(
-            style: ButtonStyle(
-              padding: MaterialStateProperty.all<EdgeInsets>(
-                  const EdgeInsets.symmetric(vertical: 20)),
-              backgroundColor:
-                  MaterialStateProperty.all<Color>(const Color(0xFFF58633)),
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(0)),
-                ),
-              ),
-            ),
-            onPressed: isLoading
-                ? null
-                : () async {
-                    setState(() => {
-                          isLoading = !isLoading,
-                        });
-                    // try {
-                    Api api = Api();
+    return TextButton(
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20)),
+        backgroundColor:
+            MaterialStateProperty.all<Color>(const Color(0xFFF58633)),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(0)),
+          ),
+        ),
+      ),
+      onPressed: isLoading
+          ? null
+          : () async {
+              setState(() => {
+                    isLoading = !isLoading,
+                  });
+              // try {
+              Api api = Api();
 
-                    var fullUrl = apiUrl + 'register';
+              var fullUrl = apiUrl + 'register';
 
-                    MultipartRequest request =
-                        MultipartRequest('POST', Uri.parse(fullUrl));
-                    Map headers = api.setHeaders();
-                    headers.forEach((key, value) {
-                      request.headers[key] = value;
+              MultipartRequest request =
+                  MultipartRequest('POST', Uri.parse(fullUrl));
+              Map headers = api.setHeaders();
+              headers.forEach((key, value) {
+                request.headers[key] = value;
+              });
+
+              request.fields['user_type'] = userType.text;
+              request.fields['first_name'] = firstName.text;
+              request.fields['last_name'] = lastName.text;
+              request.fields['legal_name'] = legalName.text;
+              request.fields['document_number'] = documentNumber.text;
+              request.fields['cellphone'] = cellphone.text;
+              request.fields['phone'] = phone.text;
+              request.fields['email'] = email.text;
+              request.fields['street1'] = street1.text;
+              request.fields['street2'] = street2.text;
+              request.fields['house_number'] = houseNumber.text;
+              request.fields['city_id'] = cityId.text;
+              request.fields['password'] = password.text;
+              request.fields['password_confirmation'] =
+                  passwordConfirmation.text;
+
+              request.files.add(await MultipartFile.fromPath(
+                  'identity_card_attachment', cedulaFrente));
+              request.files.add(await MultipartFile.fromPath(
+                  'identity_card_back_attachment', cedulaAtras));
+              StreamedResponse response = await request.send();
+              String stringResponse = await response.stream.bytesToString();
+
+              if (response.statusCode == 200) {
+                setState(() => {
+                      isLoading = !isLoading,
+                    });
+                ScaffoldMessenger.of(context).clearSnackBars();
+                Map responseBody = jsonDecode(stringResponse);
+                print(responseBody['data']);
+                if (responseBody['success']) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      duration: const Duration(seconds: 1),
+                      content: Text(responseBody['message']),
+                    ),
+                  );
+                  SharedPreferences sharedPreferences =
+                      await SharedPreferences.getInstance();
+
+                  //TOKEN PARA MENSAJES PUSH
+                  String? token = await FirebaseMessaging.instance.getToken();
+
+                  print('firebase token: ' + (token ?? 'token'));
+
+                  sharedPreferences.setString(
+                      'user', jsonEncode(responseBody['data']['user']));
+                  sharedPreferences.setString(
+                      'token', responseBody['data']['token']);
+
+                  if (token != null) {
+                    Response response = await Api().postData(
+                        'user/set-device-token', {
+                      'id': responseBody['data']['user']['id'],
+                      'device_token': token
                     });
 
-                    request.fields['user_type'] = userType.text;
-                    request.fields['first_name'] = firstName.text;
-                    request.fields['last_name'] = lastName.text;
-                    request.fields['legal_name'] = legalName.text;
-                    request.fields['document_number'] = documentNumber.text;
-                    request.fields['cellphone'] = cellphone.text;
-                    request.fields['phone'] = phone.text;
-                    request.fields['email'] = email.text;
-                    request.fields['street1'] = street1.text;
-                    request.fields['street2'] = street2.text;
-                    request.fields['house_number'] = houseNumber.text;
-                    request.fields['city_id'] = cityId.text;
-                    request.fields['password'] = password.text;
-                    request.fields['password_confirmation'] =
-                        passwordConfirmation.text;
+                    print(response.body);
+                  }
 
-                    request.files.add(await MultipartFile.fromPath(
-                        'identity_card_attachment', cedulaFrente));
-                    request.files.add(await MultipartFile.fromPath(
-                        'identity_card_back_attachment', cedulaAtras));
-                    StreamedResponse response = await request.send();
-                    String stringResponse =
-                        await response.stream.bytesToString();
+                  if (responseBody['data']['user']['is_carrier']) {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const CreateVehicleAfterReg()));
+                  } else {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const ValidateCode()));
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      duration: const Duration(seconds: 5),
+                      content: Text(responseBody['message']),
+                    ),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  duration: Duration(seconds: 5),
+                  content: Text(
+                      'Ha ocurrido un error, verifique sus datos e inténtelo de nuevo'),
+                ));
 
-                    if (response.statusCode == 200) {
-                      setState(() => {
-                            isLoading = !isLoading,
-                          });
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      Map responseBody = jsonDecode(stringResponse);
-                      print(responseBody['data']);
-                      if (responseBody['success']) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(responseBody['message']),
-                          ),
-                        );
-                        SharedPreferences sharedPreferences =
-                            await SharedPreferences.getInstance();
+                setState(() => {
+                      isLoading = !isLoading,
+                    });
+              }
+              // } catch (e) {
+              //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              //       duration: Duration(seconds: 1),
+              //       content: Text('Compruebe su conexión a internet')));
 
-                        //TOKEN PARA MENSAJES PUSH
-                        String? token =
-                            await FirebaseMessaging.instance.getToken();
-
-                        print('firebase token: ' + (token ?? 'token'));
-
-                        sharedPreferences.setString(
-                            'user', jsonEncode(responseBody['data']['user']));
-                        sharedPreferences.setString(
-                            'token', responseBody['data']['token']);
-
-                        if (token != null) {
-                          Response response = await Api().postData(
-                              'user/set-device-token', {
-                            'id': responseBody['data']['user']['id'],
-                            'device_token': token
-                          });
-
-                          print(response.body);
-                        }
-
-                        if (responseBody['data']['user']['is_carrier']) {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateVehicleAfterReg()));
-                        } else {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) => const ValidateCode()));
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(responseBody['message']),
-                          ),
-                        );
-                      }
-                    } else {
-                      setState(() => {
-                            isLoading = !isLoading,
-                          });
-                    }
-                    // } catch (e) {
-                    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    //       duration: Duration(seconds: 1),
-                    //       content: Text('Compruebe su conexión a internet')));
-
-                    //   setState(() => {
-                    //         isLoading = !isLoading,
-                    //       });
-                    // }
-                  },
-            child: Row(
+              //   setState(() => {
+              //         isLoading = !isLoading,
+              //       });
+              // }
+            },
+      child: !isLoading
+          ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: const [
@@ -808,12 +809,10 @@ class RegisterButtonState extends State<RegisterButton> {
                 ),
                 Icon(Icons.upload, color: Colors.white),
               ],
-            ),
-          )
-        : const Center(
-            child: Flexible(
+            )
+          : const Center(
               child: CircularProgressIndicator(color: Colors.white),
             ),
-          );
+    );
   }
 }
