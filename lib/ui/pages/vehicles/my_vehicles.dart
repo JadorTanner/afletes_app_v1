@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
@@ -20,6 +21,7 @@ Future<List<Vehicle>> getMyVehicles() async {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
+        log(data[0].toString());
         if (data.isNotEmpty) {
           data.asMap().forEach((key, vehicle) {
             vehicles.add(
@@ -39,6 +41,47 @@ Future<List<Vehicle>> getMyVehicles() async {
                     vehicle['expiration_date_senacsa_authorization'] ?? '',
                 vtoSeguro: vehicle['expiration_date_insurance'] ?? '',
                 imgs: vehicle['vehicleattachments'],
+                dinatranFront:
+                    vehicle['vehicle_dinatran_authorization_attachment'] != null
+                        ? vehicle['vehicle_dinatran_authorization_attachment']
+                            ['filename']
+                        : '',
+                dinatranBack: vehicle[
+                            'vehicle_dinatran_authorization_back_attachment'] !=
+                        null
+                    ? vehicle['vehicle_dinatran_authorization_back_attachment']
+                        ['filename']
+                    : '',
+                senacsaFront:
+                    vehicle['vehicle_senacsa_authorization_attachment'] != null
+                        ? vehicle['vehicle_senacsa_authorization_attachment']
+                            ['filename']
+                        : '',
+                senacsaBack: vehicle[
+                            'vehicle_senacsa_authorization_back_attachment'] !=
+                        null
+                    ? vehicle['vehicle_senacsa_authorization_back_attachment']
+                        ['filename']
+                    : '',
+                municipalFront: vehicle['vehicle_authorization_attachment'] !=
+                        null
+                    ? vehicle['vehicle_authorization_attachment']['filename']
+                    : '',
+                municipalBack:
+                    vehicle['vehicle_authorization_back_attachment'] != null
+                        ? vehicle['vehicle_authorization_back_attachment']
+                            ['filename']
+                        : '',
+                greencardFront: vehicle['vehicle_green_card_attachment'] != null
+                    ? vehicle['vehicle_green_card_attachment']['filename']
+                    : '',
+                greencardBack: vehicle['vehicle_green_card_back_attachment'] !=
+                        null
+                    ? vehicle['vehicle_green_card_back_attachment']['filename']
+                    : '',
+                insuranceImg: vehicle['vehicle_insurance_attachment'] != null
+                    ? vehicle['vehicle_insurance_attachment']['filename']
+                    : '',
               ),
             );
           });
@@ -177,7 +220,16 @@ class VehicleCard extends StatelessWidget {
                   'vtoDinatran': vehicles[index].vtoDinatran,
                   'vtoSenacsa': vehicles[index].vtoSenacsa,
                   'vtoSeguro': vehicles[index].vtoSeguro,
-                  'imgs': vehicles[index].imgs
+                  'imgs': vehicles[index].imgs,
+                  'dinatranFront': vehicles[index].dinatranFront,
+                  'dinatranBack': vehicles[index].dinatranBack,
+                  'greencardFront': vehicles[index].greencardFront,
+                  'senacsaFront': vehicles[index].senacsaFront,
+                  'senacsaBack': vehicles[index].senacsaBack,
+                  'greencardBack': vehicles[index].greencardBack,
+                  'municipalFront': vehicles[index].municipalFront,
+                  'municipalBack': vehicles[index].municipalBack,
+                  'insuranceImg': vehicles[index].insuranceImg,
                 });
               },
             )

@@ -114,7 +114,11 @@ class CodeSquare extends StatelessWidget {
           child: TextField(
             textAlign: TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
-            // decoration: const InputDecoration(border: InputBorder.none),
+            decoration: const InputDecoration(
+              counter: SizedBox.shrink(),
+              counterStyle: TextStyle(color: Colors.white),
+            ),
+            maxLength: 1,
             keyboardType: TextInputType.number,
             textInputAction: last ? TextInputAction.done : TextInputAction.next,
             onChanged: (value) {
@@ -122,9 +126,7 @@ class CodeSquare extends StatelessWidget {
                 List<String> newCode = codeController.text.split('');
                 newCode[index] = value;
                 codeController.text = newCode.join('');
-                if (!last) {
-                  FocusScope.of(context).nextFocus();
-                }
+                FocusScope.of(context).nextFocus();
               } else {
                 if (index != 0) {
                   FocusScope.of(context).previousFocus();

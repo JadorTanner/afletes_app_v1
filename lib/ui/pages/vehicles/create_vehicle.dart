@@ -100,9 +100,9 @@ class _CreateVehicleState extends State<CreateVehicle> {
   }
 
   setValues(args) async {
-    imagenes.clear();
-    imagenesNetwork.clear();
     if (args != null) {
+      imagenes.clear();
+      imagenesNetwork.clear();
       hasVehicleData = true;
       vehicleId = args['id'];
       chapaController.text = args['chapa'];
@@ -118,16 +118,68 @@ class _CreateVehicleState extends State<CreateVehicle> {
       if (args['imgs'].isNotEmpty) {
         print(args['imgs']);
         imagenesNetwork = args['imgs'];
-        /* List.generate(args['imgs'].length, (index) async {
-          imagenesNetwork.add(args['imgs'][index]['path']);
-          // imagePickerKey.currentState != null
-          //     ? imagePickerKey.currentState!.setState(() {})
-          //     : null;
-        }); */
       }
+
+      dinatran = args['dinatranFront'] != ''
+          ? baseUrl +
+              'images/vehicle_dinatran_authorization/' +
+              args['dinatranFront']
+          : '';
+      dinatranBack = args['dinatranBack'] != ''
+          ? baseUrl +
+              'images/vehicle_dinatran_authorization/' +
+              args['dinatranBack']
+          : '';
+      greenCard = args['greencardFront'] != ''
+          ? baseUrl + 'images/vehicle_green_card/' + args['greencardFront']
+          : '';
+      greenCardBack = args['greencardBack'] != ''
+          ? baseUrl + 'images/vehicle_green_card/' + args['greencardBack']
+          : '';
+      senacsa = args['senacsaFront'] != ''
+          ? baseUrl +
+              'images/vehicle_senacsa_authorization/' +
+              args['senacsaFront']
+          : '';
+      senacsaBack = args['senacsaBack'] != ''
+          ? baseUrl +
+              'images/vehicle_senacsa_authorization/' +
+              args['senacsaBack']
+          : '';
+      municipal = args['municipalFront'] != ''
+          ? baseUrl + 'images/vehicle_authorization/' + args['municipalFront']
+          : '';
+      municipalBack = args['municipalBack'] != ''
+          ? baseUrl + 'images/vehicle_authorization/' + args['municipalBack']
+          : '';
+      seguro = args['insuranceImg'] != ''
+          ? baseUrl + 'images/vehicle_insurance/' + args['insuranceImg']
+          : '';
     } else {
+      imagenes.clear();
+      imagenesNetwork.clear();
+      chapaController.text = '';
+      pesoController.text = '';
+      modeloController.text = '';
+      marcaController.text = '';
+      fabricacionController.text = '';
+      unidadMedidaController.text = '';
+      vtoMunicipalController.text = '';
+      vtoDinatranController.text = '';
+      vtoSenacsaController.text = '';
+      vtoSeguroController.text = '';
       hasVehicleData = false;
       vehicleId = 0;
+
+      greenCard = '';
+      greenCardBack = '';
+      municipal = '';
+      municipalBack = '';
+      dinatran = '';
+      dinatranBack = '';
+      senacsa = '';
+      senacsaBack = '';
+      seguro = '';
     }
   }
 
@@ -140,7 +192,10 @@ class _CreateVehicleState extends State<CreateVehicle> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(const RegisterVehicleForm());
+    return BaseApp(
+      const RegisterVehicleForm(),
+      resizeToAvoidBottomInset: true,
+    );
   }
 }
 

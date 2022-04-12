@@ -27,18 +27,20 @@ class _PendingLoadsPageState extends State<PendingLoadsPage> {
               left: 20,
               right: 20,
             ),
-            children: context
-                .watch<Load>()
-                .pendingLoads
-                .map(
-                  (Load load) => LoadCard(
-                    load,
-                    hasData: true,
-                    isCarrier: true,
-                    isFinalOffer: true,
-                  ),
-                )
-                .toList(),
+            children: context.watch<Load>().pendingLoads.isNotEmpty
+                ? context
+                    .watch<Load>()
+                    .pendingLoads
+                    .map(
+                      (Load load) => LoadCard(
+                        load,
+                        hasData: true,
+                        isCarrier: true,
+                        isFinalOffer: true,
+                      ),
+                    )
+                    .toList()
+                : [const Text('No hay cargas pendientes')],
           ),
         );
       }),

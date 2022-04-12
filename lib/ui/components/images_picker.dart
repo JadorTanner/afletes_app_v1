@@ -178,10 +178,13 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                     File(img!.path),
                   )
                 : (widget.imageFile != null && widget.imageFile != ''
-                    ? Image.file(
-                        File(widget.imageFile!),
-                      )
-                    : const Center(child: Icon(Icons.photo_camera))),
+                    ? Image.network(widget.imageFile!)
+                    // Image.file(
+                    //     File(widget.imageFile!),
+                    //   )
+                    : const Center(
+                        child: Icon(Icons.photo_camera),
+                      )),
           ),
         ],
       ),
