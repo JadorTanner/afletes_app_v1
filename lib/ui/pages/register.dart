@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
@@ -724,6 +725,7 @@ class RegisterButtonState extends State<RegisterButton> {
                   'identity_card_back_attachment', cedulaAtras));
               StreamedResponse response = await request.send();
               String stringResponse = await response.stream.bytesToString();
+              log(stringResponse);
 
               if (response.statusCode == 200) {
                 setState(() => {

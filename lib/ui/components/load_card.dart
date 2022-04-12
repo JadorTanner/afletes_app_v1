@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
@@ -172,7 +173,7 @@ onLoadTap(int id, BuildContext context, Load load,
                         children: [
                           Flexible(
                             child: TextField(
-                              enabled: false,
+                              enabled: isCarrier,
                               controller: intialOfferController,
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -220,11 +221,22 @@ onLoadTap(int id, BuildContext context, Load load,
                                               ));
                                             }
                                           }
+                                        } on SocketException {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Compruebe su conexión a internet'),
+                                            ),
+                                          );
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content: Text(
-                                                      'Compruebe su conexión a internet')));
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content:
+                                                  Text('Ha ocurrido un error'),
+                                            ),
+                                          );
                                         }
                                       },
                                       style: ButtonStyle(

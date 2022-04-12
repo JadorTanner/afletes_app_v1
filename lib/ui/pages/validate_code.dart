@@ -39,8 +39,8 @@ class ValidateCode extends StatelessWidget {
                 padding: EdgeInsets.all(20),
                 child: CodeInput(),
               ),
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Flexible(
                     child: ReturnBack(
@@ -50,15 +50,15 @@ class ValidateCode extends StatelessWidget {
                   Flexible(child: ValidateButton())
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('No lo has recibido?'),
-                  TextButton(
-                      onPressed: () => {},
-                      child: const Text('Reenviar código')),
-                ],
-              )
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Text('No lo has recibido?'),
+              //     TextButton(
+              //         onPressed: () => {},
+              //         child: const Text('Reenviar código')),
+              //   ],
+              // ),
             ],
           ),
         ));

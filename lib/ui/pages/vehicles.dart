@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -278,13 +279,21 @@ class _VehiclesListState extends State<VehiclesList> {
                                   } else {
                                     return {};
                                   }
+                                } on SocketException {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Compruebe su conexión a internet'),
+                                    ),
+                                  );
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Compruebe su conexión a internet')));
-                                  return Future(() => {});
+                                    const SnackBar(
+                                      content: Text('Ha ocurrido un error'),
+                                    ),
+                                  );
                                 }
+                                return Future(() => {});
                               }),
                               builder: (context, snapshot) {
                                 Map? data = snapshot.connectionState ==
@@ -475,13 +484,24 @@ class _VehiclesListState extends State<VehiclesList> {
                                                                               Text(jsonResponse['message'])));
                                                             }
                                                           }
+                                                        } on SocketException {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'Compruebe su conexión a internet'),
+                                                            ),
+                                                          );
                                                         } catch (e) {
                                                           ScaffoldMessenger.of(
                                                                   context)
                                                               .showSnackBar(
-                                                                  const SnackBar(
-                                                                      content: Text(
-                                                                          'Compruebe su conexión a internet')));
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'Ha ocurrido un error'),
+                                                            ),
+                                                          );
                                                         }
                                                       },
                                                       icon: const Icon(
@@ -558,9 +578,18 @@ class _VehiclesListState extends State<VehiclesList> {
           ),
         );
       }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Compruebe su conexión a internet'),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
     }
   }
 

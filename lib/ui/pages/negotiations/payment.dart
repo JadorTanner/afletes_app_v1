@@ -30,9 +30,19 @@ class _PaymentState extends State<Payment> {
       Response response = await api.getData(
           'negotiation/payment?negotiation_id=' + widget.id.toString());
       return jsonDecode(response.body);
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Compruebe su conexión a internet'),
+        ),
+      );
+      return {};
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
       return {};
     }
   }
@@ -175,11 +185,19 @@ class _PaymentState extends State<Payment> {
                                       barrierDismissible: false);
                                 }
                               }
+                            } on SocketException {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Compruebe su conexión a internet'),
+                                ),
+                              );
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Compruebe su conexión a internet')));
+                                const SnackBar(
+                                  content: Text('Ha ocurrido un error'),
+                                ),
+                              );
                             }
                           },
                           icon: const Icon(Icons.attach_money),

@@ -82,7 +82,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
     mapController.setMapStyle(_darkMapStyle);
   }
 
-  void setPolylinesInMap(LatLng origin, LatLng destin) async {
+  Future<MarkerId> setPolylinesInMap(LatLng origin, LatLng destin) async {
     var result = await polylinePoints.getRouteBetweenCoordinates(
       'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs',
       PointLatLng(origin.latitude, origin.longitude),
@@ -107,6 +107,10 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           ),
         ),
       );
+      print('DISTANCIA ENTRE PUNTOS: ' +
+          PolylinePoints.calculateDistance(origin.latitude, origin.longitude,
+                  destin.latitude, destin.longitude)
+              .toString());
       _markers.add(
         Marker(
           markerId: marcadorDestino,
@@ -124,11 +128,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
         polylineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
       }
-      LatLng aux = origin;
-      if (origin.latitude > destin.latitude) {
-        origin = destin;
-        destin = aux;
-      }
       setState(() {
         _polylines.add(Polyline(
           width: 5,
@@ -137,25 +136,24 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           points: polylineCoordinates,
         ));
       });
-      mapController.showMarkerInfoWindow(marcadorOrigen);
+
       mapController.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: origin.latitude <= destin.latitude ? origin : destin,
-            northeast: destin.latitude > origin.latitude ? destin : origin,
-          ),
+        CameraUpdate.newLatLngZoom(
+          origin,
           10,
         ),
       );
+      return _markers[0].markerId;
     }
+    return const MarkerId('');
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
     polylinePoints = PolylinePoints();
     setMapStyles();
     getPosition();
-    setPolylinesInMap(
+    MarkerId mkinfo = await setPolylinesInMap(
       LatLng(
         double.parse(widget.load.latitudeFrom),
         double.parse(widget.load.longitudeFrom),
@@ -165,6 +163,10 @@ class _StateTrayectoMap extends State<TrayectoMap> {
         double.parse(widget.load.destinLongitude),
       ),
     );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      mapController.showMarkerInfoWindow(mkinfo);
+    });
   }
 
   @override

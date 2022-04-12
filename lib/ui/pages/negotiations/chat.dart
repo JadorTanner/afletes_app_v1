@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
@@ -190,9 +191,18 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
         duration: const Duration(seconds: 3),
       ));
     }
+  } on SocketException {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compruebe su conexión a internet'),
+      ),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
+      const SnackBar(
+        content: Text('Ha ocurrido un error'),
+      ),
+    );
   }
 }
 
@@ -214,9 +224,18 @@ Future cancelNegotiation(id, context) async {
                 context.read<ChatProvider>().setCanOffer(false);
               }
               Navigator.of(context).pop();
+            } on SocketException {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Compruebe su conexión a internet'),
+                ),
+              );
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Compruebe su conexión a internet')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ha ocurrido un error'),
+                ),
+              );
             }
           },
         ),
@@ -254,9 +273,18 @@ Future setLoadState(int negotiationId, int loadId, int state,
         duration: const Duration(seconds: 3),
       ));
     }
+  } on SocketException {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compruebe su conexión a internet'),
+      ),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
+      const SnackBar(
+        content: Text('Ha ocurrido un error'),
+      ),
+    );
   }
 }
 
@@ -283,9 +311,18 @@ Future acceptNegotiation(id, context) async {
                   ));
                 }
               }
+            } on SocketException {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Compruebe su conexión a internet'),
+                ),
+              );
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Compruebe su conexión a internet')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ha ocurrido un error'),
+                ),
+              );
             }
           },
           icon: const Icon(Icons.check),
@@ -693,11 +730,22 @@ class ButtonsSection extends StatelessWidget {
                                             .read<ChatProvider>()
                                             .setCanVote(false);
                                         Navigator.pop(context);
+                                      } on SocketException {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Compruebe su conexión a internet'),
+                                          ),
+                                        );
                                       } catch (e) {
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text(
-                                                    'Compruebe su conexión a internet')));
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('Ha ocurrido un error'),
+                                          ),
+                                        );
                                       }
                                     },
                                     child: const Text('Votar'),

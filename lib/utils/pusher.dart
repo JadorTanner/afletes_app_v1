@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
@@ -91,10 +92,18 @@ class PusherApi extends ChangeNotifier {
                     'user_id': jsonData['sender_id'],
                     'location': loc
                   });
+                } on SocketException {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Compruebe su conexión a internet'),
+                    ),
+                  );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text(
-                          'Ha ocurrido un error. Compruebe su conexión a internet')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ha ocurrido un error'),
+                    ),
+                  );
                 }
               }
               if ((chat.negotiationId == jsonData['negotiation_id']) ||

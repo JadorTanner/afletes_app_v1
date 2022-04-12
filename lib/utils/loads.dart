@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/globals.dart';
@@ -164,11 +165,18 @@ class Load extends ChangeNotifier {
           return false;
         }
       }
-    } catch (e) {
-      print(e);
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
-      return false;
+        const SnackBar(
+          content: Text('Compruebe su conexión a internet'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
     }
   }
 
