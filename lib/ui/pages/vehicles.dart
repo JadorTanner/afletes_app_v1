@@ -316,7 +316,7 @@ class _VehiclesListState extends State<VehiclesList> {
                                               ? const Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    'Pulse sobre la flecha para negociar',
+                                                    'Pulse sobre la carga para negociar',
                                                     style:
                                                         TextStyle(fontSize: 12),
                                                   ),
@@ -339,177 +339,249 @@ class _VehiclesListState extends State<VehiclesList> {
                                           ...List.generate(
                                               snapshot.data!['data'].length,
                                               (index) {
-                                            return Card(
-                                              margin: const EdgeInsets.only(
-                                                  bottom: 20),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20,
-                                                        vertical: 10),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          data!['data'][index]
-                                                              ['product'],
-                                                          textScaleFactor: 1.1,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Text('Oferta inicial' +
-                                                            data['data'][index][
-                                                                    'initial_offer']
-                                                                .toString()),
-                                                        const SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Text('Carga: ' +
-                                                            data['data'][index][
-                                                                    'pickup_at']
-                                                                .toString() +
-                                                            ' ' +
-                                                            data['data'][index][
-                                                                    'pickup_time']
-                                                                .toString()),
-                                                        const SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        SizedBox(
-                                                          width: 200,
-                                                          child: Text('Desde: ' +
-                                                              data['data']
-                                                                      [index]
-                                                                  ['address']),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        Text('Hasta: ' +
-                                                            data['data'][index][
-                                                                    'destination_address']
-                                                                .toString()),
-                                                        const SizedBox(
-                                                          height: 10,
-                                                        ),
-                                                        (data['data'][index]
-                                                                ['is_urgent']
-                                                            ? const Text(
-                                                                'Urgente',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .red),
-                                                              )
-                                                            : const SizedBox
-                                                                .shrink()),
-                                                      ],
-                                                    ),
-                                                    //COMENZAR LA NEGOCIACION
-                                                    IconButton(
-                                                      onPressed: () async {
-                                                        try {
-                                                          Api api = Api();
+                                            return GestureDetector(
+                                              onTap: () async {
+                                                try {
+                                                  Api api = Api();
 
-                                                          Response response =
-                                                              await api.postData(
-                                                                  'negotiation/start-negotiation',
-                                                                  {
-                                                                'load_id': data[
+                                                  Response response = await api
+                                                      .postData(
+                                                          'negotiation/start-negotiation',
+                                                          {
+                                                        'load_id': data!['data']
+                                                            [index]['id'],
+                                                        'vehicle_id': id
+                                                      });
+
+                                                  if (response.statusCode ==
+                                                      200) {
+                                                    Navigator.pop(context);
+
+                                                    Navigator.pop(context);
+                                                    Navigator.pop(
+                                                        bottomSheetContext);
+                                                    Map jsonResponse =
+                                                        jsonDecode(
+                                                            response.body);
+                                                    if (jsonResponse[
+                                                        'success']) {
+                                                      Navigator.of(context)
+                                                          .push(
+                                                              MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            NegotiationChat(
+                                                                jsonResponse[
                                                                         'data'][
-                                                                    index]['id'],
-                                                                'vehicle_id': id
-                                                              });
-                                                          // showDialog(
-                                                          //     context:
-                                                          //         context,
-                                                          //     barrierColor: Colors
-                                                          //         .transparent,
-                                                          //     builder:
-                                                          //         (context) =>
-                                                          //             const Dialog(
-                                                          //               backgroundColor:
-                                                          //                   Colors.transparent,
-                                                          //               child:
-                                                          //                   Center(
-                                                          //                 child:
-                                                          //                     CircularProgressIndicator(),
-                                                          //               ),
-                                                          //             ));
-
-                                                          if (response
-                                                                  .statusCode ==
-                                                              200) {
-                                                            Navigator.pop(
-                                                                context);
-
-                                                            Navigator.pop(
-                                                                context);
-                                                            Navigator.pop(
-                                                                bottomSheetContext);
-                                                            Map jsonResponse =
-                                                                jsonDecode(
-                                                                    response
-                                                                        .body);
-                                                            if (jsonResponse[
-                                                                'success']) {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .push(
-                                                                      MaterialPageRoute(
-                                                                builder: (context) =>
-                                                                    NegotiationChat(
-                                                                        jsonResponse['data']
-                                                                            [
-                                                                            'negotiation_id']),
-                                                              ));
-                                                            } else {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      SnackBar(
-                                                                          content:
-                                                                              Text(jsonResponse['message'])));
+                                                                    'negotiation_id']),
+                                                      ));
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(SnackBar(
+                                                              content: Text(
+                                                                  jsonResponse[
+                                                                      'message'])));
+                                                    }
+                                                  }
+                                                } on SocketException {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                          'Compruebe su conexión a internet'),
+                                                    ),
+                                                  );
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                          'Ha ocurrido un error'),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              child: Card(
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 20),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 10),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            data!['data'][index]
+                                                                ['product'],
+                                                            textScaleFactor:
+                                                                1.1,
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Text('Oferta inicial' +
+                                                              data['data'][
+                                                                          index]
+                                                                      [
+                                                                      'initial_offer']
+                                                                  .toString()),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Text('Carga: ' +
+                                                              data['data'][
+                                                                          index]
+                                                                      [
+                                                                      'pickup_at']
+                                                                  .toString() +
+                                                              ' ' +
+                                                              data['data'][
+                                                                          index]
+                                                                      [
+                                                                      'pickup_time']
+                                                                  .toString()),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          SizedBox(
+                                                            width: 200,
+                                                            child: Text('Desde: ' +
+                                                                data['data']
+                                                                        [index][
+                                                                    'address']),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Text('Hasta: ' +
+                                                              data['data'][
+                                                                          index]
+                                                                      [
+                                                                      'destination_address']
+                                                                  .toString()),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          (data['data'][index]
+                                                                  ['is_urgent']
+                                                              ? const Text(
+                                                                  'Urgente',
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .red),
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink()),
+                                                        ],
+                                                      ),
+                                                      //COMENZAR LA NEGOCIACION
+                                                      /*  IconButton(
+                                                        onPressed: () async {
+                                                          try {
+                                                            Api api = Api();
+                                            
+                                                            Response response =
+                                                                await api.postData(
+                                                                    'negotiation/start-negotiation',
+                                                                    {
+                                                                  'load_id': data[
+                                                                          'data'][
+                                                                      index]['id'],
+                                                                  'vehicle_id': id
+                                                                });
+                                                            // showDialog(
+                                                            //     context:
+                                                            //         context,
+                                                            //     barrierColor: Colors
+                                                            //         .transparent,
+                                                            //     builder:
+                                                            //         (context) =>
+                                                            //             const Dialog(
+                                                            //               backgroundColor:
+                                                            //                   Colors.transparent,
+                                                            //               child:
+                                                            //                   Center(
+                                                            //                 child:
+                                                            //                     CircularProgressIndicator(),
+                                                            //               ),
+                                                            //             ));
+                                            
+                                                            if (response
+                                                                    .statusCode ==
+                                                                200) {
+                                                              Navigator.pop(
+                                                                  context);
+                                            
+                                                              Navigator.pop(
+                                                                  context);
+                                                              Navigator.pop(
+                                                                  bottomSheetContext);
+                                                              Map jsonResponse =
+                                                                  jsonDecode(
+                                                                      response
+                                                                          .body);
+                                                              if (jsonResponse[
+                                                                  'success']) {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .push(
+                                                                        MaterialPageRoute(
+                                                                  builder: (context) =>
+                                                                      NegotiationChat(
+                                                                          jsonResponse['data']
+                                                                              [
+                                                                              'negotiation_id']),
+                                                                ));
+                                                              } else {
+                                                                ScaffoldMessenger
+                                                                        .of(
+                                                                            context)
+                                                                    .showSnackBar(
+                                                                        SnackBar(
+                                                                            content:
+                                                                                Text(jsonResponse['message'])));
+                                                              }
                                                             }
+                                                          } on SocketException {
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                    'Compruebe su conexión a internet'),
+                                                              ),
+                                                            );
+                                                          } catch (e) {
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                    'Ha ocurrido un error'),
+                                                              ),
+                                                            );
                                                           }
-                                                        } on SocketException {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text(
-                                                                  'Compruebe su conexión a internet'),
-                                                            ),
-                                                          );
-                                                        } catch (e) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text(
-                                                                  'Ha ocurrido un error'),
-                                                            ),
-                                                          );
-                                                        }
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.chevron_right),
-                                                      // label: const Text(
-                                                      //     'Negociar'),
-                                                    )
-                                                  ],
+                                                        },
+                                                        icon: const Icon(
+                                                            Icons.chevron_right),
+                                                        // label: const Text(
+                                                        //     'Negociar'),
+                                                      ) */
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             );

@@ -109,7 +109,6 @@ class _AfletesAppState extends State<AfletesApp> {
     print(user);
     if (user != null) {
       Map data = jsonDecode(user);
-      PusherApi().disconnect();
       PusherApi().init(context, context.read<TransportistsLocProvider>(),
           context.read<ChatProvider>(), data['is_load_generator']);
     }
@@ -181,21 +180,29 @@ class _AfletesAppState extends State<AfletesApp> {
           }
         }
         if (context.read<ChatProvider>().negotiationId == 0) {
-          NotificationsApi.showNotification(
-            id: notification.hashCode,
-            title: notification.title,
-            body: notification.body,
-            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-          );
+          // NotificationsApi.showNotification(
+          //   id: notification.hashCode,
+          //   title: notification.title,
+          //   body: notification.body,
+          //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+          // );
+          navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+            builder: (context) =>
+                NegotiationChat(int.parse(data["negotiation_id"])),
+          ));
         } else {
           if (context.read<ChatProvider>().negotiationId !=
               data['negotiation_id']) {
-            NotificationsApi.showNotification(
-              id: notification.hashCode,
-              title: notification.title,
-              body: notification.body,
-              payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-            );
+            navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+              builder: (context) =>
+                  NegotiationChat(int.parse(data["negotiation_id"])),
+            ));
+            // NotificationsApi.showNotification(
+            //   id: notification.hashCode,
+            //   title: notification.title,
+            //   body: notification.body,
+            //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            // );
           }
         }
       }
@@ -227,21 +234,30 @@ class _AfletesAppState extends State<AfletesApp> {
           }
         }
         if (context.read<ChatProvider>().negotiationId == 0) {
-          NotificationsApi.showNotification(
-            id: notification.hashCode,
-            title: notification.title,
-            body: notification.body,
-            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-          );
+          // NotificationsApi.showNotification(
+          //   id: notification.hashCode,
+          //   title: notification.title,
+          //   body: notification.body,
+          //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+          // );
+
+          navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+            builder: (context) =>
+                NegotiationChat(int.parse(data["negotiation_id"])),
+          ));
         } else {
           if (context.read<ChatProvider>().negotiationId !=
               data['negotiation_id']) {
-            NotificationsApi.showNotification(
-              id: notification.hashCode,
-              title: notification.title,
-              body: notification.body,
-              payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-            );
+            navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+              builder: (context) =>
+                  NegotiationChat(int.parse(data["negotiation_id"])),
+            ));
+            // NotificationsApi.showNotification(
+            //   id: notification.hashCode,
+            //   title: notification.title,
+            //   body: notification.body,
+            //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            // );
           }
         }
       }

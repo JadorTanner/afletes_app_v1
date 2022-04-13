@@ -54,7 +54,7 @@ class PusherApi extends ChangeNotifier {
       print("error: ${error!.message}");
 
       disconnect();
-      init(context, transportistsLocProvider, chat);
+      init(context, transportistsLocProvider, chat, isGenerator);
     });
 
     pusherChannel = _pusher.subscribe("negotiation-chat");
@@ -62,6 +62,7 @@ class PusherApi extends ChangeNotifier {
     //EVENTOS DEL CHAT
     bindEvent(pusherChannel!, 'App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
+      print('EVENTO DE CHAT');
       if (event != null) {
         if (event.data != null) {
           SharedPreferences sharedPreferences =
