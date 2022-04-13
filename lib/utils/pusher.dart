@@ -8,7 +8,7 @@ import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PusherApi extends ChangeNotifier {
   final PusherClient _pusher = PusherClient(
-    pusherKey,
+    Constants.pusherKey,
     PusherOptions(
       encrypted: false,
       cluster: 'us2',

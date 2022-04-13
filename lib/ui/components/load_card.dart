@@ -6,7 +6,7 @@ import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -46,7 +46,7 @@ onLoadTap(int id, BuildContext context, Load load,
           if (images.isNotEmpty) {
             for (var element in images) {
               attachments.add(Image.network(
-                loadImgUrl + element['filename'],
+                Constants.loadImgUrl + element['filename'],
                 fit: BoxFit.cover,
               ));
             }
@@ -455,7 +455,8 @@ class LoadCard extends StatelessWidget {
                     child: hasData
                         ? (load!.attachments.isNotEmpty
                             ? Image.network(
-                                loadImgUrl + load!.attachments[0]['filename'],
+                                Constants.loadImgUrl +
+                                    load!.attachments[0]['filename'],
                                 loadingBuilder: (context, child,
                                     ImageChunkEvent? loadingProgress) {
                                   print(loadingProgress);
@@ -513,7 +514,7 @@ class LoadCard extends StatelessWidget {
                                 painter: OpenPainter(50, 10, 10, 20),
                               ),
                         hasData
-                            ? Text(currencyFormat(isFinalOffer
+                            ? Text(Constants.currencyFormat(isFinalOffer
                                 ? load!.finalOffer
                                 : load!.initialOffer))
                             : CustomPaint(

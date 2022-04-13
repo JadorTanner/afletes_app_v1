@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:afletes_app_v1/ui/components/form_field.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class DatePicker extends StatefulWidget {
@@ -24,8 +24,8 @@ class _DatePickerState extends State<DatePicker> {
       builder: (context, child) {
         return Theme(
             data: ThemeData.light().copyWith(
-              primaryColor: primaryOrange.withAlpha(100),
-              colorScheme: ColorScheme.light(primary: primaryOrange),
+              primaryColor: Constants.primaryOrange.withAlpha(100),
+              colorScheme: ColorScheme.light(primary: Constants.primaryOrange),
               buttonTheme:
                   const ButtonThemeData(textTheme: ButtonTextTheme.primary),
             ),

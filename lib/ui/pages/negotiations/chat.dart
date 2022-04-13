@@ -11,7 +11,7 @@ import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
 import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
@@ -161,10 +161,11 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     oferta.text = '';
     Position? location;
     String mapImgUrl = "";
+    String mapKey = Constants.googleMapKey;
     if (isLocation) {
       location = await Geolocator.getCurrentPosition();
       mapImgUrl =
-          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$googleMapKey";
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$mapKey";
       message =
           """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
     }
@@ -792,7 +793,7 @@ class ButtonsSection extends StatelessWidget {
                   padding: MaterialStateProperty.all<EdgeInsets>(
                       const EdgeInsets.symmetric(vertical: 20)),
                   backgroundColor: MaterialStateProperty.all<Color>(
-                    kBlack,
+                    Constants.kBlack,
                   ),
                   shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                     const RoundedRectangleBorder(

@@ -4,7 +4,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -112,8 +112,8 @@ class Vehicle {
       body.addEntries([MapEntry('id', vehicleId)]);
     }
 
-    var fullUrl =
-        apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
+    var fullUrl = Constants.apiUrl +
+        (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
     MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
 

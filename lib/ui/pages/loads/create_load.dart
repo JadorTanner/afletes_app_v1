@@ -9,7 +9,7 @@ import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/location_service.dart';
 import 'package:flutter/material.dart';
@@ -442,7 +442,8 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                         minScale: 0.5,
                                         maxScale: 4,
                                         clipBehavior: Clip.none,
-                                        child: Image.network(loadImgUrl +
+                                        child: Image.network(Constants
+                                                .loadImgUrl +
                                             imagenesNetwork[index]['filename']),
                                       ),
                                     ),
@@ -454,7 +455,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
                                   child: Image.network(
-                                    loadImgUrl +
+                                    Constants.loadImgUrl +
                                         imagenesNetwork[index]['filename'],
                                     fit: BoxFit.cover,
                                   ),
@@ -479,7 +480,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     backgroundColor: Colors.white,
                                     child: Icon(
                                       Icons.close,
-                                      color: kBlack,
+                                      color: Constants.kBlack,
                                     ),
                                   ),
                                 ),
@@ -533,7 +534,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   backgroundColor: Colors.white,
                                   child: Icon(
                                     Icons.close,
-                                    color: kBlack,
+                                    color: Constants.kBlack,
                                   ),
                                 ),
                               ),

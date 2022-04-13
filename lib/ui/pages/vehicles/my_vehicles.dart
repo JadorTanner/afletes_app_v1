@@ -6,7 +6,7 @@ import 'dart:developer';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -160,7 +160,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                     padding: MaterialStateProperty.all<EdgeInsets>(
                         const EdgeInsets.symmetric(vertical: 20)),
                     backgroundColor: MaterialStateProperty.all<Color>(
-                      kBlack,
+                      Constants.kBlack,
                     ),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       const RoundedRectangleBorder(

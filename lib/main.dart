@@ -39,7 +39,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-  WidgetsFlutterBinding();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -133,7 +133,6 @@ class _AfletesAppState extends State<AfletesApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsFlutterBinding.ensureInitialized();
 
     NotificationsApi.init();
     listenNotifications();

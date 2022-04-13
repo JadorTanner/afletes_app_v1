@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:http/http.dart';
 
 class LocationService {
-  final String key = googleMapKey;
+  final String key = Constants.googleMapKey;
 
   Future<String> getPlaceId(String input) async {
     final String url =

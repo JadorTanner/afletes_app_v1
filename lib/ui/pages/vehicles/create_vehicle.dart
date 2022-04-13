@@ -8,7 +8,7 @@ import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -121,39 +121,49 @@ class _CreateVehicleState extends State<CreateVehicle> {
       }
 
       dinatran = args['dinatranFront'] != ''
-          ? baseUrl +
+          ? Constants.baseUrl +
               'images/vehicle_dinatran_authorization/' +
               args['dinatranFront']
           : '';
       dinatranBack = args['dinatranBack'] != ''
-          ? baseUrl +
+          ? Constants.baseUrl +
               'images/vehicle_dinatran_authorization/' +
               args['dinatranBack']
           : '';
       greenCard = args['greencardFront'] != ''
-          ? baseUrl + 'images/vehicle_green_card/' + args['greencardFront']
+          ? Constants.baseUrl +
+              'images/vehicle_green_card/' +
+              args['greencardFront']
           : '';
       greenCardBack = args['greencardBack'] != ''
-          ? baseUrl + 'images/vehicle_green_card/' + args['greencardBack']
+          ? Constants.baseUrl +
+              'images/vehicle_green_card/' +
+              args['greencardBack']
           : '';
       senacsa = args['senacsaFront'] != ''
-          ? baseUrl +
+          ? Constants.baseUrl +
               'images/vehicle_senacsa_authorization/' +
               args['senacsaFront']
           : '';
       senacsaBack = args['senacsaBack'] != ''
-          ? baseUrl +
+          ? Constants.baseUrl +
               'images/vehicle_senacsa_authorization/' +
               args['senacsaBack']
           : '';
       municipal = args['municipalFront'] != ''
-          ? baseUrl + 'images/vehicle_authorization/' + args['municipalFront']
+          ? Constants.baseUrl +
+              'images/vehicle_authorization/' +
+              args['municipalFront']
           : '';
       municipalBack = args['municipalBack'] != ''
-          ? baseUrl + 'images/vehicle_authorization/' + args['municipalBack']
+          ? Constants.baseUrl +
+              'images/vehicle_authorization/' +
+              args['municipalBack']
           : '';
       seguro = args['insuranceImg'] != ''
-          ? baseUrl + 'images/vehicle_insurance/' + args['insuranceImg']
+          ? Constants.baseUrl +
+              'images/vehicle_insurance/' +
+              args['insuranceImg']
           : '';
     } else {
       imagenes.clear();
@@ -706,8 +716,9 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                         minScale: 0.5,
                                         maxScale: 4,
                                         clipBehavior: Clip.none,
-                                        child: Image.network(vehicleImgUrl +
-                                            imagenesNetwork[index]['path']),
+                                        child: Image.network(
+                                            Constants.vehicleImgUrl +
+                                                imagenesNetwork[index]['path']),
                                       ),
                                     ),
                                   );
@@ -718,7 +729,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
                                   child: Image.network(
-                                    vehicleImgUrl +
+                                    Constants.vehicleImgUrl +
                                         imagenesNetwork[index]['path'],
                                     fit: BoxFit.cover,
                                   ),
@@ -746,7 +757,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     backgroundColor: Colors.white,
                                     child: Icon(
                                       Icons.close,
-                                      color: kBlack,
+                                      color: Constants.kBlack,
                                     ),
                                   ),
                                 ),
@@ -800,7 +811,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   backgroundColor: Colors.white,
                                   child: Icon(
                                     Icons.close,
-                                    color: kBlack,
+                                    color: Constants.kBlack,
                                   ),
                                 ),
                               ),

@@ -1,5 +1,5 @@
 import 'package:afletes_app_v1/models/common.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/cupertino.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -41,7 +41,7 @@ class ChatProvider extends ChangeNotifier {
 
   addMessage(int id, ChatMessage message) {
     // if (id == negotiationId) {
-    message.message = message.message.replaceAll(htmlTagRegExp, '');
+    message.message = message.message.replaceAll(Constants.htmlTagRegExp, '');
     _messages.insert(0, message);
     notifyListeners();
     // }
@@ -54,8 +54,8 @@ class ChatProvider extends ChangeNotifier {
 
   setMessages(List<ChatMessage> newMessages) {
     newMessages
-        .map((message) =>
-            message.message = message.message.replaceAll(htmlTagRegExp, ''))
+        .map((message) => message.message =
+            message.message.replaceAll(Constants.htmlTagRegExp, ''))
         .toList();
     _messages.addAll(newMessages);
     notifyListeners();

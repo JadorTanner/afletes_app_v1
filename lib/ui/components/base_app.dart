@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -175,7 +175,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       ))
                     },
                     icon: CircleAvatar(
-                      backgroundColor: kGrey,
+                      backgroundColor: Constants.kGrey,
                       child: const Icon(
                         Icons.person,
                         color: Colors.white,
@@ -253,7 +253,7 @@ class DrawerItem extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => {Navigator.of(context).pushNamed(routeName)},
       icon: CircleAvatar(
-        backgroundColor: kGrey,
+        backgroundColor: Constants.kGrey,
         child: Icon(
           icon,
           color: Colors.white,

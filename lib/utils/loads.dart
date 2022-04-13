@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -121,7 +121,8 @@ class Load extends ChangeNotifier {
         body.addEntries([MapEntry('id', loadId)]);
       }
 
-      var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
+      var fullUrl =
+          Constants.apiUrl + (update ? 'load/edit-load' : 'load/create-load');
 
       MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
       SharedPreferences sha = await SharedPreferences.getInstance();

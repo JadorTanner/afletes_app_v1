@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -174,7 +174,7 @@ class _PaymentState extends State<Payment> {
                                       context: context,
                                       builder: (context) => Dialog(
                                             child: WebView(
-                                              initialUrl: apiUrl +
+                                              initialUrl: Constants.apiUrl +
                                                   'bancard-view?process_id=' +
                                                   jsonResponse['data']
                                                       ['process_id'],

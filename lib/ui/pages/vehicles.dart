@@ -8,7 +8,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
@@ -133,7 +133,7 @@ class _VehiclesListState extends State<VehiclesList> {
         if (images.isNotEmpty) {
           for (var element in images) {
             attachments.add(Image.network(
-              vehicleImgUrl + element['path'],
+              Constants.vehicleImgUrl + element['path'],
               fit: BoxFit.cover,
             ));
           }
@@ -697,7 +697,7 @@ class _VehiclesListState extends State<VehiclesList> {
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(50))),
             child: IconButton(
-              color: kBlack,
+              color: Constants.kBlack,
               onPressed: () async {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(
