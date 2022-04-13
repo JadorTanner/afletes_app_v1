@@ -137,10 +137,11 @@ class Load extends ChangeNotifier {
       });
 
       for (var file in imagenes) {
-        request.files
-            .add(await MultipartFile.fromPath('imagenes[]', file.path));
+        try {
+          request.files
+              .add(await MultipartFile.fromPath('imagenes[]', file.path));
+        } catch (e) {}
       }
-      BuildContext loadingContext = context;
       StreamedResponse response = await request.send();
       String stringResponse = await response.stream.bytesToString();
       print(stringResponse);
@@ -153,8 +154,16 @@ class Load extends ChangeNotifier {
                 content: Text(responseBody['message']),
               ),
             );
-            Future.delayed(const Duration(seconds: 1),
-                () => {Navigator.of(context).pop()});
+            if (body['is_urgent']) {
+              Future.delayed(
+                  const Duration(seconds: 1),
+                  () => {
+                        Navigator.of(context).pushReplacementNamed('/vehicles')
+                      });
+            } else {
+              Future.delayed(const Duration(seconds: 1),
+                  () => {Navigator.of(context).pop()});
+            }
           }
           return true;
         } else {
@@ -165,6 +174,13 @@ class Load extends ChangeNotifier {
           );
           return false;
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(stringResponse),
+          ),
+        );
+        return false;
       }
     } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(

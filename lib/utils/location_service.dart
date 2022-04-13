@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:http/http.dart';
@@ -18,12 +19,21 @@ class LocationService {
   }
 
   Future<Map<String, dynamic>> getPlace(String input) async {
-    final placeId = await getPlaceId(input);
-    final String url =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$key';
-    Response response = await get(Uri.parse(url));
-    Map json = jsonDecode(response.body);
-    var results = json['result'] as Map<String, dynamic>;
-    return results;
+    try {
+      final placeId = await getPlaceId(input);
+      final String url =
+          'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$key';
+      Response response = await get(Uri.parse(url));
+      Map json = jsonDecode(response.body);
+      var results = json['result'] as Map<String, dynamic>;
+      print(results);
+      return results;
+    } on SocketException {
+      print('Compruebe su conexión a internet');
+      return {};
+    } catch (e) {
+      print('NO HAY RESULTADOS');
+      return {};
+    }
   }
 }

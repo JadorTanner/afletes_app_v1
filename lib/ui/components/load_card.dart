@@ -287,6 +287,7 @@ onLoadTap(int id, BuildContext context, Load load,
                                       : const SizedBox.shrink()))
                               : TextButton.icon(
                                   onPressed: () async {
+                                    Navigator.of(context).pop();
                                     //LLEVA AL DETALLE DE LA CARGA
                                     Navigator.of(context)
                                         .pushNamed('/create-load', arguments: {

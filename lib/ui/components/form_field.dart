@@ -17,6 +17,7 @@ class CustomFormField extends StatefulWidget {
       this.icon,
       this.defaultValue = '',
       this.hint = '',
+      this.helperText,
       this.action = TextInputAction.next,
       Key? key})
       : super(key: key);
@@ -36,6 +37,7 @@ class CustomFormField extends StatefulWidget {
   String label;
   String defaultValue;
   String hint;
+  String? helperText;
   TextInputAction action;
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
@@ -45,9 +47,11 @@ class _CustomFormFieldState extends State<CustomFormField> {
   @override
   void initState() {
     super.initState();
-    widget.controller.text = widget.defaultValue != ''
-        ? widget.defaultValue
-        : widget.controller.text;
+    if (widget.controller.text == '') {
+      widget.controller.text = widget.defaultValue != ''
+          ? widget.defaultValue
+          : widget.controller.text;
+    }
   }
 
   @override
@@ -78,32 +82,32 @@ class _CustomFormFieldState extends State<CustomFormField> {
             : () => {};
       },
       decoration: InputDecoration(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: Constants.kInputBorder),
-          borderRadius: BorderRadius.all(
-            Radius.circular(widget.radius),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Constants.kInputBorder),
+            borderRadius: BorderRadius.all(
+              Radius.circular(widget.radius),
+            ),
           ),
-        ),
-        prefixIcon: widget.icon != null
-            ? Icon(
-                widget.icon,
-                color: Constants.kInputBorder,
-                size: 22,
-              )
-            : null,
-        focusedBorder: OutlineInputBorder(
-            borderSide:
-                BorderSide(color: Constants.kBlack, style: BorderStyle.solid)),
-        hintText: widget.hint,
-        hintStyle: TextStyle(color: Constants.kInputBorder),
-        label: Text(widget.label),
-        floatingLabelStyle: TextStyle(color: Constants.kBlack),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 5,
-          horizontal: 20,
-        ),
-      ),
+          prefixIcon: widget.icon != null
+              ? Icon(
+                  widget.icon,
+                  color: Constants.kInputBorder,
+                  size: 22,
+                )
+              : null,
+          focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Constants.kBlack, style: BorderStyle.solid)),
+          hintText: widget.hint,
+          hintStyle: TextStyle(color: Constants.kInputBorder),
+          label: Text(widget.label),
+          floatingLabelStyle: TextStyle(color: Constants.kBlack),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 5,
+            horizontal: 20,
+          ),
+          helperText: widget.helperText),
     );
   }
 }

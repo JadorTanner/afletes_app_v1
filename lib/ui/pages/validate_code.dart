@@ -109,7 +109,7 @@ class CodeSquare extends StatelessWidget {
     return Flexible(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10),
-        height: 50,
+        height: 60,
         child: Center(
           child: TextField(
             textAlign: TextAlign.center,
@@ -178,9 +178,17 @@ class ReturnBackState extends State<ReturnBack> {
           ),
         );
       },
-      child: Text(
-        widget.text,
-        style: const TextStyle(color: Colors.white),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20,
+            child: Text(
+              widget.text,
+              style: const TextStyle(color: Colors.white),
+            ),
+          )
+        ],
       ),
     );
   }
@@ -241,6 +249,7 @@ class ValidateButtonState extends State<ValidateButton> {
 
                 shared.setString(
                     'user', jsonEncode(responseBody['data']['user']));
+                print(responseBody['data']['user']);
                 if (responseBody['data']['user']['habilitado']) {
                   if (responseBody['data']['user']['is_carrier']) {
                     if (responseBody['data']['cant_vehicles'] <= 0) {
@@ -264,14 +273,25 @@ class ValidateButtonState extends State<ValidateButton> {
                     });
               }
             },
-      child: !isLoading
-          ? Text(
-              widget.text,
-              style: const TextStyle(color: Colors.white),
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20,
+            child: !isLoading
+                ? Text(
+                    widget.text,
+                    style: const TextStyle(color: Colors.white),
+                  )
+                : const SizedBox(
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

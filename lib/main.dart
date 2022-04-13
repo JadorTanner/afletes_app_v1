@@ -36,6 +36,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('#');
+  print('#');
+  print('#');
+  print('BACKGROUND FIREBASE MESSAGE');
+  print(message.data);
+  print('#');
+  print('#');
+  print('#');
 }
 
 void main() async {
@@ -49,6 +57,8 @@ void main() async {
     description:
         'This channel is used for important notifications.', // description
     importance: Importance.high,
+    enableVibration: true,
+    playSound: true,
   );
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -95,6 +105,8 @@ class _AfletesAppState extends State<AfletesApp> {
   listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
+    print('DATOS DE USUARIO ANTES DE INIT PUSHER');
+    print(user);
     if (user != null) {
       Map data = jsonDecode(user);
       PusherApi().disconnect();
@@ -104,6 +116,15 @@ class _AfletesAppState extends State<AfletesApp> {
 
     NotificationsApi.onNotifications.stream.listen((event) {
       Map data = jsonDecode(event!);
+
+      print('#');
+      print('-');
+      print('#');
+      print('NOTIFICATIONS API');
+      print(data);
+      print('#');
+      print('-');
+      print('#');
       if (data['route'] == 'chat') {
         if (data['id'] != null) {
           if (navigatorKey.currentState != null) {
@@ -137,11 +158,28 @@ class _AfletesAppState extends State<AfletesApp> {
     NotificationsApi.init();
     listenNotifications();
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       Map data = message.data;
+
+      print('#');
+      print('-');
+      print('#');
+      print('FIREBASE MESSAGE');
+      print(data);
+      print('#');
+      print('-');
+      print('#');
       if (notification != null && android != null) {
+        if (data.keys.contains('alta')) {
+          SharedPreferences shared = await SharedPreferences.getInstance();
+          if (shared.getString('user') != null) {
+            Map user = jsonDecode(shared.getString('user')!);
+            user['habilitado'] = true;
+            shared.setString('user', jsonEncode(user));
+          }
+        }
         if (context.read<ChatProvider>().negotiationId == 0) {
           NotificationsApi.showNotification(
             id: notification.hashCode,
@@ -164,30 +202,46 @@ class _AfletesAppState extends State<AfletesApp> {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      String? user = sharedPreferences.getString('user');
+      Map data = message.data;
 
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
+
+      print('#');
+      print('-');
+      print('#');
+      print('FIREBASE MESSAGE OPENED');
+      print(message.data);
+      print('#');
+      print('-');
+      print('#');
+
       if (notification != null && android != null) {
-        if (message.data['negotiation_id'] != null) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    NegotiationChat(int.parse(message.data['negotiation_id'])),
-              ));
+        print('NOTIFICACION Y ANDROID NO NULOS');
+        if (data.keys.contains('alta')) {
+          SharedPreferences shared = await SharedPreferences.getInstance();
+          if (shared.getString('user') != null) {
+            Map user = jsonDecode(shared.getString('user')!);
+            user['habilitado'] = true;
+            shared.setString('user', jsonEncode(user));
+          }
+        }
+        if (context.read<ChatProvider>().negotiationId == 0) {
+          NotificationsApi.showNotification(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+          );
         } else {
-          if (user != null) {
-            //SI EXISTE USUARIO, LLEVA A BUSCAR CARGAS O VEHICULOS
-            Navigator.of(context).pushReplacementNamed(
-                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
-          } else {
-            //SI NO EXISTE USUARIO, LLEVA A LOGIN
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const LoginPage(),
-            ));
+          if (context.read<ChatProvider>().negotiationId !=
+              data['negotiation_id']) {
+            NotificationsApi.showNotification(
+              id: notification.hashCode,
+              title: notification.title,
+              body: notification.body,
+              payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            );
           }
         }
       }

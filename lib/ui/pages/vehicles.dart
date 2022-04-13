@@ -655,6 +655,7 @@ class _VehiclesListState extends State<VehiclesList> {
   Widget build(BuildContext context) {
     List<TransportistLocation> transportists =
         context.watch<TransportistsLocProvider>().transportists;
+    print("CANTIDAD DE TRANSPORTISTAS: " + transportists.length.toString());
     setMarkers(transportists);
     return Stack(
       children: [

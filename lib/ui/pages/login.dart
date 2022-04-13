@@ -4,6 +4,7 @@ import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
+import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -12,7 +13,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -80,7 +80,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   });
                 }
               });
-              Navigator.of(context).pushReplacementNamed('/loads');
+              if (sharedPreferences.getInt('vehicles')! > 0) {
+                Navigator.of(context).pushReplacementNamed('/loads');
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateVehicleAfterReg(),
+                  ),
+                );
+              }
             } else {
               PusherApi().init(
                   context,
@@ -105,7 +113,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ha ocurrido un error')));
+          const SnackBar(
+            content: Text('Verifique sus datos'),
+          ),
+        );
       }
     } else {
       setState(() {

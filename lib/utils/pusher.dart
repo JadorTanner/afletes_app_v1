@@ -52,6 +52,9 @@ class PusherApi extends ChangeNotifier {
     _pusher.onConnectionError((error) {
       print('\n\n\nERROR EN PUSHER\n\n\n');
       print("error: ${error!.message}");
+
+      disconnect();
+      init(context, transportistsLocProvider, chat);
     });
 
     pusherChannel = _pusher.subscribe("negotiation-chat");
@@ -106,7 +109,9 @@ class PusherApi extends ChangeNotifier {
                   );
                 }
               }
-              if ((chat.negotiationId == jsonData['negotiation_id']) ||
+              if ((Provider.of<ChatProvider>(context, listen: false)
+                          .negotiationId ==
+                      jsonData['negotiation_id']) ||
                   (negotiationId != null &&
                       int.parse(negotiationId) == jsonData['negotiation_id'])) {
                 DateTime now = DateTime.now();
@@ -162,9 +167,12 @@ class PusherApi extends ChangeNotifier {
           pusher.subscribe("transportist-location");
       bindEvent(transportistsLocationChannel,
           'App\\Events\\TransportistLocationEvent', (PusherEvent? event) async {
+        print('EVENTO DE LOCATION TRANSPORTISTA');
         if (event != null) {
           if (event.data != null) {
             Map data = jsonDecode(event.data.toString());
+            print('DATOS DEL EVENTO TRANSPORTISTA LOCATION: ' +
+                event.data.toString());
             if (data['isLoggingOut']) {
               transportistsLocProvider.removeTransportist(
                   data['user_id'], data['vehicle_id']);

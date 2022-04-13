@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_init_to_null
 import 'dart:convert';
 
-import 'package:afletes_app_v1/ui/pages/validate_code.dart';
-import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
@@ -91,59 +89,34 @@ class User extends ChangeNotifier {
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     String? userStored = localStorage.getString('user');
-    if (userStored != null) {
-      Map userJson = jsonDecode(userStored);
-      notifyListeners();
-      if (userJson['confirmed']) {
-        if (userJson['habilitado']) {
-          Navigator.of(context).pushReplacementNamed(
-              userJson['is_carrier'] ? 'loads' : '/vehicles');
-        } else {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => const WaitHabilitacion()));
-        }
-      } else {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ValidateCode()));
-      }
-    } else {
-      bool emailValid = RegExp(
-              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-          .hasMatch(email);
-      if (emailValid) {
-        try {
-          Api api = Api();
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+    if (emailValid) {
+      try {
+        Api api = Api();
 
-          Response response = await api.postData('login', {
-            'email': email,
-            'password': password,
-          });
-          if (response.statusCode == 200) {
-            Map responseBody = jsonDecode(response.body);
-            if (responseBody['success']) {
-              Map userJson = responseBody['data']['user'];
-              setUser(User(userData: userJson).userFromArray());
-              localStorage.setString(
-                  'user', jsonEncode(responseBody['data']['user']));
-              localStorage.setString('token', responseBody['data']['token']);
-              return true;
-            } else {
-              return false;
-            }
+        Response response = await api.postData('login', {
+          'email': email,
+          'password': password,
+        });
+        if (response.statusCode == 200) {
+          Map responseBody = jsonDecode(response.body);
+          if (responseBody['success']) {
+            Map userJson = responseBody['data']['user'];
+            setUser(User(userData: userJson).userFromArray());
+            localStorage.setString(
+                'user', jsonEncode(responseBody['data']['user']));
+            localStorage.setString('token', responseBody['data']['token']);
+            localStorage.setInt('vehicles', responseBody['data']['vehicles']);
+            return true;
+          } else {
+            return false;
           }
-          return false;
-        } catch (e) {
-          return false;
         }
-      } else {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //       content: Center(
-        //           child: Text(
-        //     'Ha ocurrido un error',
-        //     style: TextStyle(color: Colors.white),
-        //   ))),
-        // );
+        return false;
+      } catch (e) {
+        return false;
       }
     }
     return false;

@@ -129,40 +129,58 @@ class Vehicle {
 
     //DOCUMENTOS
     if (greenCard != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_attachment', greenCard));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_attachment', greenCard));
+      } catch (e) {}
     }
     if (greenCardBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_back_attachment', greenCardBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_back_attachment', greenCardBack));
+      } catch (e) {}
     }
     if (municipal != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_attachment', municipal));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_attachment', municipal));
+      } catch (e) {}
     }
     if (municipalBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_back_attachment', municipalBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_back_attachment', municipalBack));
+      } catch (e) {}
     }
     if (dinatran != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_attachment', dinatran));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_attachment', dinatran));
+      } catch (e) {}
     }
     if (dinatranBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_back_attachment', dinatranBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_back_attachment', dinatranBack));
+      } catch (e) {}
     }
     if (senacsa != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_attachment', senacsa));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_attachment', senacsa));
+      } catch (e) {}
     }
     if (senacsaBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_back_attachment', senacsaBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_back_attachment', senacsaBack));
+      } catch (e) {}
     }
     if (insurance != '') {
-      request.files
-          .add(await MultipartFile.fromPath('insurance_attachment', insurance));
+      try {
+        request.files.add(
+            await MultipartFile.fromPath('insurance_attachment', insurance));
+      } catch (e) {}
     }
 
     for (var file in imagenes) {
@@ -184,8 +202,10 @@ class Vehicle {
     print(stringResponse);
     Map responseBody = jsonDecode(stringResponse);
     if (response.statusCode == 200) {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       if (responseBody['success']) {
+        sharedPreferences.setInt(
+            'vehicles', ((sharedPreferences.getInt('vehicles') ?? 0) + 1));
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));
@@ -223,7 +243,7 @@ class Vehicle {
         return false;
       }
     } else {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       if (context != null) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(responseBody['message'])));
