@@ -64,9 +64,11 @@ class PusherApi extends ChangeNotifier {
         (PusherEvent? event) async {
       print('EVENTO DE CHAT');
       if (event != null) {
+        print('EVENTO NO ESTA VACIO');
         if (event.data != null) {
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
+          print('TIENE DATOS');
           print(event.data);
           print('usuario');
           print(sharedPreferences.getString('user'));
@@ -81,6 +83,7 @@ class PusherApi extends ChangeNotifier {
               print('user id');
               print(user.id);
               if (jsonData['ask_location'] == true) {
+                print('enviar ubicacion por pusher');
                 Position position = await Geolocator.getCurrentPosition();
                 Map loc = {
                   'coords': {
@@ -115,6 +118,7 @@ class PusherApi extends ChangeNotifier {
                       jsonData['negotiation_id']) ||
                   (negotiationId != null &&
                       int.parse(negotiationId) == jsonData['negotiation_id'])) {
+                print('Esta dentro de la misma negociacion');
                 DateTime now = DateTime.now();
                 String formattedDate =
                     DateFormat('y-dd-MM kk:mm:ss').format(now);
@@ -129,21 +133,25 @@ class PusherApi extends ChangeNotifier {
                   ),
                 );
                 if (jsonData['negotiation_state'] != null) {
+                  print('tiene negociacion state');
                   context
                       .read<ChatProvider>()
                       .setLoadState(jsonData['negotiation_state']);
                 }
                 if (jsonData['is_final_offer'] == 'true') {
+                  print('Es una oferta final');
                   context.read<ChatProvider>().setPaid(false);
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(false);
                 }
                 if (jsonData['accepted'] != null) {
+                  print('Se acepto la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(true);
                   context.read<ChatProvider>().setPaid(false);
                 }
               } else {
+                print('NO esta dentro de la misma negociacion');
                 NotificationsApi.showNotification(
                   id: 10,
                   title: 'Tiene una nueva notificación',

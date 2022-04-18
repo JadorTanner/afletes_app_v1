@@ -100,6 +100,7 @@ class User extends ChangeNotifier {
           'email': email,
           'password': password,
         });
+        print(response.body);
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
@@ -116,6 +117,7 @@ class User extends ChangeNotifier {
         }
         return false;
       } catch (e) {
+        print(e);
         return false;
       }
     }

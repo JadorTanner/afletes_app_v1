@@ -125,27 +125,39 @@ class _AfletesAppState extends State<AfletesApp> {
       print('-');
       print('#');
       if (data['route'] == 'chat') {
-        if (data['id'] != null) {
-          if (navigatorKey.currentState != null) {
-            navigatorKey.currentState!.push(MaterialPageRoute(
-              builder: (context) => NegotiationChat(data['id']),
-            ));
-          }
-        } else {
-          if (user != null && user != 'null') {
+        print('Tiene route igual a chat');
+        if (user != null && user != 'null') {
+          print('Existe usuario');
+          if (data['id'] != null) {
+            print('tiene id');
+            if (navigatorKey.currentState != null) {
+              print('tiene state');
+              Future.delayed(Duration.zero, () {
+                navigatorKey.currentState!.push(MaterialPageRoute(
+                  builder: (context) => NegotiationChat(int.parse(data["id"])),
+                ));
+              });
+            } else {
+              print('NO tiene state');
+            }
+          } else {
+            print('NO tiene id');
             navigatorKey.currentState!.pushReplacementNamed(
                 jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
-          } else {
-            navigatorKey.currentState!.push(MaterialPageRoute(
-              builder: (context) => const LoginPage(),
-            ));
           }
+        } else {
+          print('NO existe usuario');
+          navigatorKey.currentState!.push(MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ));
         }
         // Navigator.of(context).pushReplacement(
         //   MaterialPageRoute(
         //     builder: (context) => NegotiationChat(data['negotiation_id']),
         //   ),
         // );
+      } else {
+        print('NO tiene route igual a chat');
       }
     });
   }
@@ -160,6 +172,7 @@ class _AfletesAppState extends State<AfletesApp> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
+      AppleNotification? apple = message.notification?.apple;
       Map data = message.data;
 
       print('#');
@@ -170,7 +183,7 @@ class _AfletesAppState extends State<AfletesApp> {
       print('#');
       print('-');
       print('#');
-      if (notification != null && android != null) {
+      if (notification != null && (android != null || apple != null)) {
         if (data.keys.contains('alta')) {
           SharedPreferences shared = await SharedPreferences.getInstance();
           if (shared.getString('user') != null) {
@@ -179,31 +192,15 @@ class _AfletesAppState extends State<AfletesApp> {
             shared.setString('user', jsonEncode(user));
           }
         }
-        if (context.read<ChatProvider>().negotiationId == 0) {
-          // NotificationsApi.showNotification(
-          //   id: notification.hashCode,
-          //   title: notification.title,
-          //   body: notification.body,
-          //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-          // );
-          navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
-            builder: (context) =>
-                NegotiationChat(int.parse(data["negotiation_id"])),
-          ));
-        } else {
-          if (context.read<ChatProvider>().negotiationId !=
-              data['negotiation_id']) {
-            navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
-              builder: (context) =>
-                  NegotiationChat(int.parse(data["negotiation_id"])),
-            ));
-            // NotificationsApi.showNotification(
-            //   id: notification.hashCode,
-            //   title: notification.title,
-            //   body: notification.body,
-            //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-            // );
-          }
+
+        if (context.read<ChatProvider>().negotiationId !=
+            data['negotiation_id']) {
+          NotificationsApi.showNotification(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+          );
         }
       }
     });
@@ -213,6 +210,7 @@ class _AfletesAppState extends State<AfletesApp> {
 
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
+      AppleNotification? apple = message.notification?.apple;
 
       print('#');
       print('-');
@@ -223,7 +221,7 @@ class _AfletesAppState extends State<AfletesApp> {
       print('-');
       print('#');
 
-      if (notification != null && android != null) {
+      if (notification != null && (android != null || apple != null)) {
         print('NOTIFICACION Y ANDROID NO NULOS');
         if (data.keys.contains('alta')) {
           SharedPreferences shared = await SharedPreferences.getInstance();
@@ -233,32 +231,15 @@ class _AfletesAppState extends State<AfletesApp> {
             shared.setString('user', jsonEncode(user));
           }
         }
-        if (context.read<ChatProvider>().negotiationId == 0) {
-          // NotificationsApi.showNotification(
-          //   id: notification.hashCode,
-          //   title: notification.title,
-          //   body: notification.body,
-          //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-          // );
 
-          navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
-            builder: (context) =>
-                NegotiationChat(int.parse(data["negotiation_id"])),
-          ));
-        } else {
-          if (context.read<ChatProvider>().negotiationId !=
-              data['negotiation_id']) {
-            navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+        if (context.read<ChatProvider>().negotiationId !=
+            data['negotiation_id']) {
+          Future.delayed(Duration.zero, () {
+            navigatorKey.currentState!.push(MaterialPageRoute(
               builder: (context) =>
                   NegotiationChat(int.parse(data["negotiation_id"])),
             ));
-            // NotificationsApi.showNotification(
-            //   id: notification.hashCode,
-            //   title: notification.title,
-            //   body: notification.body,
-            //   payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
-            // );
-          }
+          });
         }
       }
     });
