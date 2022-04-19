@@ -129,110 +129,114 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ListView(
-        children: [
-          Align(
-            alignment: const AlignmentDirectional(-1, -1),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.6,
-              decoration: const BoxDecoration(color: Colors.white),
-              child: Image.asset(
-                'assets/icons/logo-naranja.png',
-                width: 50,
-                height: 50,
+      body: SingleChildScrollView(
+        reverse: true,
+        child: Column(
+          children: [
+            Align(
+              alignment: const AlignmentDirectional(-1, -1),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.6,
+                decoration: const BoxDecoration(color: Colors.white),
+                child: Image.asset(
+                  'assets/icons/logo-naranja.png',
+                  width: 50,
+                  height: 50,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomFormField(
-                  textController1,
-                  'Email',
-                  hint: 'Ejemplo@gmail.com',
-                  icon: Icons.alternate_email,
-                  type: TextInputType.emailAddress,
-                  enabled: !isLoading,
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                PasswordField(
-                  'Contraseña',
-                  textController2,
-                  enabled: !isLoading,
-                  onSubmit: () async {
-                    loginFunction();
-                  },
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                // const LoginButton(),
-                TextButton.icon(
-                  onPressed: (isLoading ? null : loginFunction),
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: CircularProgressIndicator(
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CustomFormField(
+                    textController1,
+                    'Email',
+                    hint: 'Ejemplo@gmail.com',
+                    icon: Icons.alternate_email,
+                    type: TextInputType.emailAddress,
+                    enabled: !isLoading,
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 20,
+                  ),
+                  PasswordField(
+                    'Contraseña',
+                    textController2,
+                    enabled: !isLoading,
+                    onSubmit: () async {
+                      loginFunction();
+                    },
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 20,
+                  ),
+                  // const LoginButton(),
+                  TextButton.icon(
+                    onPressed: (isLoading ? null : loginFunction),
+                    icon: isLoading
+                        ? const SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.app_registration,
                             color: Colors.white,
+                            size: 30,
                           ),
-                        )
-                      : const Icon(
-                          Icons.app_registration,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                  label: const Text('Iniciar Sesión',
-                      style: TextStyle(color: Colors.white)),
-                  style: ButtonStyle(
-                      backgroundColor: isLoading
-                          ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
-                          : MaterialStateProperty.all(const Color(0xFFED8232))),
-                ),
-                const SizedBox(
-                  width: 100,
-                  height: 20,
-                ),
-                // const Text('He olvidado mi contraseña',
-                //     textAlign: TextAlign.center),
-              ],
+                    label: const Text('Iniciar Sesión',
+                        style: TextStyle(color: Colors.white)),
+                    style: ButtonStyle(
+                        backgroundColor: isLoading
+                            ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
+                            : MaterialStateProperty.all(
+                                const Color(0xFFED8232))),
+                  ),
+                  const SizedBox(
+                    width: 100,
+                    height: 20,
+                  ),
+                  // const Text('He olvidado mi contraseña',
+                  //     textAlign: TextAlign.center),
+                ],
+              ),
             ),
-          ),
-          // const Spacer(),
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              children: [
-                const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
-                WidgetSpan(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/register'),
-                    child: const Text(
-                      'Crea una aquí!',
-                      style: TextStyle(
-                          color: Color(0xFFED8232),
-                          fontSize: 16,
-                          decoration: TextDecoration.underline),
+            // const Spacer(),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
+                  WidgetSpan(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/register'),
+                      child: const Text(
+                        'Crea una aquí!',
+                        style: TextStyle(
+                            color: Color(0xFFED8232),
+                            fontSize: 16,
+                            decoration: TextDecoration.underline),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          // const Spacer(),
-          const SizedBox(
-            width: 100,
-            height: 20,
-          ),
-        ],
+            // const Spacer(),
+            const SizedBox(
+              width: 100,
+              height: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

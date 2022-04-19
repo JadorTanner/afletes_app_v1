@@ -134,7 +134,7 @@ class _AfletesAppState extends State<AfletesApp> {
               print('tiene state');
               Future.delayed(Duration.zero, () {
                 navigatorKey.currentState!.push(MaterialPageRoute(
-                  builder: (context) => NegotiationChat(int.parse(data["id"])),
+                  builder: (context) => NegotiationChat(data["id"]),
                 ));
               });
             } else {
@@ -195,11 +195,13 @@ class _AfletesAppState extends State<AfletesApp> {
 
         if (context.read<ChatProvider>().negotiationId !=
             data['negotiation_id']) {
+          print(data);
           NotificationsApi.showNotification(
             id: notification.hashCode,
             title: notification.title,
             body: notification.body,
-            payload: '{"route": "chat", "id":${data["negotiation_id"]}}',
+            payload:
+                '{"route": "chat", "id":${data["negotiation_id"].toString()}}',
           );
         }
       }
@@ -236,8 +238,7 @@ class _AfletesAppState extends State<AfletesApp> {
             data['negotiation_id']) {
           Future.delayed(Duration.zero, () {
             navigatorKey.currentState!.push(MaterialPageRoute(
-              builder: (context) =>
-                  NegotiationChat(int.parse(data["negotiation_id"])),
+              builder: (context) => NegotiationChat(data["negotiation_id"]),
             ));
           });
         }

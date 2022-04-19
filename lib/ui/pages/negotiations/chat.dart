@@ -48,8 +48,7 @@ ButtonStyle pillStyle = ButtonStyle(
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   // try {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
-      .userFromArray();
+  user = User.userFromArray(jsonDecode(sharedPreferences.getString('user')!));
 
   sharedPreferences.setString('negotiation_id', id.toString());
   context.read<ChatProvider>().setNegotiationId(id);
@@ -142,6 +141,14 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     }
 
     load = Load.fromJSON(jsonResp['data']['load']);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('No tiene permiso para ver esta negociación'),
+      ),
+    );
+    Navigator.of(context)
+        .pushReplacementNamed(user.isCarrier ? '/loads' : '/vehicles');
   }
   return [];
   // } catch (e) {
@@ -223,6 +230,8 @@ Future cancelNegotiation(id, context) async {
               });
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
+                context.read<ChatProvider>().setToPay(false);
+                context.read<ChatProvider>().setPaid(false);
               }
               Navigator.of(context).pop();
             } on SocketException {

@@ -29,27 +29,27 @@ class User extends ChangeNotifier {
       documentNumber = '',
       legalName = '';
 
-  User userFromArray([Map? data]) {
-    if (data != null) {
-      userData = data;
+  static User userFromArray(Map data) {
+    if (data.isEmpty) {
+      return User();
+    } else {
+      return User(
+        id: data['id'],
+        fullName: data['full_name'],
+        firstName: data['first_name'],
+        lastName: data['last_name'],
+        email: data['email'],
+        legalName: data['legal_name'],
+        documentNumber: data['document_number'],
+        street1: data['street1'],
+        street2: data['street2'] ?? '',
+        houseNumber: data['house_number'] ?? '',
+        isCarrier: data['is_carrier'],
+        isLoadGenerator: data['is_load_generator'],
+        cellphone: data['cellphone'] ?? '',
+        phone: data['phone'] ?? '',
+      );
     }
-
-    return User(
-      id: userData['id'],
-      fullName: userData['full_name'],
-      firstName: userData['first_name'],
-      lastName: userData['last_name'],
-      email: userData['email'],
-      legalName: userData['legal_name'],
-      documentNumber: userData['document_number'],
-      street1: userData['street1'],
-      street2: userData['street2'] ?? '',
-      houseNumber: userData['house_number'] ?? '',
-      isCarrier: userData['is_carrier'],
-      isLoadGenerator: userData['is_load_generator'],
-      cellphone: userData['cellphone'] ?? '',
-      phone: userData['phone'] ?? '',
-    );
   }
 
   User({
@@ -80,8 +80,7 @@ class User extends ChangeNotifier {
 
   Future<User> getUser() async {
     SharedPreferences sh = await SharedPreferences.getInstance();
-    User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'))
-        .userFromArray();
+    User user = User.userFromArray(jsonDecode(sh.getString('user') ?? '{}'));
     return user;
   }
 
@@ -105,7 +104,7 @@ class User extends ChangeNotifier {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
             Map userJson = responseBody['data']['user'];
-            setUser(User(userData: userJson).userFromArray());
+            setUser(User.userFromArray(userJson));
             localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
@@ -206,7 +205,7 @@ class User extends ChangeNotifier {
           sharedPreferences.setString(
               'user', jsonEncode(responseBody['data']['user']));
           sharedPreferences.setString('token', responseBody['data']['token']);
-          setUser(User(userData: responseBody['data']['user']).userFromArray());
+          setUser(User.userFromArray(responseBody['data']['user']));
           return true;
         } else {
           return false;

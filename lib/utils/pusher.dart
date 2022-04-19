@@ -74,50 +74,53 @@ class PusherApi extends ChangeNotifier {
           print(sharedPreferences.getString('user'));
           String data = event.data.toString();
           Map jsonData = jsonDecode(data);
-          String? negotiationId = sharedPreferences.getString('negotiation_id');
-          User user =
-              User(userData: jsonDecode(sharedPreferences.getString('user')!))
-                  .userFromArray();
+          User user = User.userFromArray(
+              jsonDecode(sharedPreferences.getString('user')!));
           if (user.id != jsonData['sender_id']) {
             if (user.id == jsonData['user_id']) {
               print('user id');
               print(user.id);
-              if (jsonData['ask_location'] == true) {
-                print('enviar ubicacion por pusher');
-                Position position = await Geolocator.getCurrentPosition();
-                Map loc = {
-                  'coords': {
-                    'latitude': position.latitude,
-                    'longitude': position.longitude,
-                  }
-                };
+              print((Provider.of<ChatProvider>(context, listen: false)
+                  .negotiationId));
+              if (jsonData.keys.contains('ask_location')) {
+                print('Pide ubicación');
+                if (jsonData['ask_location']) {
+                  print('enviar ubicacion por pusher');
+                  Position position = await Geolocator.getCurrentPosition();
+                  Map loc = {
+                    'coords': {
+                      'latitude': position.latitude,
+                      'longitude': position.longitude,
+                    }
+                  };
 
-                try {
-                  Api api = Api();
-                  await api.postData('user/send-location', {
-                    'negotiation_id': jsonData['negotiation_id'],
-                    'user_id': jsonData['sender_id'],
-                    'location': loc
-                  });
-                } on SocketException {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Compruebe su conexión a internet'),
-                    ),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ha ocurrido un error'),
-                    ),
-                  );
+                  try {
+                    Api api = Api();
+                    await api.postData('user/send-location', {
+                      'negotiation_id': jsonData['negotiation_id'],
+                      'user_id': jsonData['sender_id'],
+                      'location': loc
+                    });
+                  } on SocketException {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Compruebe su conexión a internet'),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Ha ocurrido un error'),
+                      ),
+                    );
+                  }
                 }
               }
+              print(Provider.of<ChatProvider>(context, listen: false)
+                  .negotiationId);
               if ((Provider.of<ChatProvider>(context, listen: false)
-                          .negotiationId ==
-                      jsonData['negotiation_id']) ||
-                  (negotiationId != null &&
-                      int.parse(negotiationId) == jsonData['negotiation_id'])) {
+                      .negotiationId ==
+                  jsonData['negotiation_id'])) {
                 print('Esta dentro de la misma negociacion');
                 DateTime now = DateTime.now();
                 String formattedDate =
@@ -150,14 +153,30 @@ class PusherApi extends ChangeNotifier {
                   context.read<ChatProvider>().setToPay(true);
                   context.read<ChatProvider>().setPaid(false);
                 }
+                if (jsonData['rejected'] != null) {
+                  print('Se canceló la negociacion');
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(false);
+                  context.read<ChatProvider>().setPaid(false);
+                }
               } else {
                 print('NO esta dentro de la misma negociacion');
+                String title = 'Tiene una nueva notificación';
+                if (jsonData['is_final_offer'] == 'true') {
+                  title = 'Ha recibido una oferta final';
+                }
+                if (jsonData['accepted'] != null) {
+                  title = 'La negociación ha sido aceptada';
+                }
+                if (jsonData['rejected'] != null) {
+                  title = 'La negociación ha sido rechazada';
+                }
                 NotificationsApi.showNotification(
                   id: 10,
-                  title: 'Tiene una nueva notificación',
+                  title: title,
                   body: jsonData['message'],
                   payload:
-                      '{"route": "chat", "id":${jsonData["negotiation_id"]}}',
+                      '{"route": "chat", "id":${jsonData["negotiation_id"].toString()}}',
                 );
               }
             }

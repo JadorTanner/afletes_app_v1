@@ -7,9 +7,13 @@ class NotificationsApi {
 
   static Future _notificationDetails() async {
     return const NotificationDetails(
-      android: AndroidNotificationDetails('channel id', 'channel name',
-          channelDescription: 'channel description',
-          importance: Importance.max),
+      android: AndroidNotificationDetails(
+        'channel id',
+        'channel name',
+        channelDescription: 'channel description',
+        importance: Importance.max,
+        channelShowBadge: true,
+      ),
       iOS: IOSNotificationDetails(),
     );
   }
