@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationsApi {
   static final _notifications = FlutterLocalNotificationsPlugin();
@@ -18,7 +22,13 @@ class NotificationsApi {
     );
   }
 
-  static Future init({bool initScheduled = false}) async {
+  static Future init({bool initScheduled = false, context}) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? user = sharedPreferences.getString('user');
+    if (user != null) {
+      context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+    }
+
     const settings = InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/launcher_icon'),
         iOS: IOSInitializationSettings());

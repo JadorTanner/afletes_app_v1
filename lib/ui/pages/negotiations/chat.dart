@@ -50,9 +50,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   user = User.userFromArray(jsonDecode(sharedPreferences.getString('user')!));
 
-  sharedPreferences.setString('negotiation_id', id.toString());
-  context.read<ChatProvider>().setNegotiationId(id);
-
+  print('ID DE LA NEGOCIACIÓN ' + id.toString());
   Api api = Api();
 
   context.read<ChatProvider>().clearMessages();
@@ -60,6 +58,12 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
   ChatProvider chatProvider = context.read<ChatProvider>();
+
+  sharedPreferences.setString('negotiation_id', id.toString());
+  Provider.of<ChatProvider>(context, listen: false).setNegotiationId(id);
+
+  print('ID DE LA NEGOCIACIÓN EN PROVIDER');
+  print(context.read<ChatProvider>().negotiationId);
 
   chatProvider.setCanOffer(false);
   chatProvider.setPaid(false);
@@ -791,36 +795,34 @@ class ButtonsSection extends StatelessWidget {
         //Si la negociación está para pago
         if (user.isLoadGenerator) {
           children = [
-            Flexible(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => Payment(widget.id),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Payment(widget.id),
+                ),
+              ),
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all<EdgeInsets>(
+                    const EdgeInsets.symmetric(vertical: 20)),
+                backgroundColor: MaterialStateProperty.all<Color>(
+                  Constants.kBlack,
+                ),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(0)),
                   ),
                 ),
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsets>(
-                      const EdgeInsets.symmetric(vertical: 20)),
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    Constants.kBlack,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Pagar',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(0)),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: const [
-                    Text(
-                      'Pagar',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Icon(Icons.attach_money, color: Colors.white),
-                  ],
-                ),
+                  Icon(Icons.attach_money, color: Colors.white),
+                ],
               ),
             ),
           ];

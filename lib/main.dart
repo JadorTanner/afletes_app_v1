@@ -113,9 +113,12 @@ class _AfletesAppState extends State<AfletesApp> {
           context.read<ChatProvider>(), data['is_load_generator']);
     }
 
-    NotificationsApi.onNotifications.stream.listen((event) {
+    NotificationsApi.onNotifications.stream.listen((event) async {
       Map data = jsonDecode(event!);
 
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      String? user = sharedPreferences.getString('user');
       print('#');
       print('-');
       print('#');

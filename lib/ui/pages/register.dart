@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
@@ -14,6 +15,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 const double separacion = 20;
 List states = [];
@@ -741,6 +743,9 @@ class RegisterButtonState extends State<RegisterButton> {
                       content: Text(responseBody['message']),
                     ),
                   );
+
+                  context.read<User>().setUser(
+                      User.userFromArray(responseBody['data']['user']));
                   SharedPreferences sharedPreferences =
                       await SharedPreferences.getInstance();
 

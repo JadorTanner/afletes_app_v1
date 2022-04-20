@@ -1,17 +1,14 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
-import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client/pusher_client.dart';
@@ -82,7 +79,7 @@ class PusherApi extends ChangeNotifier {
               print(user.id);
               print((Provider.of<ChatProvider>(context, listen: false)
                   .negotiationId));
-              if (jsonData.keys.contains('ask_location')) {
+              /* if (jsonData['ask_location'] != null) {
                 print('Pide ubicación');
                 if (jsonData['ask_location']) {
                   print('enviar ubicacion por pusher');
@@ -115,7 +112,7 @@ class PusherApi extends ChangeNotifier {
                     );
                   }
                 }
-              }
+              } */
               print(Provider.of<ChatProvider>(context, listen: false)
                   .negotiationId);
               if ((Provider.of<ChatProvider>(context, listen: false)
@@ -153,6 +150,12 @@ class PusherApi extends ChangeNotifier {
                   context.read<ChatProvider>().setToPay(true);
                   context.read<ChatProvider>().setPaid(false);
                 }
+                if (jsonData['paid']) {
+                  print('Se acepto la negociacion');
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(false);
+                  context.read<ChatProvider>().setPaid(true);
+                }
                 if (jsonData['rejected'] != null) {
                   print('Se canceló la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
@@ -167,6 +170,9 @@ class PusherApi extends ChangeNotifier {
                 }
                 if (jsonData['accepted'] != null) {
                   title = 'La negociación ha sido aceptada';
+                }
+                if (jsonData['paid']) {
+                  title = 'La negociación ha sido pagada';
                 }
                 if (jsonData['rejected'] != null) {
                   title = 'La negociación ha sido rechazada';

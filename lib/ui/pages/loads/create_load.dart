@@ -1028,6 +1028,16 @@ class _StateAndCityPickerState extends State<StateAndCityPicker> {
       : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
+
+  @override
+  void initState() {
+    super.initState();
+    newCities = cities.where((element) {
+      return element.state_id.toString() == departamentoId;
+    }).toList();
+    value = newCities[0].id.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     value = newCities[0].id.toString();
@@ -1165,6 +1175,17 @@ class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
       : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
+
+  @override
+  void initState() {
+    super.initState();
+
+    newCities = cities.where((element) {
+      return element.state_id.toString() == departamentoId;
+    }).toList();
+    value = newCities[0].id.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     value = newCities[0].id.toString();

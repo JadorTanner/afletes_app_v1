@@ -78,7 +78,7 @@ class User extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<User> getUser() async {
+  static Future<User> getUser() async {
     SharedPreferences sh = await SharedPreferences.getInstance();
     User user = User.userFromArray(jsonDecode(sh.getString('user') ?? '{}'));
     return user;
@@ -104,7 +104,8 @@ class User extends ChangeNotifier {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
             Map userJson = responseBody['data']['user'];
-            setUser(User.userFromArray(userJson));
+            context.read<User>().setUser(User.userFromArray(userJson));
+            print(context.read<User>().user);
             localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
@@ -205,7 +206,7 @@ class User extends ChangeNotifier {
           sharedPreferences.setString(
               'user', jsonEncode(responseBody['data']['user']));
           sharedPreferences.setString('token', responseBody['data']['token']);
-          setUser(User.userFromArray(responseBody['data']['user']));
+          User().setUser(User.userFromArray(responseBody['data']['user']));
           return true;
         } else {
           return false;
