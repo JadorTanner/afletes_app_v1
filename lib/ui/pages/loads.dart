@@ -289,10 +289,12 @@ class _LoadsState extends State<Loads> {
         ),
         isMap: true,
       ),
-      onWillPop: () => Future(() {
-        Navigator.pop(context);
-        return true;
-      }),
+      onWillPop: () => Future(
+        () {
+          Navigator.pop(context);
+          return true;
+        },
+      ),
     );
   }
 }
@@ -572,6 +574,7 @@ class _LoadsMapState extends State<LoadsMap>
                       loads[index],
                       hasData: true,
                       isCarrier: true,
+                      isFinalOffer: false,
                       onTap: () async {
                         // setLoadMarkerInfo(loads[index], position, context);
                       },

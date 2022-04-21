@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,9 +13,9 @@ class NotificationsApi {
   static Future _notificationDetails() async {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
-        'channel id',
-        'channel name',
-        channelDescription: 'channel description',
+        'notificationchannel',
+        'notifications',
+        channelDescription: 'canal de notificaciones',
         importance: Importance.max,
         channelShowBadge: true,
       ),
@@ -26,7 +27,11 @@ class NotificationsApi {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
     if (user != null) {
-      context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+      Provider.of<User>(context, listen: false).setUser(
+        User.userFromArray(
+          jsonDecode(user),
+        ),
+      );
     }
 
     const settings = InitializationSettings(
@@ -46,7 +51,8 @@ class NotificationsApi {
     String? body,
     String? payload,
   }) async {
-    _notifications.show(id, title, body, await _notificationDetails(),
-        payload: payload);
+    _notifications
+        .show(id, title, body, await _notificationDetails(), payload: payload)
+        .then((value) => print('SE HA MOSTRADO LA NOTIFICACIÓN'));
   }
 }

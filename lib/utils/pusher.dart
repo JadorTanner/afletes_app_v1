@@ -1,14 +1,17 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_client/pusher_client.dart';
@@ -77,9 +80,7 @@ class PusherApi extends ChangeNotifier {
             if (user.id == jsonData['user_id']) {
               print('user id');
               print(user.id);
-              print((Provider.of<ChatProvider>(context, listen: false)
-                  .negotiationId));
-              /* if (jsonData['ask_location'] != null) {
+              if (jsonData['ask_location']) {
                 print('Pide ubicación');
                 if (jsonData['ask_location']) {
                   print('enviar ubicacion por pusher');
@@ -112,9 +113,14 @@ class PusherApi extends ChangeNotifier {
                     );
                   }
                 }
-              } */
+              }
               print(Provider.of<ChatProvider>(context, listen: false)
                   .negotiationId);
+              print(Provider.of<ChatProvider>(context, listen: false)
+                  .negotiationId
+                  .runtimeType);
+              print(jsonData['negotiation_id']);
+              print(jsonData['negotiation_id'].runtimeType);
               if ((Provider.of<ChatProvider>(context, listen: false)
                       .negotiationId ==
                   jsonData['negotiation_id'])) {
@@ -151,10 +157,12 @@ class PusherApi extends ChangeNotifier {
                   context.read<ChatProvider>().setPaid(false);
                 }
                 if (jsonData['paid']) {
-                  print('Se acepto la negociacion');
+                  print('Se pagó la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(false);
                   context.read<ChatProvider>().setPaid(true);
+                  context.read<ChatProvider>().setShowDefaultMessages(true);
+                  context.read<ChatProvider>().setLoadState(9);
                 }
                 if (jsonData['rejected'] != null) {
                   print('Se canceló la negociacion');
@@ -165,7 +173,7 @@ class PusherApi extends ChangeNotifier {
               } else {
                 print('NO esta dentro de la misma negociacion');
                 String title = 'Tiene una nueva notificación';
-                if (jsonData['is_final_offer'] == 'true') {
+                if (jsonData['is_final_offer'] != null) {
                   title = 'Ha recibido una oferta final';
                 }
                 if (jsonData['accepted'] != null) {
@@ -177,13 +185,15 @@ class PusherApi extends ChangeNotifier {
                 if (jsonData['rejected'] != null) {
                   title = 'La negociación ha sido rechazada';
                 }
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: title,
-                  body: jsonData['message'],
-                  payload:
-                      '{"route": "chat", "id":${jsonData["negotiation_id"].toString()}}',
-                );
+                if (Platform.isIOS) {
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: title,
+                    body: jsonData['message'],
+                    payload:
+                        '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                  );
+                }
               }
             }
           }

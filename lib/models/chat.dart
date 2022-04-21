@@ -10,6 +10,9 @@ class ChatProvider extends ChangeNotifier {
   int _loadId = 0;
   int get loadId => _loadId;
 
+  int _transportistId = 0;
+  int get transportistId => _transportistId;
+
   final List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => _messages;
 
@@ -36,6 +39,11 @@ class ChatProvider extends ChangeNotifier {
 
   setNegotiationId(int id) {
     _negotiationId = id;
+    notifyListeners();
+  }
+
+  setTransportistId(int id) {
+    _transportistId = id;
     notifyListeners();
   }
 

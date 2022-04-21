@@ -1,3 +1,5 @@
+import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -5,11 +7,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 class VerTrayecto extends StatefulWidget {
-  VerTrayecto(this.load, {this.id = 0, Key? key}) : super(key: key);
+  VerTrayecto(this.load,
+      {this.id = 0,
+      this.trackTransportistLocation = false,
+      this.transportistId = 0,
+      Key? key})
+      : super(key: key);
   int id;
   Load load;
+  bool trackTransportistLocation;
+  int transportistId;
   @override
   State<VerTrayecto> createState() => _VerTrayectoState();
 }
@@ -48,7 +58,12 @@ class _VerTrayectoState extends State<VerTrayecto> {
           const SizedBox(
             height: 20,
           ),
-          Expanded(child: TrayectoMap(load)),
+          Expanded(
+              child: TrayectoMap(
+            load,
+            widget.trackTransportistLocation,
+            transportistId: widget.transportistId,
+          )),
         ],
       ),
     );
@@ -56,8 +71,12 @@ class _VerTrayectoState extends State<VerTrayecto> {
 }
 
 class TrayectoMap extends StatefulWidget {
-  TrayectoMap(this.load, {Key? key}) : super(key: key);
+  TrayectoMap(this.load, this.trackTransportistLocation,
+      {this.transportistId = 0, Key? key})
+      : super(key: key);
   Load load;
+  bool trackTransportistLocation;
+  int transportistId;
   @override
   State<StatefulWidget> createState() => _StateTrayectoMap();
 }
@@ -169,6 +188,42 @@ class _StateTrayectoMap extends State<TrayectoMap> {
     });
   }
 
+  setMarkers(
+    List<TransportistLocation> transportists,
+  ) async {
+    if (widget.transportistId != 0) {
+      BitmapDescriptor carIcon = BitmapDescriptor.fromBytes(
+          await getBytesFromAsset('assets/img/camion3.png', 30));
+      MarkerId markerId = const MarkerId('carPosition');
+      int index =
+          _markers.indexWhere((element) => element.markerId == markerId);
+      widget.transportistId = context.read<ChatProvider>().transportistId;
+      transportists.asMap().forEach((key, transportist) {
+        if (transportist.transportistId == widget.transportistId) {
+          print(transportist.latitude);
+          print(transportist.longitude);
+          Marker marker = Marker(
+            markerId: MarkerId(transportist.transportistId.toString() +
+                transportist.vehicleId.toString()),
+            position: LatLng(
+              transportist.latitude,
+              transportist.longitude,
+            ),
+            icon: carIcon,
+            flat: true,
+            rotation: transportist.heading,
+            infoWindow: InfoWindow(title: transportist.name),
+          );
+          if (index != -1) {
+            _markers[index] = marker;
+          } else {
+            _markers.add(marker);
+          }
+        }
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -181,6 +236,11 @@ class _StateTrayectoMap extends State<TrayectoMap> {
       future: getPos,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
+          if (widget.trackTransportistLocation) {
+            List<TransportistLocation> transportists =
+                context.watch<TransportistsLocProvider>().transportists;
+            setMarkers(transportists);
+          }
           return GoogleMap(
             onMapCreated: (controller) {
               _onMapCreated(controller);

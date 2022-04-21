@@ -22,13 +22,13 @@ import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 late AndroidNotificationChannel channel;
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 /// To verify things are working, check out the native platform logs.
@@ -49,6 +49,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   channel = const AndroidNotificationChannel(
@@ -89,19 +90,80 @@ void main() async {
           create: (context) => PusherApi(),
         ),
       ],
-      child: const AfletesApp(),
+      child: AfletesApp(),
     ),
   );
 }
 
 class AfletesApp extends StatefulWidget {
-  const AfletesApp({Key? key}) : super(key: key);
+  AfletesApp({Key? key}) : super(key: key);
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   State<AfletesApp> createState() => _AfletesAppState();
 }
 
 class _AfletesAppState extends State<AfletesApp> {
+  Route routes(RouteSettings settings) {
+    // routes: {
+    //   '/splash_screen': (context) => const SplashScreen(),
+    //   '/login': (context) => const LoginPage(),
+    //   '/register': (context) => const RegisterPage(),
+    //   '/loads': (context) => const Loads(),
+    //   '/vehicles': (context) => Vehicles(),
+    //   '/my-loads': (context) => const MyLoadsPage(),
+    //   '/create-load': (context) => const CreateLoadPage(),
+    //   '/create-vehicle': (context) => const CreateVehicle(),
+    //   '/my-vehicles': (context) => const MyVehiclesPage(),
+    //   '/my-negotiations': (context) => const MyNegotiations(),
+    //   '/pending-loads': (context) => const PendingLoadsPage(),
+    // },
+    if (settings.name != null) {
+      if (settings.name!.startsWith("/negotiation_id/")) {
+        try {
+          int id = int.parse(settings.name!.split("/")[2]);
+          print('RUTA DE NEGOCIACION A ID');
+          return MaterialPageRoute(
+            builder: (_) => NegotiationChat(id),
+          );
+        } catch (e) {
+          return MaterialPageRoute(
+            builder: (_) => const SplashScreen(),
+          );
+        }
+      } else if (settings.name == '/login') {
+        return MaterialPageRoute(
+          builder: (_) => const LoginPage(),
+        );
+      } else if (settings.name == '/register') {
+        return MaterialPageRoute(builder: (_) => const RegisterPage());
+      } else if (settings.name == '/loads') {
+        return MaterialPageRoute(builder: (_) => const Loads());
+      } else if (settings.name == '/vehicles') {
+        return MaterialPageRoute(builder: (_) => Vehicles());
+      } else if (settings.name == '/my-loads') {
+        return MaterialPageRoute(builder: (_) => const MyLoadsPage());
+      } else if (settings.name == '/create-load') {
+        return MaterialPageRoute(builder: (_) => const CreateLoadPage());
+      } else if (settings.name == '/create-vehicle') {
+        return MaterialPageRoute(builder: (_) => const CreateVehicle());
+      } else if (settings.name == '/my-vehicles') {
+        return MaterialPageRoute(builder: (_) => const MyVehiclesPage());
+      } else if (settings.name == '/my-negotiations') {
+        return MaterialPageRoute(builder: (_) => const MyNegotiations());
+      } else if (settings.name == '/pending-loads') {
+        return MaterialPageRoute(builder: (_) => const PendingLoadsPage());
+      }
+    } else {
+      return MaterialPageRoute(
+        builder: (_) => const SplashScreen(),
+      );
+    }
+    return MaterialPageRoute(
+      builder: (_) => const SplashScreen(),
+    );
+  }
+
   listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
@@ -133,24 +195,26 @@ class _AfletesAppState extends State<AfletesApp> {
           print('Existe usuario');
           if (data['id'] != null) {
             print('tiene id');
-            if (navigatorKey.currentState != null) {
+            if (widget.navigatorKey.currentState != null) {
               print('tiene state');
-              Future.delayed(Duration.zero, () {
-                navigatorKey.currentState!.push(MaterialPageRoute(
-                  builder: (context) => NegotiationChat(data["id"]),
-                ));
-              });
+              // Future.delayed(Duration.zero, () {
+              //   widget.navigatorKey.currentState!.push(MaterialPageRoute(
+              //     builder: (context) => NegotiationChat(data["id"]),
+              //   ));
+              // });
+              widget.navigatorKey.currentState!
+                  .pushNamed('/negotiation_id/' + data['id'].toString());
             } else {
               print('NO tiene state');
             }
           } else {
             print('NO tiene id');
-            navigatorKey.currentState!.pushReplacementNamed(
+            widget.navigatorKey.currentState!.pushReplacementNamed(
                 jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
           }
         } else {
           print('NO existe usuario');
-          navigatorKey.currentState!.push(MaterialPageRoute(
+          widget.navigatorKey.currentState!.push(MaterialPageRoute(
             builder: (context) => const LoginPage(),
           ));
         }
@@ -169,7 +233,7 @@ class _AfletesAppState extends State<AfletesApp> {
   void initState() {
     super.initState();
 
-    NotificationsApi.init();
+    NotificationsApi.init(context: context);
     listenNotifications();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -187,6 +251,7 @@ class _AfletesAppState extends State<AfletesApp> {
       print('-');
       print('#');
       if (notification != null && (android != null || apple != null)) {
+        print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
         if (data.keys.contains('alta')) {
           SharedPreferences shared = await SharedPreferences.getInstance();
           if (shared.getString('user') != null) {
@@ -196,17 +261,23 @@ class _AfletesAppState extends State<AfletesApp> {
           }
         }
 
-        if (context.read<ChatProvider>().negotiationId !=
-            data['negotiation_id']) {
+        if (Provider.of<ChatProvider>(context, listen: false).negotiationId !=
+            int.parse(data['negotiation_id'])) {
+          print('ID DE LA NEGOCIACION SON DIFERENTES');
           print(data);
+          print([notification.title, notification.body, notification.hashCode]);
           NotificationsApi.showNotification(
             id: notification.hashCode,
             title: notification.title,
             body: notification.body,
             payload:
-                '{"route": "chat", "id":${data["negotiation_id"].toString()}}',
+                '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
           );
+        } else {
+          print('ID DE LA NEGOCIACION IGUALES');
         }
+      } else {
+        print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');
       }
     });
 
@@ -239,11 +310,13 @@ class _AfletesAppState extends State<AfletesApp> {
 
         if (context.read<ChatProvider>().negotiationId !=
             data['negotiation_id']) {
-          Future.delayed(Duration.zero, () {
-            navigatorKey.currentState!.push(MaterialPageRoute(
-              builder: (context) => NegotiationChat(data["negotiation_id"]),
-            ));
-          });
+          // Future.delayed(Duration.zero, () {
+          // widget.navigatorKey.currentState!.push(MaterialPageRoute(
+          //   builder: (context) => NegotiationChat(data["negotiation_id"]),
+          // ));
+          widget.navigatorKey.currentState!
+              .pushNamed('/negotiation_id/' + data['negotiation_id']);
+          // });
         }
       }
     });
@@ -285,20 +358,21 @@ class _AfletesAppState extends State<AfletesApp> {
       ),
       initialRoute: '/splash_screen',
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/splash_screen': (context) => const SplashScreen(),
-        '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
-        '/loads': (context) => const Loads(),
-        '/vehicles': (context) => Vehicles(),
-        '/my-loads': (context) => const MyLoadsPage(),
-        '/create-load': (context) => const CreateLoadPage(),
-        '/create-vehicle': (context) => const CreateVehicle(),
-        '/my-vehicles': (context) => const MyVehiclesPage(),
-        '/my-negotiations': (context) => const MyNegotiations(),
-        '/pending-loads': (context) => const PendingLoadsPage(),
-      },
-      navigatorKey: navigatorKey,
+      // routes: {
+      //   '/splash_screen': (context) => const SplashScreen(),
+      //   '/login': (context) => const LoginPage(),
+      //   '/register': (context) => const RegisterPage(),
+      //   '/loads': (context) => const Loads(),
+      //   '/vehicles': (context) => Vehicles(),
+      //   '/my-loads': (context) => const MyLoadsPage(),
+      //   '/create-load': (context) => const CreateLoadPage(),
+      //   '/create-vehicle': (context) => const CreateVehicle(),
+      //   '/my-vehicles': (context) => const MyVehiclesPage(),
+      //   '/my-negotiations': (context) => const MyNegotiations(),
+      //   '/pending-loads': (context) => const PendingLoadsPage(),
+      // },
+      onGenerateRoute: routes,
+      navigatorKey: widget.navigatorKey,
     );
   }
 }

@@ -82,6 +82,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     );
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
+    chatProvider.setTransportistId(jsonResp['data']['vehicle']['owner_id']);
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
         providerMessages.add(ChatMessage(
@@ -315,6 +316,7 @@ Future acceptNegotiation(id, context) async {
               Response response = await api.postData('negotiation/accept', {
                 'id': id,
               });
+              print(response.body);
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
                 context.read<ChatProvider>().setToPay(true);
@@ -501,6 +503,8 @@ class _NegotiationChatState extends State<NegotiationChat> {
         ),
         onWillPop: () => Future(() {
               context.read<ChatProvider>().setNegotiationId(0);
+              context.read<ChatProvider>().setTransportistId(0);
+
               // context.read<ChatProvider>().setCanOffer(false);
               // context.read<ChatProvider>().setPaid(false);
               // context.read<ChatProvider>().setCanVote(false);
@@ -640,7 +644,21 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton(
                 style: buttonStyle,
-                onPressed: () => {},
+                onPressed: () => {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Dialog(
+                        child: VerTrayecto(
+                          load,
+                          trackTransportistLocation: true,
+                          transportistId:
+                              context.read<ChatProvider>().transportistId,
+                        ),
+                      );
+                    },
+                  )
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
