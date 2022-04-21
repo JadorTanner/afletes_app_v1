@@ -30,9 +30,12 @@ onLoadTap(
 
     Api api = Api();
 
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Buscando carga...')));
     Response response = await api.getData('load/load-info?id=' + id.toString());
     Map jsonResponse = jsonDecode(response.body);
     if (jsonResponse['success']) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       attachments.clear();
       data = jsonResponse['data'];
       images = data['attachments'] ?? [];
@@ -231,8 +234,9 @@ onLoadTap(
                                     : const SizedBox.shrink()))
                             : TextButton.icon(
                                 onPressed: () async {
-                                  Navigator.of(context).pop();
+                                  // Navigator.of(context).pop();
                                   //LLEVA AL DETALLE DE LA CARGA
+                                  print(load.addressFrom);
                                   Navigator.of(context)
                                       .pushNamed('/create-load', arguments: {
                                     'id': load.id,

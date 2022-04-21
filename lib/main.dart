@@ -144,7 +144,7 @@ class _AfletesAppState extends State<AfletesApp> {
       } else if (settings.name == '/my-loads') {
         return MaterialPageRoute(builder: (_) => const MyLoadsPage());
       } else if (settings.name == '/create-load') {
-        return MaterialPageRoute(builder: (_) => const CreateLoadPage());
+        return MaterialPageRoute(builder: (_) => CreateLoadPage(null));
       } else if (settings.name == '/create-vehicle') {
         return MaterialPageRoute(builder: (_) => const CreateVehicle());
       } else if (settings.name == '/my-vehicles') {
