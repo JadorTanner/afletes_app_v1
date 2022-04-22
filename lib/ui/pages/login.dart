@@ -28,6 +28,17 @@ TextEditingController textController2 = TextEditingController();
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool isLoading = false;
 
+  checkIfIssetUser() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    if (sharedPreferences.getString('user') != null) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        context.read<User>().user.isCarrier ? '/loads' : '/vehicles',
+        ModalRoute.withName(
+            context.read<User>().user.isCarrier ? '/loads' : '/vehicles'),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -54,8 +65,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           await Api().postData('user/set-device-token',
               {'id': user['id'], 'device_token': token ?? ''});
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ha ocurrido un error')));
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //     const SnackBar(content: Text('Ha ocurrido un error')));
         }
         if (user['confirmed']) {
           if (user['habilitado']) {
@@ -81,12 +92,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 }
               });
               if (sharedPreferences.getInt('vehicles')! > 0) {
-                Navigator.of(context).pushReplacementNamed('/loads');
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/loads', ModalRoute.withName('/loads'));
               } else {
-                Navigator.of(context).pushReplacement(
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
                     builder: (context) => const CreateVehicleAfterReg(),
                   ),
+                  ModalRoute.withName('/create-vehicle-after-registration'),
                 );
               }
             } else {
@@ -95,17 +108,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   context.read<TransportistsLocProvider>(),
                   context.read<ChatProvider>(),
                   true);
-              Navigator.of(context).pushReplacementNamed('/vehicles');
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/vehicles', ModalRoute.withName('/vehicles'));
             }
           } else {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => const WaitHabilitacion(),
-            ));
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const WaitHabilitacion(),
+              ),
+              ModalRoute.withName('/wait-habilitacion'),
+            );
           }
         } else {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => const ValidateCode(),
-          ));
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const ValidateCode(),
+            ),
+            ModalRoute.withName('/validate-code'),
+          );
         }
       } else {
         setState(() {
@@ -127,6 +147,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    print('BUILD ENTIRE LOGIN PAGE');
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -146,69 +167,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  CustomFormField(
-                    textController1,
-                    'Email',
-                    hint: 'Ejemplo@gmail.com',
-                    icon: Icons.alternate_email,
-                    type: TextInputType.emailAddress,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(
-                    width: 100,
-                    height: 20,
-                  ),
-                  PasswordField(
-                    'Contraseña',
-                    textController2,
-                    enabled: !isLoading,
-                    onSubmit: () async {
-                      loginFunction();
-                    },
-                  ),
-                  const SizedBox(
-                    width: 100,
-                    height: 20,
-                  ),
-                  // const LoginButton(),
-                  TextButton.icon(
-                    onPressed: (isLoading ? null : loginFunction),
-                    icon: isLoading
-                        ? const SizedBox(
-                            width: 30,
-                            height: 30,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.app_registration,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                    label: const Text('Iniciar Sesión',
-                        style: TextStyle(color: Colors.white)),
-                    style: ButtonStyle(
-                        backgroundColor: isLoading
-                            ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
-                            : MaterialStateProperty.all(
-                                const Color(0xFFED8232))),
-                  ),
-                  const SizedBox(
-                    width: 100,
-                    height: 20,
-                  ),
-                  // const Text('He olvidado mi contraseña',
-                  //     textAlign: TextAlign.center),
-                ],
-              ),
-            ),
+            FormContainer(isLoading, loginFunction),
             // const Spacer(),
             RichText(
               textAlign: TextAlign.center,
@@ -237,6 +196,78 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class FormContainer extends StatelessWidget {
+  FormContainer(this.isLoading, this.loginFunction, {Key? key})
+      : super(key: key);
+  bool isLoading;
+  var loginFunction;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomFormField(
+            textController1,
+            'Email',
+            hint: 'Ejemplo@gmail.com',
+            icon: Icons.alternate_email,
+            type: TextInputType.emailAddress,
+            enabled: !isLoading,
+          ),
+          const SizedBox(
+            width: 100,
+            height: 20,
+          ),
+          PasswordField(
+            'Contraseña',
+            textController2,
+            enabled: !isLoading,
+            onSubmit: () async {
+              loginFunction();
+            },
+          ),
+          const SizedBox(
+            width: 100,
+            height: 20,
+          ),
+          // const LoginButton(),
+          TextButton.icon(
+            onPressed: (isLoading ? null : loginFunction),
+            icon: isLoading
+                ? const SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(
+                    Icons.app_registration,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+            label: const Text('Iniciar Sesión',
+                style: TextStyle(color: Colors.white)),
+            style: ButtonStyle(
+                backgroundColor: isLoading
+                    ? MaterialStateProperty.all(const Color(0xFFA0A0A0))
+                    : MaterialStateProperty.all(const Color(0xFFED8232))),
+          ),
+          const SizedBox(
+            width: 100,
+            height: 20,
+          ),
+          // const Text('He olvidado mi contraseña',
+          //     textAlign: TextAlign.center),
+        ],
       ),
     );
   }

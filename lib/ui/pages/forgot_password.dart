@@ -249,12 +249,16 @@ class ValidateButtonState extends State<ValidateButton> {
                                       builder: (context) =>
                                           const CreateVehicleAfterReg()));
                             } else {
-                              Navigator.of(context)
-                                  .pushReplacementNamed('/loads');
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/loads',
+                                ModalRoute.withName('/loads'),
+                              );
                             }
                           } else {
-                            Navigator.of(context)
-                                .pushReplacementNamed('/vehicles');
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/vehicles',
+                              ModalRoute.withName('/vehicles'),
+                            );
                           }
                         } else {
                           Navigator.of(context).pushReplacement(

@@ -152,8 +152,10 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         content: Text('No tiene permiso para ver esta negociación'),
       ),
     );
-    Navigator.of(context)
-        .pushReplacementNamed(user.isCarrier ? '/loads' : '/vehicles');
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      user.isCarrier ? '/loads' : '/vehicles',
+      ModalRoute.withName(user.isCarrier ? '/loads' : '/vehicles'),
+    );
   }
   return [];
   // } catch (e) {
@@ -168,6 +170,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     String message = '',
     bool isLocation = false]) async {
   try {
+    context.read<ChatProvider>().setCanOffer(false);
     FocusManager.instance.primaryFocus?.unfocus();
     String offer = oferta.text;
     oferta.text = '';

@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
@@ -155,6 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
               (snapshot.connectionState == ConnectionState.done
                   ? PageView(
                       controller: pageController,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         PrimeraParte(pageController: pageController),
                         SegundaParte(pageController: pageController),
@@ -364,7 +364,8 @@ class SegundaParte extends StatefulWidget {
   State<SegundaParte> createState() => _SegundaParteState();
 }
 
-class _SegundaParteState extends State<SegundaParte> {
+class _SegundaParteState extends State<SegundaParte>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -457,6 +458,9 @@ class _SegundaParteState extends State<SegundaParte> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class UbicacionPicker extends StatefulWidget {
@@ -727,7 +731,6 @@ class RegisterButtonState extends State<RegisterButton> {
                   'identity_card_back_attachment', cedulaAtras));
               StreamedResponse response = await request.send();
               String stringResponse = await response.stream.bytesToString();
-              log(stringResponse);
 
               if (response.statusCode == 200) {
                 setState(() => {
@@ -750,24 +753,23 @@ class RegisterButtonState extends State<RegisterButton> {
                       await SharedPreferences.getInstance();
 
                   //TOKEN PARA MENSAJES PUSH
-                  String? token = await FirebaseMessaging.instance.getToken();
+                  try {
+                    String? token = await FirebaseMessaging.instance.getToken();
+                    if (token != null) {
+                      Response response = await Api().postData(
+                          'user/set-device-token', {
+                        'id': responseBody['data']['user']['id'],
+                        'device_token': token
+                      });
 
-                  print('firebase token: ' + (token ?? 'token'));
+                      print(response.body);
+                    }
+                  } catch (e) {}
 
                   sharedPreferences.setString(
                       'user', jsonEncode(responseBody['data']['user']));
                   sharedPreferences.setString(
                       'token', responseBody['data']['token']);
-
-                  if (token != null) {
-                    Response response = await Api().postData(
-                        'user/set-device-token', {
-                      'id': responseBody['data']['user']['id'],
-                      'device_token': token
-                    });
-
-                    print(response.body);
-                  }
 
                   if (responseBody['data']['user']['is_carrier']) {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(

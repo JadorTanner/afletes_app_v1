@@ -176,7 +176,7 @@ onLoadTap(
                       children: [
                         Flexible(
                           child: TextField(
-                            // enabled: isCarrier,
+                            enabled: isCarrier,
                             controller: intialOfferController,
                             keyboardType: TextInputType.number,
                             onChanged: (val) {
@@ -234,41 +234,80 @@ onLoadTap(
                                     : const SizedBox.shrink()))
                             : TextButton.icon(
                                 onPressed: () async {
-                                  // Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
                                   //LLEVA AL DETALLE DE LA CARGA
                                   print(load.addressFrom);
-                                  Navigator.of(context)
-                                      .pushNamed('/create-load', arguments: {
-                                    'id': load.id,
-                                    'product': load.product,
-                                    'peso': load.weight,
-                                    'volumen': load.volumen,
-                                    'description': load.description,
-                                    'categoria': load.categoryId,
-                                    'unidadMedida': load.measurement,
-                                    'ofertaInicial': load.initialOffer,
-                                    'vehiculos': load.vehicleQuantity,
-                                    'ayudantes': load.helpersQuantity,
-                                    'originAddress': load.addressFrom,
-                                    'originCity': load.cityFromId,
-                                    'originState': load.stateFromId,
-                                    'originCoords': load.latitudeFrom +
-                                        ',' +
-                                        load.longitudeFrom,
-                                    'destinAddress': load.destinAddress,
-                                    'destinCity': load.destinCityId,
-                                    'destinState': load.destinStateId,
-                                    'destinCoords': load.latitudeFrom +
-                                        ',' +
-                                        load.destinLongitude,
-                                    'loadDate': load.pickUpDate,
-                                    'loadHour': load.pickUpTime,
-                                    'esperaCarga': load.loadWait,
-                                    'esperaDescarga': load.deliveryWait,
-                                    'observaciones': load.observations,
-                                    'isUrgent': load.isUrgent,
-                                    'imgs': images
-                                  });
+                                  // Navigator.of(context).push(
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => CreateLoadPage(
+                                  //       {
+                                  //         'id': load.id,
+                                  //         'product': load.product,
+                                  //         'peso': load.weight,
+                                  //         'volumen': load.volumen,
+                                  //         'description': load.description,
+                                  //         'categoria': load.categoryId,
+                                  //         'unidadMedida': load.measurement,
+                                  //         'ofertaInicial': load.initialOffer,
+                                  //         'vehiculos': load.vehicleQuantity,
+                                  //         'ayudantes': load.helpersQuantity,
+                                  //         'originAddress': load.addressFrom,
+                                  //         'originCity': load.cityFromId,
+                                  //         'originState': load.stateFromId,
+                                  //         'originCoords': load.latitudeFrom +
+                                  //             ',' +
+                                  //             load.longitudeFrom,
+                                  //         'destinAddress': load.destinAddress,
+                                  //         'destinCity': load.destinCityId,
+                                  //         'destinState': load.destinStateId,
+                                  //         'destinCoords': load.latitudeFrom +
+                                  //             ',' +
+                                  //             load.destinLongitude,
+                                  //         'loadDate': load.pickUpDate,
+                                  //         'loadHour': load.pickUpTime,
+                                  //         'esperaCarga': load.loadWait,
+                                  //         'esperaDescarga': load.deliveryWait,
+                                  //         'observaciones': load.observations,
+                                  //         'isUrgent': load.isUrgent,
+                                  //         'imgs': images
+                                  //       },
+                                  //     ),
+                                  //   ),
+                                  // );
+                                  Navigator.of(context).pushNamed(
+                                    '/create-load',
+                                    arguments: {
+                                      'id': load.id,
+                                      'product': load.product,
+                                      'peso': load.weight,
+                                      'volumen': load.volumen,
+                                      'description': load.description,
+                                      'categoria': load.categoryId,
+                                      'unidadMedida': load.measurement,
+                                      'ofertaInicial': load.initialOffer,
+                                      'vehiculos': load.vehicleQuantity,
+                                      'ayudantes': load.helpersQuantity,
+                                      'originAddress': load.addressFrom,
+                                      'originCity': load.cityFromId,
+                                      'originState': load.stateFromId,
+                                      'originCoords': load.latitudeFrom +
+                                          ',' +
+                                          load.longitudeFrom,
+                                      'destinAddress': load.destinAddress,
+                                      'destinCity': load.destinCityId,
+                                      'destinState': load.destinStateId,
+                                      'destinCoords': load.latitudeFrom +
+                                          ',' +
+                                          load.destinLongitude,
+                                      'loadDate': load.pickUpDate,
+                                      'loadHour': load.pickUpTime,
+                                      'esperaCarga': load.loadWait,
+                                      'esperaDescarga': load.deliveryWait,
+                                      'observaciones': load.observations,
+                                      'isUrgent': load.isUrgent,
+                                      'imgs': images
+                                    },
+                                  );
                                 },
                                 style: ButtonStyle(
                                   backgroundColor:
@@ -468,6 +507,8 @@ class LoadCard extends StatefulWidget {
 }
 
 class _LoadCardState extends State<LoadCard> {
+  String stateName = '';
+
   @override
   void initState() {
     super.initState();
@@ -475,6 +516,51 @@ class _LoadCardState extends State<LoadCard> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.hasData && widget.load != null) {
+      if (widget.load!.state != '') {
+        switch (widget.load!.state) {
+          case 'OPEN':
+            stateName = 'Abierto';
+            break;
+          case 'IN_NEGOTIATION':
+            stateName = 'En negociación';
+            break;
+          case 'CONFIRMED':
+            stateName = 'Carga confirmada';
+            break;
+          case 'REJECTED_BY_CARRIER':
+            stateName = 'Rechazado por el transportista';
+            break;
+          case 'REJECTED_BY_LOADER':
+            stateName = 'Rechazado por el generador';
+            break;
+          case 'CANCELLED':
+            stateName = 'Cancelado';
+            break;
+          case 'EXPIRATED':
+            stateName = 'Expirado';
+            break;
+          case 'FINISHED':
+            stateName = 'Aceptado';
+            break;
+          case 'EN_CAMINO_RECOGIDA':
+            stateName = 'En camino a recogida';
+            break;
+          case 'RECOGIDO':
+            stateName = 'Recogida';
+            break;
+          case 'EN_CAMINO_DESTINO':
+            stateName = 'En camino a destino';
+            break;
+          case 'ENTREGADO':
+            stateName = 'Entregada';
+            break;
+          case 'ENTREGA_CONFIRMADA':
+            stateName = 'Entrega confirmada';
+            break;
+        }
+      }
+    }
     return Card(
       margin: const EdgeInsets.only(bottom: 15),
       elevation: 10,
@@ -568,6 +654,11 @@ class _LoadCardState extends State<LoadCard> {
                           ? Text(Constants.currencyFormat(widget.isFinalOffer
                               ? widget.load!.finalOffer
                               : widget.load!.initialOffer))
+                          : CustomPaint(
+                              painter: OpenPainter(50, 10, 10, 20),
+                            ),
+                      widget.hasData
+                          ? Text(stateName)
                           : CustomPaint(
                               painter: OpenPainter(50, 10, 10, 20),
                             ),

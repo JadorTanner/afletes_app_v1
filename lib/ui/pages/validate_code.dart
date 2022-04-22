@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 
-import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -171,11 +170,10 @@ class ReturnBackState extends State<ReturnBack> {
         sharedPreferences.remove('user');
         sharedPreferences.remove('token');
         sharedPreferences.clear();
-        Navigator.pushReplacement(
+        Navigator.pushNamedAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginPage(),
-          ),
+          '/login',
+          ModalRoute.withName('/login'),
         );
       },
       child: Row(
@@ -253,17 +251,31 @@ class ValidateButtonState extends State<ValidateButton> {
                 if (responseBody['data']['user']['habilitado']) {
                   if (responseBody['data']['user']['is_carrier']) {
                     if (responseBody['data']['cant_vehicles'] <= 0) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => const CreateVehicleAfterReg()));
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const CreateVehicleAfterReg()),
+                        ModalRoute.withName(
+                            '/create-vehicle-after-registration'),
+                      );
                     } else {
-                      Navigator.of(context).pushReplacementNamed('/loads');
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        '/loads',
+                        ModalRoute.withName('/loads'),
+                      );
                     }
                   } else {
-                    Navigator.of(context).pushReplacementNamed('/vehicles');
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/vehicles',
+                      ModalRoute.withName('/vehicles'),
+                    );
                   }
                 } else {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => const WaitHabilitacion()));
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const WaitHabilitacion()),
+                    ModalRoute.withName('/wait-habilitacion'),
+                  );
                 }
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(

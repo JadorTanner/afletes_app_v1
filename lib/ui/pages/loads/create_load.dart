@@ -106,76 +106,14 @@ Future getCategories() async {
 }
 
 class CreateLoadPage extends StatefulWidget {
-  CreateLoadPage(this.arguments, {Key? key}) : super(key: key);
-  Map? arguments;
+  const CreateLoadPage({Key? key}) : super(key: key);
   @override
   State<CreateLoadPage> createState() => _CreateLoadPageState();
 }
 
 class _CreateLoadPageState extends State<CreateLoadPage> {
   late Position position;
-
-  setValues(args) {
-    if (widget.arguments != null) {
-      hasLoadData = true;
-      loadId = args['id'];
-      productController.text = args['product'];
-      pesoController.text = args['peso'].toString();
-      volumenController.text = args['volumen'].toString();
-      descriptionController.text = args['description'];
-      categoriaController.text = args['categoria'].toString();
-      unidadMedidaController.text = args['unidadMedida'];
-      ofertaInicialController.text = args['ofertaInicial'].toString();
-      vehiculosController.text = args['vehiculos'].toString();
-      ayudantesController.text = args['ayudantes'].toString();
-      originAddressController.text = args['originAddress'];
-      originCityController.text = args['originCity'].toString();
-      originStateController.text = args['originState'].toString();
-      originCoordsController.text = args['originCoords'];
-      destinAddressController.text = args['destinAddress'];
-      destinCityController.text = args['destinCity'].toString();
-      destinStateController.text = args['destinState'].toString();
-      destinCoordsController.text = args['destinCoords'];
-      loadDateController.text = args['loadDate'];
-      loadHourController.text = args['loadHour'];
-      esperaCargaController.text = args['esperaCarga'].toString();
-      esperaDescargaController.text = args['esperaDescarga'].toString();
-      observacionesController.text = args['observaciones'];
-      isUrgentController.text = args['isUrgent'].toString();
-      imagenes.clear();
-      imagenesNetwork.clear();
-      imagenesNetwork = args['imgs'];
-    } else {
-      loadId = 0;
-      imagenes.clear();
-      hasLoadData = false;
-      ubicacionController.text = '';
-      productController.text = '';
-      descriptionController.text = '';
-      categoriaController.text = '';
-      unidadMedidaController.text = '';
-      pesoController.text = '';
-      ofertaInicialController.text = '';
-      vehiculosController.text = '';
-      ayudantesController.text = '';
-      volumenController.text = '';
-      originAddressController.text = '';
-      originCityController.text = '';
-      originStateController.text = '';
-      originCoordsController.text = '';
-      destinAddressController.text = '';
-      destinCityController.text = '';
-      destinStateController.text = '';
-      destinCoordsController.text = '';
-      loadDateController.text = '';
-      loadHourController.text = '';
-      esperaCargaController.text = '';
-      esperaDescargaController.text = '';
-      observacionesController.text = '';
-      isUrgentController.text = '';
-    }
-    setState(() {});
-  }
+  var arguments;
 
   @override
   void initState() {
@@ -185,9 +123,69 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // arguments = ModalRoute.of(context)!.settings.arguments;
+    arguments = ModalRoute.of(context)!.settings.arguments;
     print('ARGUMENTOS PASADOS');
-    setValues(widget.arguments);
+    setState(() {
+      if (arguments != null) {
+        hasLoadData = true;
+        loadId = arguments!['id'];
+        productController.text = arguments['product'];
+        pesoController.text = arguments['peso'].toString();
+        volumenController.text = arguments['volumen'].toString();
+        descriptionController.text = arguments['description'];
+        categoriaController.text = arguments['categoria'].toString();
+        unidadMedidaController.text = arguments['unidadMedida'];
+        ofertaInicialController.text = arguments['ofertaInicial'].toString();
+        vehiculosController.text = arguments['vehiculos'].toString();
+        ayudantesController.text = arguments['ayudantes'].toString();
+        originAddressController.text = arguments['originAddress'];
+        originCityController.text = arguments['originCity'].toString();
+        originStateController.text = arguments['originState'].toString();
+        originCoordsController.text = arguments['originCoords'];
+        destinAddressController.text = arguments['destinAddress'];
+        destinCityController.text = arguments['destinCity'].toString();
+        destinStateController.text = arguments['destinState'].toString();
+        destinCoordsController.text = arguments['destinCoords'];
+        loadDateController.text = arguments['loadDate'];
+        loadHourController.text = arguments['loadHour'];
+        esperaCargaController.text = arguments['esperaCarga'].toString();
+        esperaDescargaController.text = arguments['esperaDescarga'].toString();
+        observacionesController.text = arguments['observaciones'];
+        isUrgentController.text = arguments['isUrgent'] ? '1' : '0';
+        imagenes.clear();
+        imagenesNetwork.clear();
+        imagenesNetwork = arguments['imgs'];
+      } else {
+        loadId = 0;
+        imagenes.clear();
+        imagenesNetwork.clear();
+        hasLoadData = false;
+        ubicacionController.text = '';
+        productController.text = '';
+        descriptionController.text = '';
+        categoriaController.text = '';
+        unidadMedidaController.text = '';
+        pesoController.text = '';
+        ofertaInicialController.text = '';
+        vehiculosController.text = '';
+        ayudantesController.text = '';
+        volumenController.text = '';
+        originAddressController.text = '';
+        originCityController.text = '';
+        originStateController.text = '';
+        originCoordsController.text = '';
+        destinAddressController.text = '';
+        destinCityController.text = '';
+        destinStateController.text = '';
+        destinCoordsController.text = '';
+        loadDateController.text = '';
+        loadHourController.text = '';
+        esperaCargaController.text = '';
+        esperaDescargaController.text = '';
+        observacionesController.text = '';
+        isUrgentController.text = '';
+      }
+    });
   }
 
   @override
@@ -1040,6 +1038,8 @@ class _StateAndCityPickerState extends State<StateAndCityPicker> {
       return element.state_id.toString() == departamentoId;
     }).toList();
     value = newCities[0].id.toString();
+    originStateController.text = departamentoId;
+    originCityController.text = value;
   }
 
   @override
@@ -1057,6 +1057,7 @@ class _StateAndCityPickerState extends State<StateAndCityPicker> {
                 return element.state_id.toString() == departamentoId;
               }).toList();
               value = newCities[0].id.toString();
+              originCityController.text = value;
             });
           }),
         ),
@@ -1187,7 +1188,9 @@ class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
     newCities = cities.where((element) {
       return element.state_id.toString() == departamentoId;
     }).toList();
+    destinStateController.text = departamentoId;
     value = newCities[0].id.toString();
+    destinCityController.text = value;
   }
 
   @override
@@ -1205,6 +1208,7 @@ class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
                 return element.state_id.toString() == departamentoId;
               }).toList();
               value = newCities[0].id.toString();
+              destinCityController.text = value;
             });
           }),
         ),
@@ -1466,6 +1470,15 @@ class IsUrgent extends StatefulWidget {
 
 class _IsUrgentState extends State<IsUrgent> {
   bool checked = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    checked = isUrgentController.text == '1';
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -1553,8 +1566,9 @@ class _EnviarButtonState extends State<EnviarButton> {
                   'payment_term_after_delivery': 1,
                   'wait_in_origin': esperaCargaController.text,
                   'wait_in_destination': esperaDescargaController.text,
-                  'observatios': observacionesController.text,
+                  'observations': observacionesController.text,
                   'is_urgent': isUrgentController.text == '1',
+                  'volume': volumenController.text,
                   'loadId': loadId
                 }, imagenes,
                     context: context, update: hasLoadData, loadId: loadId);

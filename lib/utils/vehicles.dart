@@ -214,8 +214,10 @@ class Vehicle {
               Future.delayed(
                   const Duration(seconds: 1),
                   () => {
-                        Navigator.of(context)
-                            .pushReplacementNamed('/my-vehicles')
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/my-vehicles',
+                          ModalRoute.withName('/my-vehicles'),
+                        )
                       });
             } else {
               Navigator.of(context).pushReplacement(

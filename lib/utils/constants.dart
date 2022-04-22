@@ -5,7 +5,7 @@ class Constants {
 //casa
 // String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
-  static String baseUrl = 'http://192.168.1.100:9000/';
+  static String baseUrl = 'http://192.168.1.196:9000/';
 //producción
 // String baseUrl = 'https://www.afletes.com/';
 

@@ -9,6 +9,7 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 TextEditingController emailController = TextEditingController();
@@ -79,273 +80,283 @@ class _MyProfilePageState extends State<MyProfilePage> {
         ),
         child: Stack(
           children: [
-            ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                CircleAvatar(
-                  backgroundColor: Constants.kGrey,
-                  minRadius: 60,
-                  child: Text(
-                    widget.user.fullName
-                        .split(' ')
-                        .map((e) => e.length > 2 ? e.substring(0, 1) : '')
-                        .join(''),
-                    style: const TextStyle(fontSize: 40, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Align(
-                  child: Text(widget.user.fullName),
-                  alignment: Alignment.center,
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                Row(
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20).copyWith(bottom: 60),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: CustomFormField(
-                        documentNumberController,
-                        'Documento',
-                        onChange: (value) {
-                          if (value != documentinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
+                    CircleAvatar(
+                      backgroundColor: Constants.kGrey,
+                      minRadius: 60,
+                      child: Text(
+                        Provider.of<User>(context)
+                            .user
+                            .fullName
+                            .split(' ')
+                            .map((e) => e.length > 2 ? e.substring(0, 1) : '')
+                            .join(''),
+                        style:
+                            const TextStyle(fontSize: 40, color: Colors.white),
                       ),
                     ),
                     const SizedBox(
-                      width: 20,
+                      height: 10,
                     ),
-                    Flexible(
-                      child: CustomFormField(
-                        legalNameController,
-                        'Razón social',
-                        onChange: (value) {
-                          if (value != legalnameinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: CustomFormField(
-                        nombreController,
-                        'Nombre',
-                        onChange: (value) {
-                          if (value != nombreinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
+                    Align(
+                      child: Text(Provider.of<User>(context).user.fullName),
+                      alignment: Alignment.center,
                     ),
                     const SizedBox(
-                      width: 20,
+                      height: 30,
                     ),
-                    Flexible(
-                      child: CustomFormField(
-                        apellidoController,
-                        'Apellido',
-                        onChange: (value) {
-                          if (value != apellidoinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: CustomFormField(
-                        cellphoneController,
-                        'Celular',
-                        onChange: (value) {
-                          if (value != cellphoneinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    Flexible(
-                      child: CustomFormField(
-                        phoneController,
-                        'Teléfono',
-                        onChange: (value) {
-                          if (value != phoneinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                CustomFormField(
-                  street1Controller,
-                  'Calle principal',
-                  onChange: (value) {
-                    if (value != street1initialValue) {
-                      if (!canUpdate) {
-                        setState(() {
-                          canUpdate = !canUpdate;
-                        });
-                      }
-                    } else {
-                      setState(() {
-                        canUpdate = !canUpdate;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: CustomFormField(
-                        street2Controller,
-                        'Secundaria',
-                        onChange: (value) {
-                          if (value != street2initialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              canUpdate = !canUpdate;
-                            });
-                          }
-                        },
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: CustomFormField(
+                            documentNumberController,
+                            'Documento',
+                            onChange: (value) {
+                              if (value != documentinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: CustomFormField(
+                            legalNameController,
+                            'Razón social',
+                            onChange: (value) {
+                              if (value != legalnameinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(
-                      width: 20,
+                      height: 20,
                     ),
-                    Flexible(
-                      child: CustomFormField(
-                        houseNumberController,
-                        'Nro',
-                        onChange: (value) {
-                          if (value != housenumberinitialValue) {
-                            if (!canUpdate) {
-                              setState(() {
-                                canUpdate = !canUpdate;
-                              });
-                            }
-                          } else {
+                    Row(
+                      children: [
+                        Flexible(
+                          child: CustomFormField(
+                            nombreController,
+                            'Nombre',
+                            onChange: (value) {
+                              if (value != nombreinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: CustomFormField(
+                            apellidoController,
+                            'Apellido',
+                            onChange: (value) {
+                              if (value != apellidoinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: CustomFormField(
+                            cellphoneController,
+                            'Celular',
+                            onChange: (value) {
+                              if (value != cellphoneinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: CustomFormField(
+                            phoneController,
+                            'Teléfono',
+                            onChange: (value) {
+                              if (value != phoneinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomFormField(
+                      street1Controller,
+                      'Calle principal',
+                      onChange: (value) {
+                        if (value != street1initialValue) {
+                          if (!canUpdate) {
                             setState(() {
                               canUpdate = !canUpdate;
                             });
                           }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                CustomFormField(
-                  emailController,
-                  'Email',
-                  type: TextInputType.emailAddress,
-                  enabled: false,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Text('Confirma tu contraseña para guardar los cambios'),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: PasswordField('Contraseña', passwordController),
+                        } else {
+                          setState(() {
+                            canUpdate = !canUpdate;
+                          });
+                        }
+                      },
                     ),
                     const SizedBox(
-                      width: 20,
+                      height: 20,
                     ),
-                    Flexible(
-                      child: PasswordField('Confirmar contraseña',
-                          passwordConfirmationController),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: CustomFormField(
+                            street2Controller,
+                            'Secundaria',
+                            onChange: (value) {
+                              if (value != street2initialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: CustomFormField(
+                            houseNumberController,
+                            'Nro',
+                            onChange: (value) {
+                              if (value != housenumberinitialValue) {
+                                if (!canUpdate) {
+                                  setState(() {
+                                    canUpdate = !canUpdate;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  canUpdate = !canUpdate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomFormField(
+                      emailController,
+                      'Email',
+                      type: TextInputType.emailAddress,
+                      enabled: false,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text(
+                        'Confirma tu contraseña para guardar los cambios'),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child:
+                              PasswordField('Contraseña', passwordController),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Flexible(
+                          child: PasswordField('Confirmar contraseña',
+                              passwordConfirmationController),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
+              ),
             ),
             Positioned(
                 bottom: 0,
@@ -416,6 +427,9 @@ class _UpdateButtonState extends State<UpdateButton> {
                   SharedPreferences shared =
                       await SharedPreferences.getInstance();
                   shared.setString('user', jsonEncode(resp['data']));
+                  context
+                      .read<User>()
+                      .setUser(User.userFromArray(resp['data']));
                   widget.afterUpdate();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

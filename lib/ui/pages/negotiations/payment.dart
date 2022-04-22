@@ -193,8 +193,10 @@ class _PaymentState extends State<Payment> {
                                   );
                                 }
                               } else {
-                                Navigator.of(context)
-                                    .pushReplacementNamed('/my-negotiations');
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/my-negotiations',
+                                  ModalRoute.withName('/my-negotiations'),
+                                );
                               }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(

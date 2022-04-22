@@ -110,6 +110,7 @@ class Load extends ChangeNotifier {
       latitudeFrom: json['latitude'] ?? '',
       longitudeFrom: json['longitude'] ?? '',
       negotiationId: json['negotiation_id'] ?? 0,
+      state: json.containsKey('load_state') ? json['load_state']['name'] : '',
     );
   }
 
@@ -158,7 +159,10 @@ class Load extends ChangeNotifier {
               Future.delayed(
                   const Duration(seconds: 1),
                   () => {
-                        Navigator.of(context).pushReplacementNamed('/vehicles')
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/vehicles',
+                          ModalRoute.withName('/vehicles'),
+                        )
                       });
             } else {
               Future.delayed(const Duration(seconds: 1),

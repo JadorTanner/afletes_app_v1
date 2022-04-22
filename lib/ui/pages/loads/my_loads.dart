@@ -16,14 +16,15 @@ Future<List<Load>> getMyLoads() async {
   try {
     Response response = await Api().getData('user/my-loads');
     loads.clear();
-    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
         if (data.isNotEmpty) {
+          print(data[0]);
           data.asMap().forEach((key, load) {
-            loads.add(Load(
+            loads.add(
+              Load(
                 id: load['id'],
                 addressFrom: load['address'],
                 cityFromId: load['city_id'],
@@ -51,7 +52,10 @@ Future<List<Load>> getMyLoads() async {
                 pickUpTime: load['pickup_time'],
                 observations: load['observations'] ?? '',
                 isUrgent: load['is_urgent'],
-                categoryId: load['product_category_id']));
+                categoryId: load['product_category_id'],
+                state: load['load_state']['name'],
+              ),
+            );
           });
           return loads;
         } else {
@@ -122,8 +126,8 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
                 ),
                 children: [
                   TextButton.icon(
-                    onPressed: () =>
-                        Navigator.of(context).pushNamed('/create-load'),
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed('/create-load', arguments: null),
                     style: ButtonStyle(
                       padding: MaterialStateProperty.all<EdgeInsets>(
                           const EdgeInsets.symmetric(vertical: 20)),

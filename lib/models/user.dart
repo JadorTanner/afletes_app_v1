@@ -228,7 +228,10 @@ class User extends ChangeNotifier {
       sharedPreferences.remove('user');
       sharedPreferences.remove('token');
       context.read<PusherApi>().disconnect();
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/login',
+        ModalRoute.withName('/login'),
+      );
     } catch (e) {
       return false;
     }

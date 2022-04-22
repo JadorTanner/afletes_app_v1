@@ -9,8 +9,12 @@ Future<bool> login(BuildContext context, String email, String password) async {
   SharedPreferences localStorage = await SharedPreferences.getInstance();
   String? user = localStorage.getString('user');
   if (user != null) {
-    Navigator.pushReplacementNamed(
-        context, jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles',
+      ModalRoute.withName(
+          jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles'),
+    );
   } else {
     bool emailValid = RegExp(
             r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -29,11 +33,15 @@ Future<bool> login(BuildContext context, String email, String password) async {
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
 
-            Navigator.pushReplacementNamed(
-                context,
-                responseBody['data']['user']['is_carrier']
-                    ? '/loads'
-                    : '/vehicles');
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              responseBody['data']['user']['is_carrier']
+                  ? '/loads'
+                  : '/vehicles',
+              ModalRoute.withName(responseBody['data']['user']['is_carrier']
+                  ? '/loads'
+                  : '/vehicles'),
+            );
             return true;
           } else {
             return false;

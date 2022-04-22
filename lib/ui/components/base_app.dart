@@ -110,11 +110,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     loadProvider = Provider.of<Load>(context);
-    user = Provider.of<User>(context, listen: false).user;
   }
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of<User>(context).user;
     return Drawer(
       child: SafeArea(
         minimum: const EdgeInsets.all(15),

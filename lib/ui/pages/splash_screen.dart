@@ -98,10 +98,14 @@ class _SplashScreenState extends State<SplashScreen> {
                             });
                           });
                         }
-                        Navigator.of(context).pushReplacementNamed(
-                            jsonDecode(user)['is_carrier']
-                                ? '/loads'
-                                : '/vehicles');
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          jsonDecode(user)['is_carrier']
+                              ? '/loads'
+                              : '/vehicles',
+                          ModalRoute.withName(jsonDecode(user)['is_carrier']
+                              ? '/loads'
+                              : '/vehicles'),
+                        );
                       } else {
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const WaitHabilitacion(),
@@ -113,7 +117,10 @@ class _SplashScreenState extends State<SplashScreen> {
                       ));
                     }
                   } else {
-                    Navigator.of(context).pushReplacementNamed('/login');
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login',
+                      ModalRoute.withName('/login'),
+                    );
                   }
                 } else if (permission == 4) {
                   showDialog(
@@ -197,29 +204,42 @@ class _SplashScreenState extends State<SplashScreen> {
               });
 
               if (sharedPreferences.getInt('vehicles')! > 0) {
-                Navigator.of(context).pushReplacementNamed('/loads');
-              } else {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const CreateVehicleAfterReg(),
-                  ),
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/loads',
+                  ModalRoute.withName('/loads'),
                 );
+              } else {
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const CreateVehicleAfterReg(),
+                    ),
+                    ModalRoute.withName('/create-vehicle-after-registration'));
               }
             } else {
-              Navigator.of(context).pushReplacementNamed('/vehicles');
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/vehicles', ModalRoute.withName('/vehicles'));
             }
           } else {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => const WaitHabilitacion(),
-            ));
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const WaitHabilitacion(),
+              ),
+              ModalRoute.withName('/wait-habilitacion'),
+            );
           }
         } else {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => const ValidateCode(),
-          ));
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const ValidateCode(),
+            ),
+            ModalRoute.withName('/validate-code'),
+          );
         }
       } else {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/login',
+          ModalRoute.withName('/login'),
+        );
       }
     }
   }

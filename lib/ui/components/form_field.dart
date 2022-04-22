@@ -166,18 +166,18 @@ class _PasswordFieldState extends State<PasswordField> {
         focusedBorder: OutlineInputBorder(
             borderSide:
                 BorderSide(color: Constants.kBlack, style: BorderStyle.solid)),
-        suffixIcon: InkWell(
-          onTap: () => setState(
-            () => passwordVisibility = !passwordVisibility,
-          ),
-          child: Icon(
-            passwordVisibility
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
-            color: Constants.kInputBorder,
-            size: 22,
-          ),
-        ),
+        // suffixIcon: IconButton(
+        //   onPressed: () => setState(
+        //     () => passwordVisibility = !passwordVisibility,
+        //   ),
+        //   icon: Icon(
+        //     passwordVisibility
+        //         ? Icons.visibility_outlined
+        //         : Icons.visibility_off_outlined,
+        //     color: Constants.kInputBorder,
+        //     size: 22,
+        //   ),
+        // ),
       ),
     );
   }

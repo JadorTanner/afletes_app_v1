@@ -68,10 +68,6 @@ class PusherApi extends ChangeNotifier {
         if (event.data != null) {
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
-          print('TIENE DATOS');
-          print(event.data);
-          print('usuario');
-          print(sharedPreferences.getString('user'));
           String data = event.data.toString();
           Map jsonData = jsonDecode(data);
           User user = User.userFromArray(
@@ -114,17 +110,9 @@ class PusherApi extends ChangeNotifier {
                   }
                 }
               }
-              print(Provider.of<ChatProvider>(context, listen: false)
-                  .negotiationId);
-              print(Provider.of<ChatProvider>(context, listen: false)
-                  .negotiationId
-                  .runtimeType);
-              print(jsonData['negotiation_id']);
-              print(jsonData['negotiation_id'].runtimeType);
               if ((Provider.of<ChatProvider>(context, listen: false)
                       .negotiationId ==
                   jsonData['negotiation_id'])) {
-                print('Esta dentro de la misma negociacion');
                 DateTime now = DateTime.now();
                 String formattedDate =
                     DateFormat('y-dd-MM kk:mm:ss').format(now);
@@ -138,6 +126,9 @@ class PusherApi extends ChangeNotifier {
                     jsonData['is_location'] ?? false,
                   ),
                 );
+                if (jsonData['normal_message']) {
+                  context.read<ChatProvider>().setCanOffer(true);
+                }
                 if (jsonData['negotiation_state'] != null) {
                   print('tiene negociacion state');
                   context
@@ -185,15 +176,13 @@ class PusherApi extends ChangeNotifier {
                 if (jsonData['rejected'] != null) {
                   title = 'La negociación ha sido rechazada';
                 }
-                if (Platform.isIOS) {
-                  NotificationsApi.showNotification(
-                    id: 10,
-                    title: title,
-                    body: jsonData['message'],
-                    payload:
-                        '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
-                  );
-                }
+                NotificationsApi.showNotification(
+                  id: 10,
+                  title: title,
+                  body: jsonData['message'],
+                  payload:
+                      '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                );
               }
             }
           }
