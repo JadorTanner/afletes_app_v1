@@ -42,15 +42,18 @@ class MessageBubbleReceived extends StatelessWidget {
                     (isImage
                         ? GestureDetector(
                             onTap: () => showDialog(
-                                context: context,
-                                builder: (context) => Dialog(
+                                  context: context,
+                                  builder: (context) => Dialog(
                                     backgroundColor: Colors.transparent,
                                     child: InteractiveViewer(
-                                        panEnabled: true,
-                                        minScale: 0.5,
-                                        maxScale: 4,
-                                        clipBehavior: Clip.none,
-                                        child: Image.network(message)))),
+                                      panEnabled: true,
+                                      minScale: 0.5,
+                                      maxScale: 4,
+                                      clipBehavior: Clip.none,
+                                      child: Image.network(message),
+                                    ),
+                                  ),
+                                ),
                             child: Image.network(
                               message,
                               loadingBuilder:
@@ -69,7 +72,7 @@ class MessageBubbleReceived extends StatelessWidget {
                         : Text(
                             message,
                             style: const TextStyle(
-                                color: Colors.black, fontSize: 18),
+                                color: Colors.black, fontSize: 14),
                           )),
                     const SizedBox(
                       height: 5,
@@ -117,15 +120,18 @@ class MessageBubbleSent extends StatelessWidget {
                 isImage
                     ? GestureDetector(
                         onTap: () => showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
+                              context: context,
+                              builder: (context) => Dialog(
                                 backgroundColor: Colors.transparent,
                                 child: InteractiveViewer(
-                                    panEnabled: true,
-                                    minScale: 0.5,
-                                    maxScale: 4,
-                                    clipBehavior: Clip.none,
-                                    child: Image.network(message)))),
+                                  panEnabled: true,
+                                  minScale: 0.5,
+                                  maxScale: 4,
+                                  clipBehavior: Clip.none,
+                                  child: Image.network(message),
+                                ),
+                              ),
+                            ),
                         child: Image.network(
                           message,
                           loadingBuilder: (context, child, loadingProgress) {
@@ -143,7 +149,7 @@ class MessageBubbleSent extends StatelessWidget {
                     : Text(
                         message,
                         style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
+                            const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                 const SizedBox(
                   height: 5,

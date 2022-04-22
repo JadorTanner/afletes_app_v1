@@ -1,3 +1,5 @@
+import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -5,11 +7,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 class VerTrayecto extends StatefulWidget {
-  VerTrayecto(this.load, {this.id = 0, Key? key}) : super(key: key);
+  VerTrayecto(this.load,
+      {this.id = 0,
+      this.trackTransportistLocation = false,
+      this.transportistId = 0,
+      Key? key})
+      : super(key: key);
   int id;
   Load load;
+  bool trackTransportistLocation;
+  int transportistId;
   @override
   State<VerTrayecto> createState() => _VerTrayectoState();
 }
@@ -48,7 +58,12 @@ class _VerTrayectoState extends State<VerTrayecto> {
           const SizedBox(
             height: 20,
           ),
-          Expanded(child: TrayectoMap(load)),
+          Expanded(
+              child: TrayectoMap(
+            load,
+            widget.trackTransportistLocation,
+            transportistId: widget.transportistId,
+          )),
         ],
       ),
     );
@@ -56,8 +71,12 @@ class _VerTrayectoState extends State<VerTrayecto> {
 }
 
 class TrayectoMap extends StatefulWidget {
-  TrayectoMap(this.load, {Key? key}) : super(key: key);
+  TrayectoMap(this.load, this.trackTransportistLocation,
+      {this.transportistId = 0, Key? key})
+      : super(key: key);
   Load load;
+  bool trackTransportistLocation;
+  int transportistId;
   @override
   State<StatefulWidget> createState() => _StateTrayectoMap();
 }
@@ -82,7 +101,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
     mapController.setMapStyle(_darkMapStyle);
   }
 
-  void setPolylinesInMap(LatLng origin, LatLng destin) async {
+  Future<MarkerId> setPolylinesInMap(LatLng origin, LatLng destin) async {
     var result = await polylinePoints.getRouteBetweenCoordinates(
       'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs',
       PointLatLng(origin.latitude, origin.longitude),
@@ -107,6 +126,10 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           ),
         ),
       );
+      print('DISTANCIA ENTRE PUNTOS: ' +
+          PolylinePoints.calculateDistance(origin.latitude, origin.longitude,
+                  destin.latitude, destin.longitude)
+              .toString());
       _markers.add(
         Marker(
           markerId: marcadorDestino,
@@ -124,11 +147,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
         polylineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
       }
-      LatLng aux = origin;
-      if (origin.latitude > destin.latitude) {
-        origin = destin;
-        destin = aux;
-      }
       setState(() {
         _polylines.add(Polyline(
           width: 5,
@@ -137,25 +155,24 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           points: polylineCoordinates,
         ));
       });
-      mapController.showMarkerInfoWindow(marcadorOrigen);
+
       mapController.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: origin.latitude <= destin.latitude ? origin : destin,
-            northeast: destin.latitude > origin.latitude ? destin : origin,
-          ),
+        CameraUpdate.newLatLngZoom(
+          origin,
           10,
         ),
       );
+      return _markers[0].markerId;
     }
+    return const MarkerId('');
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
     polylinePoints = PolylinePoints();
     setMapStyles();
     getPosition();
-    setPolylinesInMap(
+    MarkerId mkinfo = await setPolylinesInMap(
       LatLng(
         double.parse(widget.load.latitudeFrom),
         double.parse(widget.load.longitudeFrom),
@@ -165,6 +182,46 @@ class _StateTrayectoMap extends State<TrayectoMap> {
         double.parse(widget.load.destinLongitude),
       ),
     );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      mapController.showMarkerInfoWindow(mkinfo);
+    });
+  }
+
+  setMarkers(
+    List<TransportistLocation> transportists,
+  ) async {
+    if (widget.transportistId != 0) {
+      BitmapDescriptor carIcon = BitmapDescriptor.fromBytes(
+          await getBytesFromAsset('assets/img/camion3.png', 30));
+      MarkerId markerId = const MarkerId('carPosition');
+      int index =
+          _markers.indexWhere((element) => element.markerId == markerId);
+      widget.transportistId = context.read<ChatProvider>().transportistId;
+      transportists.asMap().forEach((key, transportist) {
+        if (transportist.transportistId == widget.transportistId) {
+          print(transportist.latitude);
+          print(transportist.longitude);
+          Marker marker = Marker(
+            markerId: MarkerId(transportist.transportistId.toString() +
+                transportist.vehicleId.toString()),
+            position: LatLng(
+              transportist.latitude,
+              transportist.longitude,
+            ),
+            icon: carIcon,
+            flat: true,
+            rotation: transportist.heading,
+            infoWindow: InfoWindow(title: transportist.name),
+          );
+          if (index != -1) {
+            _markers[index] = marker;
+          } else {
+            _markers.add(marker);
+          }
+        }
+      });
+    }
   }
 
   @override
@@ -179,6 +236,11 @@ class _StateTrayectoMap extends State<TrayectoMap> {
       future: getPos,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
+          if (widget.trackTransportistLocation) {
+            List<TransportistLocation> transportists =
+                context.watch<TransportistsLocProvider>().transportists;
+            setMarkers(transportists);
+          }
           return GoogleMap(
             onMapCreated: (controller) {
               _onMapCreated(controller);

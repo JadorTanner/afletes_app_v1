@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
@@ -10,7 +11,7 @@ import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
 import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
@@ -47,12 +48,9 @@ ButtonStyle pillStyle = ButtonStyle(
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   // try {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  user = User(userData: jsonDecode(sharedPreferences.getString('user')!))
-      .userFromArray();
+  user = User.userFromArray(jsonDecode(sharedPreferences.getString('user')!));
 
-  sharedPreferences.setString('negotiation_id', id.toString());
-  context.read<ChatProvider>().setNegotiationId(id);
-
+  print('ID DE LA NEGOCIACIÓN ' + id.toString());
   Api api = Api();
 
   context.read<ChatProvider>().clearMessages();
@@ -60,6 +58,12 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
   ChatProvider chatProvider = context.read<ChatProvider>();
+
+  sharedPreferences.setString('negotiation_id', id.toString());
+  Provider.of<ChatProvider>(context, listen: false).setNegotiationId(id);
+
+  print('ID DE LA NEGOCIACIÓN EN PROVIDER');
+  print(context.read<ChatProvider>().negotiationId);
 
   chatProvider.setCanOffer(false);
   chatProvider.setPaid(false);
@@ -78,6 +82,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     );
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
+    chatProvider.setTransportistId(jsonResp['data']['vehicle']['owner_id']);
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
         providerMessages.add(ChatMessage(
@@ -141,6 +146,14 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     }
 
     load = Load.fromJSON(jsonResp['data']['load']);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('No tiene permiso para ver esta negociación'),
+      ),
+    );
+    Navigator.of(context)
+        .pushReplacementNamed(user.isCarrier ? '/loads' : '/vehicles');
   }
   return [];
   // } catch (e) {
@@ -160,10 +173,11 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     oferta.text = '';
     Position? location;
     String mapImgUrl = "";
+    String mapKey = Constants.googleMapKey;
     if (isLocation) {
       location = await Geolocator.getCurrentPosition();
       mapImgUrl =
-          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$googleMapKey";
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$mapKey";
       message =
           """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
     }
@@ -190,9 +204,18 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
         duration: const Duration(seconds: 3),
       ));
     }
+  } on SocketException {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compruebe su conexión a internet'),
+      ),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
+      const SnackBar(
+        content: Text('Ha ocurrido un error'),
+      ),
+    );
   }
 }
 
@@ -212,11 +235,22 @@ Future cancelNegotiation(id, context) async {
               });
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
+                context.read<ChatProvider>().setToPay(false);
+                context.read<ChatProvider>().setPaid(false);
               }
               Navigator.of(context).pop();
+            } on SocketException {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Compruebe su conexión a internet'),
+                ),
+              );
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Compruebe su conexión a internet')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ha ocurrido un error'),
+                ),
+              );
             }
           },
         ),
@@ -254,9 +288,18 @@ Future setLoadState(int negotiationId, int loadId, int state,
         duration: const Duration(seconds: 3),
       ));
     }
+  } on SocketException {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compruebe su conexión a internet'),
+      ),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compruebe su conexión a internet')));
+      const SnackBar(
+        content: Text('Ha ocurrido un error'),
+      ),
+    );
   }
 }
 
@@ -273,6 +316,7 @@ Future acceptNegotiation(id, context) async {
               Response response = await api.postData('negotiation/accept', {
                 'id': id,
               });
+              print(response.body);
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
                 context.read<ChatProvider>().setToPay(true);
@@ -283,9 +327,18 @@ Future acceptNegotiation(id, context) async {
                   ));
                 }
               }
+            } on SocketException {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Compruebe su conexión a internet'),
+                ),
+              );
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Compruebe su conexión a internet')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ha ocurrido un error'),
+                ),
+              );
             }
           },
           icon: const Icon(Icons.check),
@@ -450,6 +503,8 @@ class _NegotiationChatState extends State<NegotiationChat> {
         ),
         onWillPop: () => Future(() {
               context.read<ChatProvider>().setNegotiationId(0);
+              context.read<ChatProvider>().setTransportistId(0);
+
               // context.read<ChatProvider>().setCanOffer(false);
               // context.read<ChatProvider>().setPaid(false);
               // context.read<ChatProvider>().setCanVote(false);
@@ -589,7 +644,21 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton(
                 style: buttonStyle,
-                onPressed: () => {},
+                onPressed: () => {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Dialog(
+                        child: VerTrayecto(
+                          load,
+                          trackTransportistLocation: true,
+                          transportistId:
+                              context.read<ChatProvider>().transportistId,
+                        ),
+                      );
+                    },
+                  )
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -693,11 +762,22 @@ class ButtonsSection extends StatelessWidget {
                                             .read<ChatProvider>()
                                             .setCanVote(false);
                                         Navigator.pop(context);
+                                      } on SocketException {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Compruebe su conexión a internet'),
+                                          ),
+                                        );
                                       } catch (e) {
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                                content: Text(
-                                                    'Compruebe su conexión a internet')));
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('Ha ocurrido un error'),
+                                          ),
+                                        );
                                       }
                                     },
                                     child: const Text('Votar'),
@@ -733,36 +813,34 @@ class ButtonsSection extends StatelessWidget {
         //Si la negociación está para pago
         if (user.isLoadGenerator) {
           children = [
-            Flexible(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => Payment(widget.id),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Payment(widget.id),
+                ),
+              ),
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all<EdgeInsets>(
+                    const EdgeInsets.symmetric(vertical: 20)),
+                backgroundColor: MaterialStateProperty.all<Color>(
+                  Constants.kBlack,
+                ),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(0)),
                   ),
                 ),
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsets>(
-                      const EdgeInsets.symmetric(vertical: 20)),
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    kBlack,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Pagar',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(0)),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: const [
-                    Text(
-                      'Pagar',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Icon(Icons.attach_money, color: Colors.white),
-                  ],
-                ),
+                  Icon(Icons.attach_money, color: Colors.white),
+                ],
               ),
             ),
           ];

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -171,9 +173,11 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
-      var user = sharedPreferences.getString('user');
+      String? user = sharedPreferences.getString('user');
 
-      if (user != null && user != 'null') {
+      if (user != null) {
+        print(
+            context.read<User>().setUser(User.userFromArray(jsonDecode(user))));
         if (jsonDecode(user)['confirmed']) {
           if (jsonDecode(user)['habilitado']) {
             if (jsonDecode(user)['is_carrier']) {
@@ -191,9 +195,19 @@ class _SplashScreenState extends State<SplashScreen> {
                   'longitude': position.longitude,
                 });
               });
+
+              if (sharedPreferences.getInt('vehicles')! > 0) {
+                Navigator.of(context).pushReplacementNamed('/loads');
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateVehicleAfterReg(),
+                  ),
+                );
+              }
+            } else {
+              Navigator.of(context).pushReplacementNamed('/vehicles');
             }
-            Navigator.of(context).pushReplacementNamed(
-                jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles');
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => const WaitHabilitacion(),
@@ -218,11 +232,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Future.delayed(Duration.zero, () => changeScreen());
   }
 
   @override
   Widget build(BuildContext context) {
+    Future.delayed(Duration.zero, () => changeScreen());
     return Scaffold(
       backgroundColor: const Color(0xFFed8d23),
       appBar: AppBar(

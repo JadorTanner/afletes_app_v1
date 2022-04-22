@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_init_to_null
 import 'dart:convert';
 
-import 'package:afletes_app_v1/ui/pages/validate_code.dart';
-import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
@@ -31,27 +29,27 @@ class User extends ChangeNotifier {
       documentNumber = '',
       legalName = '';
 
-  User userFromArray([Map? data]) {
-    if (data != null) {
-      userData = data;
+  static User userFromArray(Map data) {
+    if (data.isEmpty) {
+      return User();
+    } else {
+      return User(
+        id: data['id'],
+        fullName: data['full_name'],
+        firstName: data['first_name'],
+        lastName: data['last_name'],
+        email: data['email'],
+        legalName: data['legal_name'],
+        documentNumber: data['document_number'],
+        street1: data['street1'],
+        street2: data['street2'] ?? '',
+        houseNumber: data['house_number'] ?? '',
+        isCarrier: data['is_carrier'],
+        isLoadGenerator: data['is_load_generator'],
+        cellphone: data['cellphone'] ?? '',
+        phone: data['phone'] ?? '',
+      );
     }
-
-    return User(
-      id: userData['id'],
-      fullName: userData['full_name'],
-      firstName: userData['first_name'],
-      lastName: userData['last_name'],
-      email: userData['email'],
-      legalName: userData['legal_name'],
-      documentNumber: userData['document_number'],
-      street1: userData['street1'],
-      street2: userData['street2'] ?? '',
-      houseNumber: userData['house_number'] ?? '',
-      isCarrier: userData['is_carrier'],
-      isLoadGenerator: userData['is_load_generator'],
-      cellphone: userData['cellphone'] ?? '',
-      phone: userData['phone'] ?? '',
-    );
   }
 
   User({
@@ -80,10 +78,9 @@ class User extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<User> getUser() async {
+  static Future<User> getUser() async {
     SharedPreferences sh = await SharedPreferences.getInstance();
-    User user = User(userData: jsonDecode(sh.getString('user') ?? '{}'))
-        .userFromArray();
+    User user = User.userFromArray(jsonDecode(sh.getString('user') ?? '{}'));
     return user;
   }
 
@@ -91,59 +88,37 @@ class User extends ChangeNotifier {
       BuildContext context, String email, String password) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     String? userStored = localStorage.getString('user');
-    if (userStored != null) {
-      Map userJson = jsonDecode(userStored);
-      notifyListeners();
-      if (userJson['confirmed']) {
-        if (userJson['habilitado']) {
-          Navigator.of(context).pushReplacementNamed(
-              userJson['is_carrier'] ? 'loads' : '/vehicles');
-        } else {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => const WaitHabilitacion()));
-        }
-      } else {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ValidateCode()));
-      }
-    } else {
-      bool emailValid = RegExp(
-              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-          .hasMatch(email);
-      if (emailValid) {
-        try {
-          Api api = Api();
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+    if (emailValid) {
+      try {
+        Api api = Api();
 
-          Response response = await api.postData('login', {
-            'email': email,
-            'password': password,
-          });
-          if (response.statusCode == 200) {
-            Map responseBody = jsonDecode(response.body);
-            if (responseBody['success']) {
-              Map userJson = responseBody['data']['user'];
-              setUser(User(userData: userJson).userFromArray());
-              localStorage.setString(
-                  'user', jsonEncode(responseBody['data']['user']));
-              localStorage.setString('token', responseBody['data']['token']);
-              return true;
-            } else {
-              return false;
-            }
+        Response response = await api.postData('login', {
+          'email': email,
+          'password': password,
+        });
+        print(response.body);
+        if (response.statusCode == 200) {
+          Map responseBody = jsonDecode(response.body);
+          if (responseBody['success']) {
+            Map userJson = responseBody['data']['user'];
+            context.read<User>().setUser(User.userFromArray(userJson));
+            print(context.read<User>().user);
+            localStorage.setString(
+                'user', jsonEncode(responseBody['data']['user']));
+            localStorage.setString('token', responseBody['data']['token']);
+            localStorage.setInt('vehicles', responseBody['data']['vehicles']);
+            return true;
+          } else {
+            return false;
           }
-          return false;
-        } catch (e) {
-          return false;
         }
-      } else {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //       content: Center(
-        //           child: Text(
-        //     'Ha ocurrido un error',
-        //     style: TextStyle(color: Colors.white),
-        //   ))),
-        // );
+        return false;
+      } catch (e) {
+        print(e);
+        return false;
       }
     }
     return false;
@@ -231,7 +206,7 @@ class User extends ChangeNotifier {
           sharedPreferences.setString(
               'user', jsonEncode(responseBody['data']['user']));
           sharedPreferences.setString('token', responseBody['data']['token']);
-          setUser(User(userData: responseBody['data']['user']).userFromArray());
+          User().setUser(User.userFromArray(responseBody['data']['user']));
           return true;
         } else {
           return false;

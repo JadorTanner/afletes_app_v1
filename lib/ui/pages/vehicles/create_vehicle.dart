@@ -4,11 +4,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -100,9 +101,9 @@ class _CreateVehicleState extends State<CreateVehicle> {
   }
 
   setValues(args) async {
-    imagenes.clear();
-    imagenesNetwork.clear();
     if (args != null) {
+      imagenes.clear();
+      imagenesNetwork.clear();
       hasVehicleData = true;
       vehicleId = args['id'];
       chapaController.text = args['chapa'];
@@ -116,18 +117,79 @@ class _CreateVehicleState extends State<CreateVehicle> {
       vtoSenacsaController.text = args['vtoSenacsa'];
       vtoSeguroController.text = args['vtoSeguro'];
       if (args['imgs'].isNotEmpty) {
-        print(args['imgs']);
         imagenesNetwork = args['imgs'];
-        /* List.generate(args['imgs'].length, (index) async {
-          imagenesNetwork.add(args['imgs'][index]['path']);
-          // imagePickerKey.currentState != null
-          //     ? imagePickerKey.currentState!.setState(() {})
-          //     : null;
-        }); */
       }
+
+      dinatran = args['dinatranFront'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_dinatran_authorization/' +
+              args['dinatranFront']
+          : '';
+      dinatranBack = args['dinatranBack'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_dinatran_authorization/' +
+              args['dinatranBack']
+          : '';
+      greenCard = args['greencardFront'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_green_card/' +
+              args['greencardFront']
+          : '';
+      greenCardBack = args['greencardBack'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_green_card/' +
+              args['greencardBack']
+          : '';
+      senacsa = args['senacsaFront'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_senacsa_authorization/' +
+              args['senacsaFront']
+          : '';
+      senacsaBack = args['senacsaBack'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_senacsa_authorization/' +
+              args['senacsaBack']
+          : '';
+      municipal = args['municipalFront'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_authorization/' +
+              args['municipalFront']
+          : '';
+      municipalBack = args['municipalBack'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_authorization/' +
+              args['municipalBack']
+          : '';
+      seguro = args['insuranceImg'] != ''
+          ? Constants.baseUrl +
+              'images/vehicle_insurance/' +
+              args['insuranceImg']
+          : '';
     } else {
+      imagenes.clear();
+      imagenesNetwork.clear();
+      chapaController.text = '';
+      pesoController.text = '';
+      modeloController.text = '';
+      marcaController.text = '';
+      fabricacionController.text = '';
+      unidadMedidaController.text = '';
+      vtoMunicipalController.text = '';
+      vtoDinatranController.text = '';
+      vtoSenacsaController.text = '';
+      vtoSeguroController.text = '';
       hasVehicleData = false;
       vehicleId = 0;
+
+      greenCard = '';
+      greenCardBack = '';
+      municipal = '';
+      municipalBack = '';
+      dinatran = '';
+      dinatranBack = '';
+      senacsa = '';
+      senacsaBack = '';
+      seguro = '';
     }
   }
 
@@ -140,7 +202,10 @@ class _CreateVehicleState extends State<CreateVehicle> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(const RegisterVehicleForm());
+    return BaseApp(
+      const RegisterVehicleForm(),
+      resizeToAvoidBottomInset: true,
+    );
   }
 }
 
@@ -271,7 +336,19 @@ class DatosGenerales extends StatelessWidget {
               child: Row(
                 children: [
                   Flexible(
-                    child: NextPageButton(pageController),
+                    child: NextPageButton(
+                      pageController,
+                      validator: () {
+                        return (chapaController.text != '' &&
+                            modeloController.text != '' &&
+                            chapaController.text != '' &&
+                            pesoController.text != '' &&
+                            fabricacionController.text != '' &&
+                            unidadMedidaController.text != '' &&
+                            (imagenes.isNotEmpty ||
+                                imagenesNetwork.isNotEmpty));
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -651,8 +728,9 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                         minScale: 0.5,
                                         maxScale: 4,
                                         clipBehavior: Clip.none,
-                                        child: Image.network(vehicleImgUrl +
-                                            imagenesNetwork[index]['path']),
+                                        child: Image.network(
+                                            Constants.vehicleImgUrl +
+                                                imagenesNetwork[index]['path']),
                                       ),
                                     ),
                                   );
@@ -663,7 +741,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
                                   child: Image.network(
-                                    vehicleImgUrl +
+                                    Constants.vehicleImgUrl +
                                         imagenesNetwork[index]['path'],
                                     fit: BoxFit.cover,
                                   ),
@@ -691,7 +769,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     backgroundColor: Colors.white,
                                     child: Icon(
                                       Icons.close,
-                                      color: kBlack,
+                                      color: Constants.kBlack,
                                     ),
                                   ),
                                 ),
@@ -745,7 +823,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   backgroundColor: Colors.white,
                                   child: Icon(
                                     Icons.close,
-                                    color: kBlack,
+                                    color: Constants.kBlack,
                                   ),
                                 ),
                               ),
@@ -827,154 +905,6 @@ class _ImagesPickerState extends State<ImagesPicker> {
   }
 }
 
-/* class _ImagesPickerState extends State<ImagesPicker> {
-  int currentImage = 0;
-  PageController imagePageController = PageController();
-
-  @override
-  void initState() {
-    super.initState();
-    imagePickerKey = GlobalKey<_ImagesPickerState>();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.4,
-      color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
-          ? Colors.transparent
-          : Colors.grey[200],
-      child: (imagenesNetwork.isNotEmpty || imagenes.isNotEmpty)
-          ? Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                PageView(
-                  controller: imagePageController,
-                  onPageChanged: (value) => setState(() {
-                    currentImage = value;
-                  }),
-                  children: [
-                    ...List.generate(
-                      imagenesNetwork.length,
-                      (index) => GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                              child: InteractiveViewer(
-                                panEnabled: true,
-                                minScale: 0.5,
-                                maxScale: 4,
-                                clipBehavior: Clip.none,
-                                child: Image.network(
-                                  vehicleImgUrl + imagenesNetwork[index],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Image.network(
-                          vehicleImgUrl + imagenesNetwork[index],
-                        ),
-                      ),
-                    ),
-                    ...List.generate(
-                      imagenes.length,
-                      (index) => GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                              child: InteractiveViewer(
-                                panEnabled: true,
-                                minScale: 0.5,
-                                maxScale: 4,
-                                clipBehavior: Clip.none,
-                                child: Image.file(
-                                  File(imagenes[index].path),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Image.file(
-                          File(imagenes[index].path),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        List<XFile>? imgs = await _picker.pickMultiImage();
-                        imagenes.addAll((imgs ?? []));
-                        if (imagenes.isNotEmpty) {
-                          setState(() {
-                            // imagePageController.jumpToPage(0);
-                          });
-                        }
-                      },
-                      child: Container(
-                        color: Colors.grey,
-                        child: const Icon(Icons.add),
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      (imagenes.length + imagenesNetwork.length + 1),
-                      (index) => Container(
-                        width: 10,
-                        height: 10,
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                        decoration: BoxDecoration(
-                          color: index == currentImage
-                              ? const Color(0xFF686868)
-                              : const Color(0xFFEEEEEE),
-                          border: Border.all(
-                            color: index == currentImage
-                                ? const Color(0xFF686868)
-                                : const Color(0xFFEEEEEE),
-                          ),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : GestureDetector(
-              key: imagePickerKey,
-              onTap: () async {
-                List<XFile>? imgs = await _picker.pickMultiImage();
-                imagenes.addAll((imgs ?? []));
-                if (imagenes.isNotEmpty) {
-                  if (mounted) {
-                    setState(() {
-                      // imagePageController.jumpToPage(0);
-                    });
-                  }
-                }
-              },
-              child: Container(
-                color: Colors.grey,
-                child: const Icon(
-                  Icons.add,
-                  size: 50,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-    );
-  }
-}
- */
 class MeasurementUnit extends StatefulWidget {
   const MeasurementUnit({Key? key}) : super(key: key);
 
@@ -1073,82 +1003,6 @@ class _MarcaSelectState extends State<MarcaSelect> {
           items: brandsSelectList,
         )
       ],
-    );
-  }
-}
-
-class DatePicker extends StatefulWidget {
-  DatePicker(this.controller, this.title, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  String title;
-  @override
-  State<DatePicker> createState() => _DatePickerState();
-}
-
-class _DatePickerState extends State<DatePicker> {
-  DateTime selectedDate = DateTime.now();
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-        widget.controller.text = selectedDate.year.toString() +
-            '-' +
-            selectedDate.month.toString() +
-            '-' +
-            selectedDate.day.toString();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomFormField(
-      widget.controller,
-      widget.title,
-      onFocus: () => _selectDate(context),
-      showCursor: true,
-      readOnly: true,
-    );
-  }
-}
-
-class LoadTimePicker extends StatefulWidget {
-  LoadTimePicker(this.controller, this.title, {Key? key}) : super(key: key);
-  TextEditingController controller;
-  String title;
-  @override
-  State<LoadTimePicker> createState() => LoadTimePickerState();
-}
-
-class LoadTimePickerState extends State<LoadTimePicker> {
-  TimeOfDay selectedTime = TimeOfDay.now();
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked =
-        await showTimePicker(context: context, initialTime: selectedTime);
-    if (picked != null && picked != selectedTime) {
-      setState(() {
-        selectedTime = picked;
-        widget.controller.text =
-            selectedTime.hour.toString() + ':' + selectedTime.minute.toString();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomFormField(
-      widget.controller,
-      widget.title,
-      onFocus: () => _selectTime(context),
-      showCursor: true,
-      readOnly: true,
     );
   }
 }

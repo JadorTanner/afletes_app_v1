@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -30,9 +30,19 @@ class _PaymentState extends State<Payment> {
       Response response = await api.getData(
           'negotiation/payment?negotiation_id=' + widget.id.toString());
       return jsonDecode(response.body);
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Compruebe su conexión a internet'),
+        ),
+      );
+      return {};
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
       return {};
     }
   }
@@ -140,50 +150,77 @@ class _PaymentState extends State<Payment> {
                   Card(
                       child: Padding(
                     padding: const EdgeInsets.all(20),
-                    child: PaymentMethods(data['data']['saldo_transportista']),
+                    child: PaymentMethods(
+                        data['data']['saldo_transportista'],
+                        data['data']['load']['final_offer']
+                            .toString()
+                            .replaceAll('.00', '')),
                   )),
                   ButtonBar(
                     alignment: MainAxisAlignment.center,
                     children: [
                       TextButton.icon(
-                          onPressed: () async {
-                            try {
-                              Api api = Api();
-                              Response response = await api
-                                  .postData('negotiation/pay-negotiation', {
+                        onPressed: () async {
+                          try {
+                            Api api = Api();
+                            Response response = await api.postData(
+                              'negotiation/pay-negotiation',
+                              {
                                 'amount': data['data']['load']['final_offer']
                                     .toString()
                                     .replaceAll('.00', ''),
-                                'negotiation_id': widget.id
-                              });
+                                'negotiation_id': widget.id,
+                                'metodo': method.text,
+                              },
+                            );
 
-                              Map jsonResponse = jsonDecode(response.body);
-                              if (response.statusCode == 200) {
+                            Map jsonResponse = jsonDecode(response.body);
+                            if (response.statusCode == 200) {
+                              if (method.text == '2') {
                                 if (jsonResponse['process_id'] != '') {
                                   showDialog(
-                                      context: context,
-                                      builder: (context) => Dialog(
-                                            child: WebView(
-                                              initialUrl: apiUrl +
-                                                  'bancard-view?process_id=' +
-                                                  jsonResponse['data']
-                                                      ['process_id'],
-                                              javascriptMode:
-                                                  JavascriptMode.unrestricted,
-                                            ),
-                                          ),
-                                      barrierDismissible: false);
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                      child: WebView(
+                                        initialUrl: Constants.apiUrl +
+                                            'bancard-view?process_id=' +
+                                            jsonResponse['data']['process_id'],
+                                        javascriptMode:
+                                            JavascriptMode.unrestricted,
+                                      ),
+                                    ),
+                                    barrierDismissible: false,
+                                  );
                                 }
+                              } else {
+                                Navigator.of(context)
+                                    .pushReplacementNamed('/my-negotiations');
                               }
-                            } catch (e) {
+                            } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Compruebe su conexión a internet')));
+                                const SnackBar(
+                                  content: Text('Ha ocurrido un error'),
+                                ),
+                              );
                             }
-                          },
-                          icon: const Icon(Icons.attach_money),
-                          label: const Text('Realizar el pago'))
+                          } on SocketException {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Compruebe su conexión a internet'),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Ha ocurrido un error'),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.attach_money),
+                        label: const Text('Realizar el pago'),
+                      )
                     ],
                   )
                 ]);
@@ -201,21 +238,30 @@ class _PaymentState extends State<Payment> {
 Row newRow(String title, data) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      Text(
-        data ?? '',
-      )
+      const SizedBox(
+        width: 10,
+      ),
+      Flexible(
+        child: Text(
+          data ?? '',
+          softWrap: true,
+        ),
+      ),
     ],
   );
 }
 
 class PaymentMethods extends StatefulWidget {
-  PaymentMethods(this.saldoTransportista, {Key? key}) : super(key: key);
+  PaymentMethods(this.saldoTransportista, this.finalOffer, {Key? key})
+      : super(key: key);
   Map? saldoTransportista;
+  String finalOffer;
   @override
   State<PaymentMethods> createState() => _PaymentMethodsState();
 }
@@ -224,6 +270,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   int selectedMethod = 0;
   @override
   Widget build(BuildContext context) {
+    print(widget.saldoTransportista);
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,27 +280,32 @@ class _PaymentMethodsState extends State<PaymentMethods> {
           textScaleFactor: 1.3,
         ),
         widget.saldoTransportista != null
-            ? RadioListTile(
-                title: const Text('Efectivo'),
-                value: 1,
-                groupValue: selectedMethod,
-                onChanged: (int? newVal) {
-                  setState(() {
-                    method.text = newVal.toString();
-                    selectedMethod = newVal!;
-                  });
-                })
+            ? ((widget.saldoTransportista!['saldo_actual'] -
+                        (double.parse(widget.finalOffer) * 0.25)) >=
+                    0
+                ? RadioListTile(
+                    title: const Text('Efectivo'),
+                    value: 1,
+                    groupValue: selectedMethod,
+                    onChanged: (int? newVal) {
+                      setState(() {
+                        method.text = newVal.toString();
+                        selectedMethod = newVal!;
+                      });
+                    })
+                : const SizedBox.shrink())
             : const SizedBox.shrink(),
         RadioListTile(
-            title: const Text('Bancard'),
-            value: 2,
-            groupValue: selectedMethod,
-            onChanged: (int? newVal) {
-              setState(() {
-                method.text = newVal.toString();
-                selectedMethod = newVal!;
-              });
-            }),
+          title: const Text('Bancard'),
+          value: 2,
+          groupValue: selectedMethod,
+          onChanged: (int? newVal) {
+            setState(() {
+              method.text = newVal.toString();
+              selectedMethod = newVal!;
+            });
+          },
+        ),
       ],
     );
   }

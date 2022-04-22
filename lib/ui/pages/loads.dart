@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/load_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -289,10 +289,12 @@ class _LoadsState extends State<Loads> {
         ),
         isMap: true,
       ),
-      onWillPop: () => Future(() {
-        Navigator.pop(context);
-        return true;
-      }),
+      onWillPop: () => Future(
+        () {
+          Navigator.pop(context);
+          return true;
+        },
+      ),
     );
   }
 }
@@ -355,7 +357,8 @@ class _LoadsMapState extends State<LoadsMap>
           icon: bitmapIcon,
           infoWindow: InfoWindow(
               title: load.product != '' ? load.product : load.addressFrom,
-              snippet: 'Oferta inicial: ' + currencyFormat(load.initialOffer)),
+              snippet: 'Oferta inicial: ' +
+                  Constants.currencyFormat(load.initialOffer)),
           onTap: () {
             onLoadTap(load.id, context, load, true,
                 () => setLoadsMarkers(position, true, false));
@@ -492,7 +495,7 @@ class _LoadsMapState extends State<LoadsMap>
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(50))),
             child: IconButton(
-              color: kBlack,
+              color: Constants.kBlack,
               onPressed: () async {
                 loads = await getLoads();
                 setLoadsMarkers(position);
@@ -510,7 +513,7 @@ class _LoadsMapState extends State<LoadsMap>
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(50))),
             child: IconButton(
-              color: kBlack,
+              color: Constants.kBlack,
               onPressed: () async {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(
@@ -548,7 +551,7 @@ class _LoadsMapState extends State<LoadsMap>
                         width: 50,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: kBlack,
+                          color: Constants.kBlack,
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -571,6 +574,7 @@ class _LoadsMapState extends State<LoadsMap>
                       loads[index],
                       hasData: true,
                       isCarrier: true,
+                      isFinalOffer: false,
                       onTap: () async {
                         // setLoadMarkerInfo(loads[index], position, context);
                       },

@@ -9,7 +9,7 @@ import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/location_service.dart';
 import 'package:flutter/material.dart';
@@ -106,15 +106,77 @@ Future getCategories() async {
 }
 
 class CreateLoadPage extends StatefulWidget {
-  const CreateLoadPage({Key? key}) : super(key: key);
-
+  CreateLoadPage(this.arguments, {Key? key}) : super(key: key);
+  Map? arguments;
   @override
   State<CreateLoadPage> createState() => _CreateLoadPageState();
 }
 
 class _CreateLoadPageState extends State<CreateLoadPage> {
   late Position position;
-  late final arguments;
+
+  setValues(args) {
+    if (widget.arguments != null) {
+      hasLoadData = true;
+      loadId = args['id'];
+      productController.text = args['product'];
+      pesoController.text = args['peso'].toString();
+      volumenController.text = args['volumen'].toString();
+      descriptionController.text = args['description'];
+      categoriaController.text = args['categoria'].toString();
+      unidadMedidaController.text = args['unidadMedida'];
+      ofertaInicialController.text = args['ofertaInicial'].toString();
+      vehiculosController.text = args['vehiculos'].toString();
+      ayudantesController.text = args['ayudantes'].toString();
+      originAddressController.text = args['originAddress'];
+      originCityController.text = args['originCity'].toString();
+      originStateController.text = args['originState'].toString();
+      originCoordsController.text = args['originCoords'];
+      destinAddressController.text = args['destinAddress'];
+      destinCityController.text = args['destinCity'].toString();
+      destinStateController.text = args['destinState'].toString();
+      destinCoordsController.text = args['destinCoords'];
+      loadDateController.text = args['loadDate'];
+      loadHourController.text = args['loadHour'];
+      esperaCargaController.text = args['esperaCarga'].toString();
+      esperaDescargaController.text = args['esperaDescarga'].toString();
+      observacionesController.text = args['observaciones'];
+      isUrgentController.text = args['isUrgent'].toString();
+      imagenes.clear();
+      imagenesNetwork.clear();
+      imagenesNetwork = args['imgs'];
+    } else {
+      loadId = 0;
+      imagenes.clear();
+      hasLoadData = false;
+      ubicacionController.text = '';
+      productController.text = '';
+      descriptionController.text = '';
+      categoriaController.text = '';
+      unidadMedidaController.text = '';
+      pesoController.text = '';
+      ofertaInicialController.text = '';
+      vehiculosController.text = '';
+      ayudantesController.text = '';
+      volumenController.text = '';
+      originAddressController.text = '';
+      originCityController.text = '';
+      originStateController.text = '';
+      originCoordsController.text = '';
+      destinAddressController.text = '';
+      destinCityController.text = '';
+      destinStateController.text = '';
+      destinCoordsController.text = '';
+      loadDateController.text = '';
+      loadHourController.text = '';
+      esperaCargaController.text = '';
+      esperaDescargaController.text = '';
+      observacionesController.text = '';
+      isUrgentController.text = '';
+    }
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -123,67 +185,9 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    setState(() {
-      arguments = ModalRoute.of(context)!.settings.arguments;
-      if (arguments != null) {
-        hasLoadData = true;
-        loadId = arguments['id'];
-        productController.text = arguments['product'];
-        pesoController.text = arguments['peso'].toString();
-        volumenController.text = arguments['volumen'].toString();
-        descriptionController.text = arguments['description'];
-        categoriaController.text = arguments['categoria'].toString();
-        unidadMedidaController.text = arguments['unidadMedida'];
-        ofertaInicialController.text = arguments['ofertaInicial'].toString();
-        vehiculosController.text = arguments['vehiculos'].toString();
-        ayudantesController.text = arguments['ayudantes'].toString();
-        originAddressController.text = arguments['originAddress'];
-        originCityController.text = arguments['originCity'].toString();
-        originStateController.text = arguments['originState'].toString();
-        originCoordsController.text = arguments['originCoords'];
-        destinAddressController.text = arguments['destinAddress'];
-        destinCityController.text = arguments['destinCity'].toString();
-        destinStateController.text = arguments['destinState'].toString();
-        destinCoordsController.text = arguments['destinCoords'];
-        loadDateController.text = arguments['loadDate'];
-        loadHourController.text = arguments['loadHour'];
-        esperaCargaController.text = arguments['esperaCarga'].toString();
-        esperaDescargaController.text = arguments['esperaDescarga'].toString();
-        observacionesController.text = arguments['observaciones'];
-        isUrgentController.text = arguments['isUrgent'].toString();
-        imagenes.clear();
-        imagenesNetwork.clear();
-        imagenesNetwork = arguments['imgs'];
-      } else {
-        loadId = 0;
-        imagenes.clear();
-        hasLoadData = false;
-        ubicacionController.text = '';
-        productController.text = '';
-        descriptionController.text = '';
-        categoriaController.text = '';
-        unidadMedidaController.text = '';
-        pesoController.text = '';
-        ofertaInicialController.text = '';
-        vehiculosController.text = '';
-        ayudantesController.text = '';
-        volumenController.text = '';
-        originAddressController.text = '';
-        originCityController.text = '';
-        originStateController.text = '';
-        originCoordsController.text = '';
-        destinAddressController.text = '';
-        destinCityController.text = '';
-        destinStateController.text = '';
-        destinCoordsController.text = '';
-        loadDateController.text = '';
-        loadHourController.text = '';
-        esperaCargaController.text = '';
-        esperaDescargaController.text = '';
-        observacionesController.text = '';
-        isUrgentController.text = '';
-      }
-    });
+    // arguments = ModalRoute.of(context)!.settings.arguments;
+    print('ARGUMENTOS PASADOS');
+    setValues(widget.arguments);
   }
 
   @override
@@ -442,7 +446,8 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                         minScale: 0.5,
                                         maxScale: 4,
                                         clipBehavior: Clip.none,
-                                        child: Image.network(loadImgUrl +
+                                        child: Image.network(Constants
+                                                .loadImgUrl +
                                             imagenesNetwork[index]['filename']),
                                       ),
                                     ),
@@ -454,7 +459,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
                                   child: Image.network(
-                                    loadImgUrl +
+                                    Constants.loadImgUrl +
                                         imagenesNetwork[index]['filename'],
                                     fit: BoxFit.cover,
                                   ),
@@ -479,7 +484,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     backgroundColor: Colors.white,
                                     child: Icon(
                                       Icons.close,
-                                      color: kBlack,
+                                      color: Constants.kBlack,
                                     ),
                                   ),
                                 ),
@@ -533,7 +538,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   backgroundColor: Colors.white,
                                   child: Icon(
                                     Icons.close,
-                                    color: kBlack,
+                                    color: Constants.kBlack,
                                   ),
                                 ),
                               ),
@@ -624,6 +629,13 @@ class MeasurementUnit extends StatefulWidget {
 
 class _MeasurementUnitState extends State<MeasurementUnit> {
   String value = '1';
+
+  @override
+  void initState() {
+    unidadMedidaController.text = value;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     unidadMedidaController.text = unidadMedidaController.text == ''
@@ -678,6 +690,7 @@ class _CategoriaSelectState extends State<CategoriaSelect> {
 
   @override
   void initState() {
+    categoriaController.text = value;
     super.initState();
   }
 
@@ -810,7 +823,13 @@ class _DatosUbicacionState extends State<DatosUbicacion> {
                 child: PrevPageButton(pageController),
               ),
               Flexible(
-                child: NextPageButton(pageController),
+                child: NextPageButton(
+                  pageController,
+                  validator: () {
+                    return (originAddressController.text != '' &&
+                        originCoordsController.text != '');
+                  },
+                ),
               ),
             ],
           ),
@@ -848,11 +867,25 @@ class _SearchPlaceState extends State<SearchPlace>
 
 //OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
-    position = await Geolocator.getCurrentPosition();
-    setState(() {
-      mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(position.latitude, position.longitude)));
-    });
+    if (widget.coordsController.text != '') {
+      List coords = widget.coordsController.text.split(',');
+      setState(() {
+        mapController.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(coords[0], coords[1]),
+          ),
+        );
+      });
+    } else {
+      position = await Geolocator.getCurrentPosition();
+      setState(() {
+        mapController.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(position.latitude, position.longitude),
+          ),
+        );
+      });
+    }
   }
 
   goToPlace(Map<String, dynamic> place) async {
@@ -922,7 +955,16 @@ class _SearchPlaceState extends State<SearchPlace>
                       setState(() => loading = !loading);
                       Map<String, dynamic> place = await LocationService()
                           .getPlace(widget.addressController.text);
-                      goToPlace(place);
+                      if (place.isNotEmpty) {
+                        await goToPlace(place);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No se encontraron resultados'),
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      }
                       setState(() => loading = !loading);
                     },
               style: ButtonStyle(
@@ -990,6 +1032,16 @@ class _StateAndCityPickerState extends State<StateAndCityPicker> {
       : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
+
+  @override
+  void initState() {
+    super.initState();
+    newCities = cities.where((element) {
+      return element.state_id.toString() == departamentoId;
+    }).toList();
+    value = newCities[0].id.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     value = newCities[0].id.toString();
@@ -1097,7 +1149,13 @@ class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
                 child: PrevPageButton(pageController),
               ),
               Flexible(
-                child: NextPageButton(pageController),
+                child: NextPageButton(
+                  pageController,
+                  validator: () {
+                    return (destinAddressController.text != '' &&
+                        destinCoordsController.text != '');
+                  },
+                ),
               ),
             ],
           ),
@@ -1121,6 +1179,17 @@ class _DestinStateAndCityPickerState extends State<DestinStateAndCityPicker> {
       : states[0].id.toString();
   List<City> newCities = cities;
   late String value;
+
+  @override
+  void initState() {
+    super.initState();
+
+    newCities = cities.where((element) {
+      return element.state_id.toString() == departamentoId;
+    }).toList();
+    value = newCities[0].id.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     value = newCities[0].id.toString();
@@ -1316,8 +1385,9 @@ class PaginaFinal extends StatelessWidget {
                   Flexible(
                     child: CustomFormField(
                       esperaCargaController,
-                      'Espera en carga',
+                      'Espera en carga *',
                       type: TextInputType.number,
+                      hint: 'Minutos',
                     ),
                   ),
                   const SizedBox(
@@ -1325,8 +1395,11 @@ class PaginaFinal extends StatelessWidget {
                   ),
                   Flexible(
                     child: CustomFormField(
-                        esperaDescargaController, 'Espera en descarga',
-                        type: TextInputType.number),
+                      esperaDescargaController,
+                      'Espera en descarga *',
+                      type: TextInputType.number,
+                      hint: 'Minutos',
+                    ),
                   ),
                 ],
               ),
@@ -1443,46 +1516,58 @@ class _EnviarButtonState extends State<EnviarButton> {
       onPressed: isLoading
           ? () {}
           : () async {
-              isLoading = !isLoading;
-              setState(() {});
-              Load load = Load();
-              print(imagenes);
-              await load.createLoad({
-                'description': descriptionController.text,
-                'vehicle_type_id': 1,
-                'product_category_id': categoriaController.text,
-                'product': productController.text,
-                'vehicles_quantity': vehiculosController.text,
-                'helpers_quantity': ayudantesController.text,
-                'weight': pesoController.text,
-                'measurement_unit_id': unidadMedidaController.text,
-                'initial_offer': ofertaInicialController.text,
-                'state_id': originStateController.text,
-                'city_id': originCityController.text,
-                'address': originAddressController.text,
-                'latitude':
-                    originCoordsController.text.split(',')[0].toString(),
-                'longitude':
-                    originCoordsController.text.split(',')[1].toString(),
-                'destination_state_id': destinStateController.text,
-                'destination_city_id': destinCityController.text,
-                'destination_address': destinAddressController.text,
-                'destination_latitude':
-                    destinCoordsController.text.split(',')[0].toString(),
-                'destination_longitude':
-                    destinCoordsController.text.split(',')[1].toString(),
-                'pickup_at': loadDateController.text,
-                'pickup_time': loadHourController.text,
-                'payment_term_after_delivery': 1,
-                'wait_in_origin': esperaCargaController.text,
-                'wait_in_destination': esperaDescargaController.text,
-                'observatios': observacionesController.text,
-                'is_urgent': isUrgentController.text == '1',
-                'loadId': loadId
-              }, imagenes,
-                  context: context, update: hasLoadData, loadId: loadId);
-              isLoading = !isLoading;
-              setState(() {});
+              if (loadDateController.text != '' &&
+                  loadHourController.text != '' &&
+                  esperaCargaController.text != '' &&
+                  esperaDescargaController.text != '') {
+                isLoading = !isLoading;
+                setState(() {});
+                Load load = Load();
+                print(imagenes);
+                await load.createLoad({
+                  'description': descriptionController.text,
+                  'vehicle_type_id': 1,
+                  'product_category_id': categoriaController.text,
+                  'product': productController.text,
+                  'vehicles_quantity': vehiculosController.text,
+                  'helpers_quantity': ayudantesController.text,
+                  'weight': pesoController.text,
+                  'measurement_unit_id': unidadMedidaController.text,
+                  'initial_offer': ofertaInicialController.text,
+                  'state_id': originStateController.text,
+                  'city_id': originCityController.text,
+                  'address': originAddressController.text,
+                  'latitude':
+                      originCoordsController.text.split(',')[0].toString(),
+                  'longitude':
+                      originCoordsController.text.split(',')[1].toString(),
+                  'destination_state_id': destinStateController.text,
+                  'destination_city_id': destinCityController.text,
+                  'destination_address': destinAddressController.text,
+                  'destination_latitude':
+                      destinCoordsController.text.split(',')[0].toString(),
+                  'destination_longitude':
+                      destinCoordsController.text.split(',')[1].toString(),
+                  'pickup_at': loadDateController.text,
+                  'pickup_time': loadHourController.text,
+                  'payment_term_after_delivery': 1,
+                  'wait_in_origin': esperaCargaController.text,
+                  'wait_in_destination': esperaDescargaController.text,
+                  'observatios': observacionesController.text,
+                  'is_urgent': isUrgentController.text == '1',
+                  'loadId': loadId
+                }, imagenes,
+                    context: context, update: hasLoadData, loadId: loadId);
+                isLoading = !isLoading;
+                setState(() {});
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Rellene todos los campos necesarios'),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              }
             },
       child: isLoading
           ? const Center(

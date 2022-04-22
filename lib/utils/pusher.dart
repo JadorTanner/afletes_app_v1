@@ -1,13 +1,14 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PusherApi extends ChangeNotifier {
   final PusherClient _pusher = PusherClient(
-    pusherKey,
+    Constants.pusherKey,
     PusherOptions(
       encrypted: false,
       cluster: 'us2',
@@ -51,6 +52,9 @@ class PusherApi extends ChangeNotifier {
     _pusher.onConnectionError((error) {
       print('\n\n\nERROR EN PUSHER\n\n\n');
       print("error: ${error!.message}");
+
+      disconnect();
+      init(context, transportistsLocProvider, chat, isGenerator);
     });
 
     pusherChannel = _pusher.subscribe("negotiation-chat");
@@ -58,48 +62,69 @@ class PusherApi extends ChangeNotifier {
     //EVENTOS DEL CHAT
     bindEvent(pusherChannel!, 'App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
+      print('EVENTO DE CHAT');
       if (event != null) {
+        print('EVENTO NO ESTA VACIO');
         if (event.data != null) {
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
+          print('TIENE DATOS');
           print(event.data);
           print('usuario');
           print(sharedPreferences.getString('user'));
           String data = event.data.toString();
           Map jsonData = jsonDecode(data);
-          String? negotiationId = sharedPreferences.getString('negotiation_id');
-          User user =
-              User(userData: jsonDecode(sharedPreferences.getString('user')!))
-                  .userFromArray();
+          User user = User.userFromArray(
+              jsonDecode(sharedPreferences.getString('user')!));
           if (user.id != jsonData['sender_id']) {
             if (user.id == jsonData['user_id']) {
               print('user id');
               print(user.id);
-              if (jsonData['ask_location'] == true) {
-                Position position = await Geolocator.getCurrentPosition();
-                Map loc = {
-                  'coords': {
-                    'latitude': position.latitude,
-                    'longitude': position.longitude,
-                  }
-                };
+              if (jsonData['ask_location']) {
+                print('Pide ubicación');
+                if (jsonData['ask_location']) {
+                  print('enviar ubicacion por pusher');
+                  Position position = await Geolocator.getCurrentPosition();
+                  Map loc = {
+                    'coords': {
+                      'latitude': position.latitude,
+                      'longitude': position.longitude,
+                    }
+                  };
 
-                try {
-                  Api api = Api();
-                  await api.postData('user/send-location', {
-                    'negotiation_id': jsonData['negotiation_id'],
-                    'user_id': jsonData['sender_id'],
-                    'location': loc
-                  });
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text(
-                          'Ha ocurrido un error. Compruebe su conexión a internet')));
+                  try {
+                    Api api = Api();
+                    await api.postData('user/send-location', {
+                      'negotiation_id': jsonData['negotiation_id'],
+                      'user_id': jsonData['sender_id'],
+                      'location': loc
+                    });
+                  } on SocketException {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Compruebe su conexión a internet'),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Ha ocurrido un error'),
+                      ),
+                    );
+                  }
                 }
               }
-              if ((chat.negotiationId == jsonData['negotiation_id']) ||
-                  (negotiationId != null &&
-                      int.parse(negotiationId) == jsonData['negotiation_id'])) {
+              print(Provider.of<ChatProvider>(context, listen: false)
+                  .negotiationId);
+              print(Provider.of<ChatProvider>(context, listen: false)
+                  .negotiationId
+                  .runtimeType);
+              print(jsonData['negotiation_id']);
+              print(jsonData['negotiation_id'].runtimeType);
+              if ((Provider.of<ChatProvider>(context, listen: false)
+                      .negotiationId ==
+                  jsonData['negotiation_id'])) {
+                print('Esta dentro de la misma negociacion');
                 DateTime now = DateTime.now();
                 String formattedDate =
                     DateFormat('y-dd-MM kk:mm:ss').format(now);
@@ -114,28 +139,61 @@ class PusherApi extends ChangeNotifier {
                   ),
                 );
                 if (jsonData['negotiation_state'] != null) {
+                  print('tiene negociacion state');
                   context
                       .read<ChatProvider>()
                       .setLoadState(jsonData['negotiation_state']);
                 }
                 if (jsonData['is_final_offer'] == 'true') {
+                  print('Es una oferta final');
                   context.read<ChatProvider>().setPaid(false);
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(false);
                 }
                 if (jsonData['accepted'] != null) {
+                  print('Se acepto la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(true);
                   context.read<ChatProvider>().setPaid(false);
                 }
+                if (jsonData['paid']) {
+                  print('Se pagó la negociacion');
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(false);
+                  context.read<ChatProvider>().setPaid(true);
+                  context.read<ChatProvider>().setShowDefaultMessages(true);
+                  context.read<ChatProvider>().setLoadState(9);
+                }
+                if (jsonData['rejected'] != null) {
+                  print('Se canceló la negociacion');
+                  context.read<ChatProvider>().setCanOffer(false);
+                  context.read<ChatProvider>().setToPay(false);
+                  context.read<ChatProvider>().setPaid(false);
+                }
               } else {
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: 'Tiene una nueva notificación',
-                  body: jsonData['message'],
-                  payload:
-                      '{"route": "chat", "id":${jsonData["negotiation_id"]}}',
-                );
+                print('NO esta dentro de la misma negociacion');
+                String title = 'Tiene una nueva notificación';
+                if (jsonData['is_final_offer'] != null) {
+                  title = 'Ha recibido una oferta final';
+                }
+                if (jsonData['accepted'] != null) {
+                  title = 'La negociación ha sido aceptada';
+                }
+                if (jsonData['paid']) {
+                  title = 'La negociación ha sido pagada';
+                }
+                if (jsonData['rejected'] != null) {
+                  title = 'La negociación ha sido rechazada';
+                }
+                if (Platform.isIOS) {
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: title,
+                    body: jsonData['message'],
+                    payload:
+                        '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                  );
+                }
               }
             }
           }
@@ -153,9 +211,12 @@ class PusherApi extends ChangeNotifier {
           pusher.subscribe("transportist-location");
       bindEvent(transportistsLocationChannel,
           'App\\Events\\TransportistLocationEvent', (PusherEvent? event) async {
+        print('EVENTO DE LOCATION TRANSPORTISTA');
         if (event != null) {
           if (event.data != null) {
             Map data = jsonDecode(event.data.toString());
+            print('DATOS DEL EVENTO TRANSPORTISTA LOCATION: ' +
+                event.data.toString());
             if (data['isLoggingOut']) {
               transportistsLocProvider.removeTransportist(
                   data['user_id'], data['vehicle_id']);

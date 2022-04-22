@@ -1,18 +1,21 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 const double separacion = 20;
 List states = [];
@@ -52,13 +55,13 @@ Future getData(context) async {
             onPressed: () =>
                 {userType.text = 'load_generator', Navigator.pop(context)},
             child: Text('Generador de carga',
-                style: TextStyle(color: primaryOrange)),
+                style: TextStyle(color: Constants.primaryOrange)),
           ),
           TextButton(
             onPressed: () =>
                 {userType.text = 'carrier', Navigator.pop(context)},
-            child:
-                Text('Transportista', style: TextStyle(color: primaryOrange)),
+            child: Text('Transportista',
+                style: TextStyle(color: Constants.primaryOrange)),
           ),
         ],
       ),
@@ -624,18 +627,18 @@ class _PassFieldState extends State<PassField> {
       textInputAction: widget.action,
       decoration: InputDecoration(
         labelText: widget.title,
-        floatingLabelStyle: TextStyle(color: kBlack),
+        floatingLabelStyle: TextStyle(color: Constants.kBlack),
         contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: kInputBorder,
+            color: Constants.kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(10),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: kInputBorder,
+            color: Constants.kInputBorder,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(10),
@@ -646,7 +649,7 @@ class _PassFieldState extends State<PassField> {
           }),
           child: Icon(
             locked ? Icons.lock : Icons.lock_open,
-            color: kInputBorder,
+            color: Constants.kInputBorder,
           ),
         ),
       ),
@@ -693,7 +696,7 @@ class RegisterButtonState extends State<RegisterButton> {
               // try {
               Api api = Api();
 
-              var fullUrl = apiUrl + 'register';
+              var fullUrl = Constants.apiUrl + 'register';
 
               MultipartRequest request =
                   MultipartRequest('POST', Uri.parse(fullUrl));
@@ -724,6 +727,7 @@ class RegisterButtonState extends State<RegisterButton> {
                   'identity_card_back_attachment', cedulaAtras));
               StreamedResponse response = await request.send();
               String stringResponse = await response.stream.bytesToString();
+              log(stringResponse);
 
               if (response.statusCode == 200) {
                 setState(() => {
@@ -739,6 +743,9 @@ class RegisterButtonState extends State<RegisterButton> {
                       content: Text(responseBody['message']),
                     ),
                   );
+
+                  context.read<User>().setUser(
+                      User.userFromArray(responseBody['data']['user']));
                   SharedPreferences sharedPreferences =
                       await SharedPreferences.getInstance();
 

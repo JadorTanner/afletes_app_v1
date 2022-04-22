@@ -1,4 +1,4 @@
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class CustomFormField extends StatefulWidget {
@@ -17,6 +17,7 @@ class CustomFormField extends StatefulWidget {
       this.icon,
       this.defaultValue = '',
       this.hint = '',
+      this.helperText,
       this.action = TextInputAction.next,
       Key? key})
       : super(key: key);
@@ -36,6 +37,7 @@ class CustomFormField extends StatefulWidget {
   String label;
   String defaultValue;
   String hint;
+  String? helperText;
   TextInputAction action;
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
@@ -45,9 +47,11 @@ class _CustomFormFieldState extends State<CustomFormField> {
   @override
   void initState() {
     super.initState();
-    widget.controller.text = widget.defaultValue != ''
-        ? widget.defaultValue
-        : widget.controller.text;
+    if (widget.controller.text == '') {
+      widget.controller.text = widget.defaultValue != ''
+          ? widget.defaultValue
+          : widget.controller.text;
+    }
   }
 
   @override
@@ -78,31 +82,32 @@ class _CustomFormFieldState extends State<CustomFormField> {
             : () => {};
       },
       decoration: InputDecoration(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: kInputBorder),
-          borderRadius: BorderRadius.all(
-            Radius.circular(widget.radius),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Constants.kInputBorder),
+            borderRadius: BorderRadius.all(
+              Radius.circular(widget.radius),
+            ),
           ),
-        ),
-        prefixIcon: widget.icon != null
-            ? Icon(
-                widget.icon,
-                color: kInputBorder,
-                size: 22,
-              )
-            : null,
-        focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: kBlack, style: BorderStyle.solid)),
-        hintText: widget.hint,
-        hintStyle: TextStyle(color: kInputBorder),
-        label: Text(widget.label),
-        floatingLabelStyle: TextStyle(color: kBlack),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 5,
-          horizontal: 20,
-        ),
-      ),
+          prefixIcon: widget.icon != null
+              ? Icon(
+                  widget.icon,
+                  color: Constants.kInputBorder,
+                  size: 22,
+                )
+              : null,
+          focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Constants.kBlack, style: BorderStyle.solid)),
+          hintText: widget.hint,
+          hintStyle: TextStyle(color: Constants.kInputBorder),
+          label: Text(widget.label),
+          floatingLabelStyle: TextStyle(color: Constants.kBlack),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 5,
+            horizontal: 20,
+          ),
+          helperText: widget.helperText),
     );
   }
 }
@@ -141,13 +146,13 @@ class _PasswordFieldState extends State<PasswordField> {
         labelText: widget.label,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: kInputBorder),
+          borderSide: BorderSide(color: Constants.kInputBorder),
           borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
         ),
-        hintStyle: TextStyle(color: kInputBorder),
-        floatingLabelStyle: TextStyle(color: kBlack),
+        hintStyle: TextStyle(color: Constants.kInputBorder),
+        floatingLabelStyle: TextStyle(color: Constants.kBlack),
         contentPadding: const EdgeInsets.only(
           top: 5,
           bottom: 5,
@@ -156,10 +161,11 @@ class _PasswordFieldState extends State<PasswordField> {
         hintText: 'Contraseña',
         prefixIcon: Icon(
           Icons.lock,
-          color: kInputBorder,
+          color: Constants.kInputBorder,
         ),
         focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: kBlack, style: BorderStyle.solid)),
+            borderSide:
+                BorderSide(color: Constants.kBlack, style: BorderStyle.solid)),
         suffixIcon: InkWell(
           onTap: () => setState(
             () => passwordVisibility = !passwordVisibility,
@@ -168,7 +174,7 @@ class _PasswordFieldState extends State<PasswordField> {
             passwordVisibility
                 ? Icons.visibility_outlined
                 : Icons.visibility_off_outlined,
-            color: kInputBorder,
+            color: Constants.kInputBorder,
             size: 22,
           ),
         ),

@@ -4,7 +4,7 @@ import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,7 +21,17 @@ class Vehicle {
       vtoDinatran,
       vtoSenacsa,
       vtoSeguro,
-      brandName;
+      brandName,
+      greencardFront,
+      greencardBack,
+      municipalFront,
+      municipalBack,
+      dinatranFront,
+      dinatranBack,
+      senacsaFront,
+      senacsaBack,
+      insuranceImg,
+      insurance;
   bool situacion, esActivo, senacsa, dinatran, seguro;
   List imgs;
   User? owner;
@@ -43,6 +53,16 @@ class Vehicle {
     this.vtoSenacsa = '',
     this.vtoSeguro = '',
     this.brandName = '',
+    this.greencardFront = '',
+    this.greencardBack = '',
+    this.municipalFront = '',
+    this.municipalBack = '',
+    this.dinatranFront = '',
+    this.dinatranBack = '',
+    this.senacsaFront = '',
+    this.senacsaBack = '',
+    this.insuranceImg = '',
+    this.insurance = '',
     this.situacion = false,
     this.esActivo = false,
     this.dinatran = false,
@@ -53,6 +73,7 @@ class Vehicle {
   });
 
   Vehicle fromJSON(Map data) {
+    print(data);
     return Vehicle(
       id: data['id'],
       licensePlate: data['license_plate'],
@@ -62,6 +83,7 @@ class Vehicle {
       brand: data['brand_id'],
       brandName: data['brand_name'],
       score: data['score'],
+      // insuranceImg: data[''],
     );
   }
 
@@ -90,8 +112,8 @@ class Vehicle {
       body.addEntries([MapEntry('id', vehicleId)]);
     }
 
-    var fullUrl =
-        apiUrl + (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
+    var fullUrl = Constants.apiUrl +
+        (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
 
     MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
 
@@ -107,40 +129,58 @@ class Vehicle {
 
     //DOCUMENTOS
     if (greenCard != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_attachment', greenCard));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_attachment', greenCard));
+      } catch (e) {}
     }
     if (greenCardBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_green_card_back_attachment', greenCardBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_green_card_back_attachment', greenCardBack));
+      } catch (e) {}
     }
     if (municipal != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_attachment', municipal));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_attachment', municipal));
+      } catch (e) {}
     }
     if (municipalBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'vehicle_authorization_back_attachment', municipalBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'vehicle_authorization_back_attachment', municipalBack));
+      } catch (e) {}
     }
     if (dinatran != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_attachment', dinatran));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_attachment', dinatran));
+      } catch (e) {}
     }
     if (dinatranBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'dinatran_authorization_back_attachment', dinatranBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'dinatran_authorization_back_attachment', dinatranBack));
+      } catch (e) {}
     }
     if (senacsa != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_attachment', senacsa));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_attachment', senacsa));
+      } catch (e) {}
     }
     if (senacsaBack != '') {
-      request.files.add(await MultipartFile.fromPath(
-          'senacsa_authorization_back_attachment', senacsaBack));
+      try {
+        request.files.add(await MultipartFile.fromPath(
+            'senacsa_authorization_back_attachment', senacsaBack));
+      } catch (e) {}
     }
     if (insurance != '') {
-      request.files
-          .add(await MultipartFile.fromPath('insurance_attachment', insurance));
+      try {
+        request.files.add(
+            await MultipartFile.fromPath('insurance_attachment', insurance));
+      } catch (e) {}
     }
 
     for (var file in imagenes) {
@@ -162,8 +202,10 @@ class Vehicle {
     print(stringResponse);
     Map responseBody = jsonDecode(stringResponse);
     if (response.statusCode == 200) {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       if (responseBody['success']) {
+        sharedPreferences.setInt(
+            'vehicles', ((sharedPreferences.getInt('vehicles') ?? 0) + 1));
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));
@@ -201,7 +243,7 @@ class Vehicle {
         return false;
       }
     } else {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       if (context != null) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(responseBody['message'])));

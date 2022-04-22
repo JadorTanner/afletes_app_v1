@@ -6,10 +6,10 @@ import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'globals.dart' as globals;
+import 'constants.dart';
 
 class Api {
-  final String _url = globals.apiUrl;
+  final String _url = Constants.apiUrl;
   // 192.168.1.2 is my IP, change with your IP address
   var token;
 
@@ -28,7 +28,7 @@ class Api {
         Uri.parse(fullUrl),
         headers: setHeaders(),
       );
-    } on SocketException catch (e) {
+    } on SocketException {
       NotificationsApi.showNotification(
           id: 1,
           title: 'Error',
@@ -47,7 +47,7 @@ class Api {
         body: jsonEncode(body),
         headers: setHeaders(token),
       );
-    } on SocketException catch (e) {
+    } on SocketException {
       NotificationsApi.showNotification(
           id: 1,
           title: 'Error',

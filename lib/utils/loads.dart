@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
@@ -120,7 +121,8 @@ class Load extends ChangeNotifier {
         body.addEntries([MapEntry('id', loadId)]);
       }
 
-      var fullUrl = apiUrl + (update ? 'load/edit-load' : 'load/create-load');
+      var fullUrl =
+          Constants.apiUrl + (update ? 'load/edit-load' : 'load/create-load');
 
       MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
       SharedPreferences sha = await SharedPreferences.getInstance();
@@ -135,10 +137,11 @@ class Load extends ChangeNotifier {
       });
 
       for (var file in imagenes) {
-        request.files
-            .add(await MultipartFile.fromPath('imagenes[]', file.path));
+        try {
+          request.files
+              .add(await MultipartFile.fromPath('imagenes[]', file.path));
+        } catch (e) {}
       }
-      BuildContext loadingContext = context;
       StreamedResponse response = await request.send();
       String stringResponse = await response.stream.bytesToString();
       print(stringResponse);
@@ -151,8 +154,16 @@ class Load extends ChangeNotifier {
                 content: Text(responseBody['message']),
               ),
             );
-            Future.delayed(const Duration(seconds: 1),
-                () => {Navigator.of(context).pop()});
+            if (body['is_urgent']) {
+              Future.delayed(
+                  const Duration(seconds: 1),
+                  () => {
+                        Navigator.of(context).pushReplacementNamed('/vehicles')
+                      });
+            } else {
+              Future.delayed(const Duration(seconds: 1),
+                  () => {Navigator.of(context).pop()});
+            }
           }
           return true;
         } else {
@@ -163,12 +174,26 @@ class Load extends ChangeNotifier {
           );
           return false;
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(stringResponse),
+          ),
+        );
+        return false;
       }
-    } catch (e) {
-      print(e);
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compruebe su conexión a internet')));
-      return false;
+        const SnackBar(
+          content: Text('Compruebe su conexión a internet'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ha ocurrido un error'),
+        ),
+      );
     }
   }
 

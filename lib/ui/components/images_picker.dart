@@ -131,12 +131,12 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                         img =
                             await _picker.pickImage(source: ImageSource.camera);
                         if (img != null) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.pop(context);
                           setState(() {
                             widget.imageFile = img!.path;
                           });
                           widget.onChange(img!.path);
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.pop(context);
                         }
                       },
                       icon: const Icon(Icons.camera_alt,
@@ -149,12 +149,12 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                         img = await _picker.pickImage(
                             source: ImageSource.gallery);
                         if (img != null) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.pop(context);
                           setState(() {
                             widget.imageFile = img!.path;
                           });
                           widget.onChange(img!.path);
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.pop(context);
                         }
                       },
                       icon: const Icon(Icons.image_search_sharp,
@@ -178,10 +178,13 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
                     File(img!.path),
                   )
                 : (widget.imageFile != null && widget.imageFile != ''
-                    ? Image.file(
-                        File(widget.imageFile!),
-                      )
-                    : const Center(child: Icon(Icons.photo_camera))),
+                    ? Image.network(widget.imageFile!)
+                    // Image.file(
+                    //     File(widget.imageFile!),
+                    //   )
+                    : const Center(
+                        child: Icon(Icons.photo_camera),
+                      )),
           ),
         ],
       ),

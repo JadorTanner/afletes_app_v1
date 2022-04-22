@@ -5,7 +5,7 @@ import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/custom_paint.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -117,7 +117,7 @@ class _MyNegotiationsState extends State<MyNegotiations> {
                       padding: MaterialStateProperty.all<EdgeInsets>(
                           const EdgeInsets.symmetric(vertical: 20)),
                       backgroundColor: MaterialStateProperty.all<Color>(
-                        kBlack,
+                        Constants.kBlack,
                       ),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         const RoundedRectangleBorder(
@@ -204,7 +204,7 @@ class _MyNegotiationsState extends State<MyNegotiations> {
                                                   .attachments
                                                   .isNotEmpty
                                               ? Image.network(
-                                                  loadImgUrl +
+                                                  Constants.loadImgUrl +
                                                       negotiations[index]
                                                               .negotiationLoad!
                                                               .attachments[0]

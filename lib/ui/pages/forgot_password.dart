@@ -39,8 +39,8 @@ class ForgotPassPage extends StatelessWidget {
                 padding: EdgeInsets.all(20),
                 child: CodeInput(),
               ),
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ReturnBack(
                     text: 'Volver a inicio',
@@ -48,15 +48,15 @@ class ForgotPassPage extends StatelessWidget {
                   ValidateButton()
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('No lo has recibido?'),
-                  TextButton(
-                      onPressed: () => {},
-                      child: const Text('Reenviar código')),
-                ],
-              )
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Text('No lo has recibido?'),
+              //     TextButton(
+              //         onPressed: () => {},
+              //         child: const Text('Reenviar código')),
+              //   ],
+              // )
             ],
           ),
         ));

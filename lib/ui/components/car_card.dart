@@ -1,6 +1,6 @@
 // ignore_for_file: must_be_immutable, prefer_typing_uninitialized_variables
 
-import 'package:afletes_app_v1/utils/globals.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 
@@ -51,8 +51,8 @@ class _CarCard2State extends State<CarCard2> {
               child: Hero(
                 tag: 'vehicle_' + widget.vehicle.id.toString(),
                 child: widget.vehicle.imgs.isNotEmpty
-                    ? Image.network(
-                        vehicleImgUrl + widget.vehicle.imgs[0]['path'])
+                    ? Image.network(Constants.vehicleImgUrl +
+                        widget.vehicle.imgs[0]['path'])
                     : const Image(
                         image: AssetImage('assets/img/noimage.png'),
                       ),

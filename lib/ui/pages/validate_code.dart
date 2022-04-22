@@ -39,8 +39,8 @@ class ValidateCode extends StatelessWidget {
                 padding: EdgeInsets.all(20),
                 child: CodeInput(),
               ),
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Flexible(
                     child: ReturnBack(
@@ -50,15 +50,15 @@ class ValidateCode extends StatelessWidget {
                   Flexible(child: ValidateButton())
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('No lo has recibido?'),
-                  TextButton(
-                      onPressed: () => {},
-                      child: const Text('Reenviar código')),
-                ],
-              )
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Text('No lo has recibido?'),
+              //     TextButton(
+              //         onPressed: () => {},
+              //         child: const Text('Reenviar código')),
+              //   ],
+              // ),
             ],
           ),
         ));
@@ -109,12 +109,16 @@ class CodeSquare extends StatelessWidget {
     return Flexible(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10),
-        height: 50,
+        height: 60,
         child: Center(
           child: TextField(
             textAlign: TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
-            // decoration: const InputDecoration(border: InputBorder.none),
+            decoration: const InputDecoration(
+              counter: SizedBox.shrink(),
+              counterStyle: TextStyle(color: Colors.white),
+            ),
+            maxLength: 1,
             keyboardType: TextInputType.number,
             textInputAction: last ? TextInputAction.done : TextInputAction.next,
             onChanged: (value) {
@@ -122,9 +126,7 @@ class CodeSquare extends StatelessWidget {
                 List<String> newCode = codeController.text.split('');
                 newCode[index] = value;
                 codeController.text = newCode.join('');
-                if (!last) {
-                  FocusScope.of(context).nextFocus();
-                }
+                FocusScope.of(context).nextFocus();
               } else {
                 if (index != 0) {
                   FocusScope.of(context).previousFocus();
@@ -176,9 +178,17 @@ class ReturnBackState extends State<ReturnBack> {
           ),
         );
       },
-      child: Text(
-        widget.text,
-        style: const TextStyle(color: Colors.white),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20,
+            child: Text(
+              widget.text,
+              style: const TextStyle(color: Colors.white),
+            ),
+          )
+        ],
       ),
     );
   }
@@ -239,6 +249,7 @@ class ValidateButtonState extends State<ValidateButton> {
 
                 shared.setString(
                     'user', jsonEncode(responseBody['data']['user']));
+                print(responseBody['data']['user']);
                 if (responseBody['data']['user']['habilitado']) {
                   if (responseBody['data']['user']['is_carrier']) {
                     if (responseBody['data']['cant_vehicles'] <= 0) {
@@ -262,14 +273,25 @@ class ValidateButtonState extends State<ValidateButton> {
                     });
               }
             },
-      child: !isLoading
-          ? Text(
-              widget.text,
-              style: const TextStyle(color: Colors.white),
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20,
+            child: !isLoading
+                ? Text(
+                    widget.text,
+                    style: const TextStyle(color: Colors.white),
+                  )
+                : const SizedBox(
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
