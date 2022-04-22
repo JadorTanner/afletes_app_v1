@@ -65,8 +65,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           await Api().postData('user/set-device-token',
               {'id': user['id'], 'device_token': token ?? ''});
         } catch (e) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //     const SnackBar(content: Text('Ha ocurrido un error')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ha ocurrido un error')));
         }
         if (user['confirmed']) {
           if (user['habilitado']) {

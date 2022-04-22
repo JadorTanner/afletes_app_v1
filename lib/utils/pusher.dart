@@ -62,90 +62,127 @@ class PusherApi extends ChangeNotifier {
     //EVENTOS DEL CHAT
     bindEvent(pusherChannel!, 'App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
-      print('EVENTO DE CHAT');
-      if (event != null) {
-        print('EVENTO NO ESTA VACIO');
-        if (event.data != null) {
-          SharedPreferences sharedPreferences =
-              await SharedPreferences.getInstance();
-          String data = event.data.toString();
-          Map jsonData = jsonDecode(data);
-          User user = User.userFromArray(
-              jsonDecode(sharedPreferences.getString('user')!));
-          if (user.id != jsonData['sender_id']) {
-            if (user.id == jsonData['user_id']) {
-              print('user id');
-              print(user.id);
-              if (jsonData['ask_location']) {
-                print('Pide ubicación');
-                if (jsonData['ask_location']) {
-                  print('enviar ubicacion por pusher');
-                  Position position = await Geolocator.getCurrentPosition();
-                  Map loc = {
-                    'coords': {
-                      'latitude': position.latitude,
-                      'longitude': position.longitude,
-                    }
-                  };
+      try {
+        print('EVENTO DE CHAT');
+        if (event != null) {
+          print('EVENTO NO ESTA VACIO');
+          if (event.data != null) {
+            SharedPreferences sharedPreferences =
+                await SharedPreferences.getInstance();
+            String data = event.data.toString();
+            Map jsonData = jsonDecode(data);
+            NotificationsApi.showNotification(
+              id: 10,
+              title: 'ENTRA CORRECTO',
+              body:
+                  'USUARIO ' + (sharedPreferences.getString('user') ?? 'VACÍO'),
+            );
+            User user = User.userFromArray(
+                jsonDecode(sharedPreferences.getString('user')!));
 
-                  try {
-                    Api api = Api();
-                    await api.postData('user/send-location', {
-                      'negotiation_id': jsonData['negotiation_id'],
-                      'user_id': jsonData['sender_id'],
-                      'location': loc
-                    });
-                  } on SocketException {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Compruebe su conexión a internet'),
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Ha ocurrido un error'),
-                      ),
-                    );
+            if (user.id != jsonData['sender_id']) {
+              if (user.id == jsonData['user_id']) {
+                print('user id');
+                print(user.id);
+                if (jsonData['ask_location']) {
+                  print('Pide ubicación');
+                  if (jsonData['ask_location']) {
+                    print('enviar ubicacion por pusher');
+                    Position position = await Geolocator.getCurrentPosition();
+                    Map loc = {
+                      'coords': {
+                        'latitude': position.latitude,
+                        'longitude': position.longitude,
+                      }
+                    };
+
+                    try {
+                      Api api = Api();
+                      await api.postData('user/send-location', {
+                        'negotiation_id': jsonData['negotiation_id'],
+                        'user_id': jsonData['sender_id'],
+                        'location': loc
+                      });
+                    } on SocketException {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Compruebe su conexión a internet'),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Ha ocurrido un error'),
+                        ),
+                      );
+                    }
                   }
                 }
-              }
-              if ((Provider.of<ChatProvider>(context, listen: false)
-                      .negotiationId ==
-                  jsonData['negotiation_id'])) {
-                DateTime now = DateTime.now();
-                String formattedDate =
-                    DateFormat('y-dd-MM kk:mm:ss').format(now);
-                chat.addMessage(
-                  jsonData['negotiation_id'],
-                  ChatMessage(
-                    jsonData['message'],
-                    formattedDate,
-                    jsonData['sender_id'],
+                if ((Provider.of<ChatProvider>(context, listen: false)
+                        .negotiationId ==
+                    jsonData['negotiation_id'])) {
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: 'ENTRA CORRECTO',
+                    body: 'ESTÁ EN LA MISMA NEGOCIACIÓN (1',
+                  );
+                  DateTime now = DateTime.now();
+                  String formattedDate =
+                      DateFormat('y-dd-MM kk:mm:ss').format(now);
+                  chat.addMessage(
                     jsonData['negotiation_id'],
-                    jsonData['is_location'] ?? false,
-                  ),
-                );
-                if (jsonData['normal_message']) {
-                  context.read<ChatProvider>().setCanOffer(true);
-                }
-                if (jsonData['negotiation_state'] != null) {
-                  print('tiene negociacion state');
-                  context
-                      .read<ChatProvider>()
-                      .setLoadState(jsonData['negotiation_state']);
-                }
-                if (jsonData['is_final_offer'] == 'true') {
-                  print('Es una oferta final');
-                  context.read<ChatProvider>().setPaid(false);
-                  context.read<ChatProvider>().setCanOffer(false);
-                  context.read<ChatProvider>().setToPay(false);
+                    ChatMessage(
+                      jsonData['message'],
+                      formattedDate,
+                      jsonData['sender_id'],
+                      jsonData['negotiation_id'],
+                      jsonData['is_location'] ?? false,
+                    ),
+                  );
+                  if (jsonData['normal_message']) {
+                    context.read<ChatProvider>().setCanOffer(true);
+                    NotificationsApi.showNotification(
+                      id: 10,
+                      title: 'ENTRA CORRECTO',
+                      body: 'ES UN MENSAJE NORMAL (2',
+                    );
+                  }
+                  if (jsonData['negotiation_state'] != null) {
+                    print('tiene negociacion state');
+                    context
+                        .read<ChatProvider>()
+                        .setLoadState(jsonData['negotiation_state']);
+                    if (jsonData['normal_message']) {
+                      context.read<ChatProvider>().setCanOffer(true);
+                      NotificationsApi.showNotification(
+                        id: 10,
+                        title: 'ENTRA CORRECTO',
+                        body: 'ES UN MENSAJE NORMAL (2',
+                      );
+                    }
+                  }
+                  if (jsonData['is_final_offer'] != "false") {
+                    print('Es una oferta final');
+                    context.read<ChatProvider>().setPaid(false);
+                    context.read<ChatProvider>().setCanOffer(false);
+                    context.read<ChatProvider>().setToPay(false);
+                    NotificationsApi.showNotification(
+                      id: 10,
+                      title: 'ENTRA CORRECTO',
+                      body: 'ES UNA OFERTA FINAL (3',
+                    );
+                  }
                 }
                 if (jsonData['accepted'] != null) {
                   print('Se acepto la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(true);
                   context.read<ChatProvider>().setPaid(false);
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: 'ENTRA CORRECTO',
+                    body: 'OFERTA ACEPTADA (4',
+                  );
                 }
                 if (jsonData['paid']) {
                   print('Se pagó la negociacion');
@@ -154,15 +191,34 @@ class PusherApi extends ChangeNotifier {
                   context.read<ChatProvider>().setPaid(true);
                   context.read<ChatProvider>().setShowDefaultMessages(true);
                   context.read<ChatProvider>().setLoadState(9);
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: 'ENTRA CORRECTO',
+                    body: 'OFERTA PAGADA (5',
+                  );
                 }
                 if (jsonData['rejected'] != null) {
                   print('Se canceló la negociacion');
                   context.read<ChatProvider>().setCanOffer(false);
                   context.read<ChatProvider>().setToPay(false);
                   context.read<ChatProvider>().setPaid(false);
+                  NotificationsApi.showNotification(
+                    id: 10,
+                    title: 'ENTRA CORRECTO',
+                    body: 'OFERTA RECHAZADA (6',
+                  );
                 }
+                NotificationsApi.showNotification(
+                  id: 10,
+                  title: 'ENTRA CORRECTO',
+                  body: 'NO ENTRA EN NADA (7',
+                );
               } else {
-                print('NO esta dentro de la misma negociacion');
+                NotificationsApi.showNotification(
+                  id: 10,
+                  title: 'ENTRA CORRECTO',
+                  body: 'NO esta dentro de la misma negociacion',
+                );
                 String title = 'Tiene una nueva notificación';
                 if (jsonData['is_final_offer'] != null) {
                   title = 'Ha recibido una oferta final';
@@ -187,6 +243,12 @@ class PusherApi extends ChangeNotifier {
             }
           }
         }
+      } catch (e) {
+        NotificationsApi.showNotification(
+          id: 10,
+          title: 'HA OCURRIDO UN ERROR',
+          body: e.toString(),
+        );
       }
     });
     // } else {
