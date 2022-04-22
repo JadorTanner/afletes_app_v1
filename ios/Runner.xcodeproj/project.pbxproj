@@ -3,10 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0796C6BF2805DE260071D999 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0796C6BE2805DE260071D999 /* GoogleService-Info.plist */; };
+		0796C6C22805E0200071D999 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0796C6C12805E0200071D999 /* FirebaseMessaging */; };
+		0A8CCE054FB7D97A74E42105 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F8C84504FD28871B6C30CBB /* Pods_Runner.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
