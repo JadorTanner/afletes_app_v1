@@ -49,6 +49,40 @@ class Negotiation {
       this.withPerson = '',
       this.negotiationLoad});
 
+  static getStateName(String stateString) {
+    String st = '';
+    switch (stateString) {
+      case 'REJECTED_BY_LOADER':
+        st = 'Rechazado';
+        break;
+      case 'REJECTED_BY_CARRIER':
+        st = 'Rechazado';
+        break;
+      case 'EXPIRATED':
+        st = 'Expirado';
+        break;
+      case 'OPEN':
+        st = 'Abierto';
+        break;
+      case 'FINISHED':
+        st = 'Aceptado';
+        break;
+      case 'IN_NEGOTIATION':
+        st = 'Aceptado';
+        break;
+      case 'PENDING':
+        st = 'Pendiente de pago';
+        break;
+      case 'PAID':
+        st = 'Pagado';
+        break;
+      default:
+        st = '';
+        break;
+    }
+    return st;
+  }
+
   //TIPOS DE MENSAJES
   // 1 - Mensaje de oferta
   sendMessage(int negotiationId, int message,

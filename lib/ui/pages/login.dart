@@ -15,6 +15,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final FocusNode _emailFocus = FocusNode();
+final FocusNode _passwordFocus = FocusNode();
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -147,7 +150,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print('BUILD ENTIRE LOGIN PAGE');
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -221,6 +223,7 @@ class FormContainer extends StatelessWidget {
             icon: Icons.alternate_email,
             type: TextInputType.emailAddress,
             enabled: !isLoading,
+            focus: _emailFocus,
           ),
           const SizedBox(
             width: 100,
@@ -233,6 +236,7 @@ class FormContainer extends StatelessWidget {
             onSubmit: () async {
               loginFunction();
             },
+            focus: _passwordFocus,
           ),
           const SizedBox(
             width: 100,

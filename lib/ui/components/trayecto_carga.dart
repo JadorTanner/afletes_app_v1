@@ -110,8 +110,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
     if (result.points.isNotEmpty) {
       MarkerId marcadorOrigen = const MarkerId('marcador_origen');
       MarkerId marcadorDestino = const MarkerId('marcador_destino');
-      print(origin.toJson());
-      print(destin.toJson());
+
       _markers.clear();
       _markers.add(
         Marker(
@@ -126,10 +125,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           ),
         ),
       );
-      print('DISTANCIA ENTRE PUNTOS: ' +
-          PolylinePoints.calculateDistance(origin.latitude, origin.longitude,
-                  destin.latitude, destin.longitude)
-              .toString());
       _markers.add(
         Marker(
           markerId: marcadorDestino,
@@ -200,8 +195,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
       widget.transportistId = context.read<ChatProvider>().transportistId;
       transportists.asMap().forEach((key, transportist) {
         if (transportist.transportistId == widget.transportistId) {
-          print(transportist.latitude);
-          print(transportist.longitude);
           Marker marker = Marker(
             markerId: MarkerId(transportist.transportistId.toString() +
                 transportist.vehicleId.toString()),

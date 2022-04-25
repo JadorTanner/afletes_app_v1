@@ -713,7 +713,6 @@ class _ImagesPickerState extends State<ImagesPicker> {
                         }),
                     children: [
                       ...List.generate(imagenesNetwork.length, (index) {
-                        print(imagenesNetwork[index]['path']);
                         return SizedBox(
                           height: MediaQuery.of(context).size.height * 0.4,
                           child: Stack(
@@ -759,7 +758,6 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                       },
                                     );
 
-                                    print(response.body);
                                     if (response.statusCode == 200) {
                                       imagenesNetwork.removeAt(index);
                                       setState(() {});

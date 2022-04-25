@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:afletes_app_v1/utils/api.dart';
@@ -111,6 +110,7 @@ class Load extends ChangeNotifier {
       longitudeFrom: json['longitude'] ?? '',
       negotiationId: json['negotiation_id'] ?? 0,
       state: json.containsKey('load_state') ? json['load_state']['name'] : '',
+      attachments: json.containsKey('attachments') ? json['attachments'] : [],
     );
   }
 
@@ -129,7 +129,7 @@ class Load extends ChangeNotifier {
       SharedPreferences sha = await SharedPreferences.getInstance();
       String token = sha.getString('token')!;
       Map headers = api.setHeaders(token);
-      print(headers);
+
       headers.forEach((key, value) {
         request.headers[key] = value;
       });
@@ -145,7 +145,7 @@ class Load extends ChangeNotifier {
       }
       StreamedResponse response = await request.send();
       String stringResponse = await response.stream.bytesToString();
-      print(stringResponse);
+
       if (response.statusCode == 200) {
         Map responseBody = jsonDecode(stringResponse);
         if (responseBody['success']) {
@@ -204,19 +204,17 @@ class Load extends ChangeNotifier {
   getPendingLoad(BuildContext context) async {
     Api api = Api();
     Response response = await api.getData('load/pending-loads');
-    print('GETTING PENDING LOADS');
+
     if (response.statusCode == 200) {
       Map jsonData = jsonDecode(response.body);
-      log(response.body);
       if (jsonData['success']) {
         List pendLoads = jsonData['data'];
         _pendingLoads.clear();
         for (var pendLoad in pendLoads) {
-          print(pendLoad['negotiation_load']);
           if (pendLoad['negotiation_load'] != null) {
             Map loadData = pendLoad['negotiation_load'];
             loadData['negotiation_id'] = pendLoad['id'];
-            print(loadData);
+
             _pendingLoads.add(Load.fromJSON(loadData));
           }
         }

@@ -33,11 +33,13 @@ late bool toPay = false;
 late bool paid = false;
 late bool canVote = false;
 late int loadState = 0;
+late int votes = 0;
 
 late Load load;
 late Vehicle vehicle;
 
 TextEditingController commentController = TextEditingController();
+TextEditingController starsController = TextEditingController();
 
 ButtonStyle pillStyle = ButtonStyle(
     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -46,11 +48,11 @@ ButtonStyle pillStyle = ButtonStyle(
             side: const BorderSide(color: Colors.orange))));
 
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
+  starsController.text = '0';
   // try {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   user = User.userFromArray(jsonDecode(sharedPreferences.getString('user')!));
 
-  print('ID DE LA NEGOCIACIÓN ' + id.toString());
   Api api = Api();
 
   context.read<ChatProvider>().clearMessages();
@@ -61,9 +63,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
   sharedPreferences.setString('negotiation_id', id.toString());
   Provider.of<ChatProvider>(context, listen: false).setNegotiationId(id);
-
-  print('ID DE LA NEGOCIACIÓN EN PROVIDER');
-  print(context.read<ChatProvider>().negotiationId);
 
   chatProvider.setCanOffer(false);
   chatProvider.setPaid(false);
@@ -98,11 +97,17 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
     print('Estado de la negociación: ' +
         jsonResp['data']['negotiation_state']['id'].toString());
+
     chatProvider.setNegState(jsonResp['data']['negotiation_state']['id']);
+    votes = jsonResp['data']['votes'];
+    starsController.text = votes.toString();
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
     switch (chatProvider.negState) {
       case 1:
         chatProvider.setCanOffer(true);
+        if (listMessages.first['sender_id'] == user.id) {
+          chatProvider.setCanOffer(false);
+        }
         chatProvider.setPaid(false);
         chatProvider.setCanVote(false);
         chatProvider.setShowDefaultMessages(false);
@@ -117,6 +122,9 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         break;
       case 6:
         chatProvider.setCanOffer(true);
+        if (listMessages.first['sender_id'] == user.id) {
+          chatProvider.setCanOffer(false);
+        }
         chatProvider.setPaid(false);
         chatProvider.setToPay(false);
         break;
@@ -138,13 +146,14 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     chatProvider.setLoadState(jsonResp['data']['load_state']['id']);
     chatProvider.setLoadId(jsonResp['data']['load']['id']);
     if (chatProvider.loadState == 13) {
-      chatProvider.setCanVote(false);
       chatProvider.setToPay(false);
       chatProvider.setCanOffer(false);
-      chatProvider.setPaid(false);
+      chatProvider.setPaid(true);
       chatProvider.setShowDefaultMessages(false);
+      if (votes <= 0) {
+        chatProvider.setCanVote(true);
+      }
     }
-
     load = Load.fromJSON(jsonResp['data']['load']);
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -319,7 +328,7 @@ Future acceptNegotiation(id, context) async {
               Response response = await api.postData('negotiation/accept', {
                 'id': id,
               });
-              print(response.body);
+
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
                 context.read<ChatProvider>().setToPay(true);
@@ -508,11 +517,11 @@ class _NegotiationChatState extends State<NegotiationChat> {
               context.read<ChatProvider>().setNegotiationId(0);
               context.read<ChatProvider>().setTransportistId(0);
 
-              // context.read<ChatProvider>().setCanOffer(false);
-              // context.read<ChatProvider>().setPaid(false);
-              // context.read<ChatProvider>().setCanVote(false);
-              // context.read<ChatProvider>().setShowDefaultMessages(false);
-              // context.read<ChatProvider>().setToPay(false);
+              context.read<ChatProvider>().setCanOffer(false);
+              context.read<ChatProvider>().setPaid(false);
+              context.read<ChatProvider>().setCanVote(false);
+              context.read<ChatProvider>().setShowDefaultMessages(false);
+              context.read<ChatProvider>().setToPay(false);
 
               return true;
             }));
@@ -529,42 +538,6 @@ class DynamicSection extends StatefulWidget {
 class _DynamicSectionState extends State<DynamicSection> {
   @override
   Widget build(BuildContext context) {
-    // int negState = context.watch<ChatProvider>().negState;
-    // ChatProvider chatProvider = context.read();
-    // if (mounted) {
-    //   switch (negState) {
-    //     case 1:
-    //       chatProvider.setCanOffer(true);
-    //       chatProvider.setPaid(false);
-    //       chatProvider.setCanVote(false);
-    //       chatProvider.setShowDefaultMessages(false);
-    //       chatProvider.setToPay(false);
-    //       break;
-    //     case 2:
-    //       chatProvider.setCanOffer(false);
-    //       chatProvider.setPaid(false);
-    //       chatProvider.setCanVote(false);
-    //       chatProvider.setShowDefaultMessages(false);
-    //       chatProvider.setToPay(true);
-    //       break;
-    //     case 6:
-    //       chatProvider.setCanOffer(true);
-    //       chatProvider.setPaid(false);
-    //       chatProvider.setToPay(false);
-    //       break;
-    //     case 8:
-    //       chatProvider.setCanOffer(false);
-    //       chatProvider.setPaid(true);
-    //       chatProvider.setShowDefaultMessages(true);
-    //       break;
-    //     default:
-    //       chatProvider.setCanVote(false);
-    //       chatProvider.setToPay(false);
-    //       chatProvider.setCanOffer(false);
-    //       chatProvider.setPaid(false);
-    //       chatProvider.setShowDefaultMessages(false);
-    //   }
-    // }
     return Column(
       children: [
         OfferInputSection(widget: widget.widget),
@@ -590,6 +563,7 @@ class ButtonsSection extends StatelessWidget {
     paid = context.watch<ChatProvider>().paid;
     loadState = context.watch<ChatProvider>().loadState;
     canVote = context.watch<ChatProvider>().canVote;
+    canOffer = context.watch<ChatProvider>().canOffer;
 
     List<Widget> children = [
       const SizedBox(
@@ -705,7 +679,7 @@ class ButtonsSection extends StatelessWidget {
                 onPressed: () => {
                   setLoadState(widget.id, context.read<ChatProvider>().loadId,
                       13, context, context.read<ChatProvider>()),
-                  context.read<ChatProvider>().setCanVote(false),
+                  context.read<ChatProvider>().setCanVote(true),
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -720,75 +694,97 @@ class ButtonsSection extends StatelessWidget {
           }
           break;
         case 13:
-          //MUESTRA SOLO SI ES GENERADOR
           if (canVote) {
             children = [
               TextButton(
                 style: buttonStyle,
                 onPressed: () => {
                   showDialog(
-                      context: context,
-                      builder: (context) => Dialog(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 40),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('Que te pareció el trato con el ' +
-                                      (user.isCarrier
-                                          ? 'generador'
-                                          : 'transportista') +
-                                      '?'),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  const Stars(),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  TextField(
-                                    controller: commentController,
-                                    decoration: const InputDecoration(
-                                      label: Text('Tienes algún comentario?'),
-                                    ),
-                                    keyboardType: TextInputType.multiline,
-                                    maxLines: null,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      try {
-                                        context
-                                            .read<ChatProvider>()
-                                            .setCanVote(false);
-                                        Navigator.pop(context);
-                                      } on SocketException {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Compruebe su conexión a internet'),
-                                          ),
-                                        );
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content:
-                                                Text('Ha ocurrido un error'),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    child: const Text('Votar'),
-                                  )
-                                ],
-                              ),
+                    context: context,
+                    builder: (context) => Dialog(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 40),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Que te pareció el trato con el ' +
+                                (user.isCarrier
+                                    ? 'generador'
+                                    : 'transportista') +
+                                '?'),
+                            const SizedBox(
+                              height: 20,
                             ),
-                          ))
+                            const Stars(),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            TextField(
+                              controller: commentController,
+                              decoration: const InputDecoration(
+                                label: Text('Tienes algún comentario?'),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(5),
+                                  ),
+                                ),
+                              ),
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                try {
+                                  Api api = Api();
+                                  Response response = await api.postData(
+                                    'user/vote',
+                                    {
+                                      'negotiation_id': widget.id,
+                                      'score': int.parse(starsController.text),
+                                      'comment': commentController.text,
+                                    },
+                                  );
+                                  if (response.statusCode == 200) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Gracias por votar!'),
+                                      ),
+                                    );
+                                    context
+                                        .read<ChatProvider>()
+                                        .setCanVote(false);
+                                    Navigator.pop(context);
+                                  } else {
+                                    throw Exception(
+                                        jsonDecode(response.body)['message']);
+                                  }
+                                } on SocketException {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Compruebe su conexión a internet'),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Ha ocurrido un error. ' +
+                                          e.toString()),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Votar'),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -849,8 +845,6 @@ class ButtonsSection extends StatelessWidget {
           ];
         }
       } else {
-        print('Puede ofertar? ' + (canOffer ? 'Sí' : 'No'));
-        print('Estado de la carga ' + loadState.toString());
         if (loadState == 2 && canOffer) {
           //Si está en negociación
           children = [
@@ -1055,7 +1049,6 @@ class PillButton extends StatelessWidget {
 
 class Stars extends StatefulWidget {
   const Stars({Key? key}) : super(key: key);
-
   @override
   State<Stars> createState() => _StarsState();
 }
@@ -1068,17 +1061,22 @@ class _StarsState extends State<Stars> {
       children: List.generate(
         5,
         (index) => GestureDetector(
-          onTap: () => setState(() {
-            if (voteStars == 1) {
-              voteStars = 0;
-            } else {
-              voteStars = index + 1;
-            }
-          }),
+          onTap: () {
+            starsController.text = voteStars.toString();
+            setState(
+              () {
+                if (voteStars == 1) {
+                  voteStars = 0;
+                } else {
+                  voteStars = index + 1;
+                }
+              },
+            );
+          },
           child: Icon(
             (voteStars >= (index + 1) ? Icons.star : Icons.star_border),
             color: Colors.yellow,
-            size: 24,
+            size: 50,
           ),
         ),
       ),

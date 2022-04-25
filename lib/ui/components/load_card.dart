@@ -179,9 +179,7 @@ onLoadTap(
                             enabled: isCarrier,
                             controller: intialOfferController,
                             keyboardType: TextInputType.number,
-                            onChanged: (val) {
-                              print('NUEVO VALOR: ' + val);
-                            },
+                            onChanged: (val) {},
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(
                                 borderSide: BorderSide(
@@ -236,7 +234,7 @@ onLoadTap(
                                 onPressed: () async {
                                   Navigator.of(context).pop();
                                   //LLEVA AL DETALLE DE LA CARGA
-                                  print(load.addressFrom);
+
                                   // Navigator.of(context).push(
                                   //   MaterialPageRoute(
                                   //     builder: (context) => CreateLoadPage(
@@ -395,7 +393,6 @@ onLoadTap(
   } catch (e) {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Ha ocurrido un error')));
-    print(e);
   }
 }
 
@@ -577,7 +574,6 @@ class _LoadCardState extends State<LoadCard> {
                   widget.isFinalOffer,
                 );
                 if (widget.onTap != null) {
-                  print('ONTAP');
                   widget.onTap();
                 }
               }
@@ -597,7 +593,6 @@ class _LoadCardState extends State<LoadCard> {
                                   widget.load!.attachments[0]['filename'],
                               loadingBuilder: (context, child,
                                   ImageChunkEvent? loadingProgress) {
-                                print(loadingProgress);
                                 if (loadingProgress == null) {
                                   return child;
                                 }

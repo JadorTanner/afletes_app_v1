@@ -21,7 +21,7 @@ class Api {
 
   getData(targetURL) async {
     var fullUrl = _url + targetURL;
-    print(fullUrl);
+
     await getToken();
     try {
       return await http.get(
@@ -39,7 +39,7 @@ class Api {
 
   postData(targetURL, body) async {
     var fullUrl = _url + targetURL;
-    print(fullUrl);
+
     String token = await getToken();
     try {
       return await http.post(
@@ -78,8 +78,6 @@ class Api {
   }
 
   setHeaders([tokenParam]) {
-    print(token);
-    print(tokenParam);
     return {
       'Content-type': 'application/json',
       'Accept': 'application/json',

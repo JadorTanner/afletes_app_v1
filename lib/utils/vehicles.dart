@@ -73,7 +73,6 @@ class Vehicle {
   });
 
   Vehicle fromJSON(Map data) {
-    print(data);
     return Vehicle(
       id: data['id'],
       licensePlate: data['license_plate'],
@@ -199,7 +198,7 @@ class Vehicle {
     // );
     StreamedResponse response = await request.send();
     String stringResponse = await response.stream.bytesToString();
-    print(stringResponse);
+
     Map responseBody = jsonDecode(stringResponse);
     if (response.statusCode == 200) {
       // Navigator.pop(context);

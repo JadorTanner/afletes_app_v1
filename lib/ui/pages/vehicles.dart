@@ -1,6 +1,5 @@
 // ignore_for_file: must_be_immutable
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
@@ -140,7 +139,6 @@ class _VehiclesListState extends State<VehiclesList> {
         }
         late BuildContext bottomSheetContext;
         bottomSheetContext = context;
-        log(response.body);
         showModalBottomSheet(
           context: bottomSheetContext,
           backgroundColor: Colors.transparent,
@@ -219,13 +217,21 @@ class _VehiclesListState extends State<VehiclesList> {
                         ],
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        (data['vehicle']['insurance_attachment_id'] != null
-                            ? const Icon(Icons.security)
-                            : const SizedBox.shrink())
-                      ],
+                    Container(
+                      color: const Color(0xFFFFFFFF),
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 40,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          (data['vehicle']['insurance_attachment_id'] != null
+                              ? const Icon(Icons.security)
+                              : const SizedBox.shrink())
+                        ],
+                      ),
                     ),
 
                     Container(
@@ -432,7 +438,7 @@ class _VehiclesListState extends State<VehiclesList> {
                                                           const SizedBox(
                                                             height: 10,
                                                           ),
-                                                          Text('Oferta inicial' +
+                                                          Text('Oferta inicial: ' +
                                                               data['data'][
                                                                           index]
                                                                       [
@@ -702,8 +708,6 @@ class _VehiclesListState extends State<VehiclesList> {
         await getBytesFromAsset('assets/img/camion3.png', 30));
     markers.clear();
     transportists.asMap().forEach((key, transportist) {
-      print(transportist.latitude);
-      print(transportist.longitude);
       markers.add(
         Marker(
           markerId: MarkerId(transportist.transportistId.toString() +
@@ -727,7 +731,7 @@ class _VehiclesListState extends State<VehiclesList> {
   Widget build(BuildContext context) {
     List<TransportistLocation> transportists =
         context.watch<TransportistsLocProvider>().transportists;
-    print("CANTIDAD DE TRANSPORTISTAS: " + transportists.length.toString());
+
     setMarkers(transportists);
     return Stack(
       children: [

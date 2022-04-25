@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 TextEditingController razon = TextEditingController();
@@ -178,21 +179,54 @@ class _PaymentState extends State<Payment> {
                             if (response.statusCode == 200) {
                               if (method.text == '2') {
                                 if (jsonResponse['process_id'] != '') {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => Dialog(
-                                      child: WebView(
-                                        initialUrl: Constants.apiUrl +
-                                            'bancard-view?process_id=' +
-                                            jsonResponse['data']['process_id'],
-                                        javascriptMode:
-                                            JavascriptMode.unrestricted,
+                                  String url = Constants.apiUrl +
+                                      'bancard-view?app=true&process_id=' +
+                                      jsonResponse['data']['process_id'];
+                                  print(url);
+                                  try {
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      throw "Could not launch $url";
+                                    }
+                                  } catch (e) {
+                                    print(e);
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        content: const Text(
+                                          'No hemos podido abrir el formulario. Por favor, ingrese desde la web para realizar el pago.',
+                                        ),
+                                        actions: [
+                                          IconButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            icon: const Icon(Icons.check),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    barrierDismissible: false,
-                                  );
+                                    );
+                                  }
+                                  // showDialog(
+                                  //   context: context,
+                                  //   builder: (context) => Dialog(
+                                  //     child: WebView(
+                                  //       initialUrl: Constants.apiUrl +
+                                  //           'bancard-view?process_id=' +
+                                  //           jsonResponse['data']['process_id'],
+                                  //       javascriptMode:
+                                  //           JavascriptMode.unrestricted,
+                                  //     ),
+                                  //   ),
+                                  //   barrierDismissible: false,
+                                  // );
                                 }
                               } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Aguardamos su pago.'),
+                                  ),
+                                );
                                 Navigator.of(context).pushNamedAndRemoveUntil(
                                   '/my-negotiations',
                                   ModalRoute.withName('/my-negotiations'),

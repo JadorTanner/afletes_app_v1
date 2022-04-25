@@ -78,15 +78,6 @@ Future<List<Load>> getLoads([callback]) async {
                         (position.longitude - 1.00000000000000))) {
               closedLoads.add(loads[key]);
             }
-            // if (parsedDestinLatitude <=
-            //         (position.latitude + 0.00000000000100) &&
-            //     parsedDestinLatitude >=
-            //         (position.latitude - 0.00000000000100)) {}
-            // if (parsedDestinLongitude <=
-            //         (position.longitude + 0.00000000000100) &&
-            //     parsedDestinLongitude >=
-            //         (position.longitude - 0.00000000000100)) {}
-            print(closedLoads);
             animatedListKey.currentState != null
                 ? animatedListKey.currentState!
                     .insertItem(0, duration: const Duration(milliseconds: 100))

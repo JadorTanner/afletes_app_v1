@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
@@ -183,8 +182,6 @@ class _SplashScreenState extends State<SplashScreen> {
       String? user = sharedPreferences.getString('user');
 
       if (user != null) {
-        print(
-            context.read<User>().setUser(User.userFromArray(jsonDecode(user))));
         if (jsonDecode(user)['confirmed']) {
           if (jsonDecode(user)['habilitado']) {
             if (jsonDecode(user)['is_carrier']) {

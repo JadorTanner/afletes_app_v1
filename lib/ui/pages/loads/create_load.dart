@@ -124,7 +124,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
-    print('ARGUMENTOS PASADOS');
+
     setState(() {
       if (arguments != null) {
         hasLoadData = true;
@@ -1536,7 +1536,7 @@ class _EnviarButtonState extends State<EnviarButton> {
                 isLoading = !isLoading;
                 setState(() {});
                 Load load = Load();
-                print(imagenes);
+
                 await load.createLoad({
                   'description': descriptionController.text,
                   'vehicle_type_id': 1,

@@ -13,7 +13,6 @@ import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:pusher_client/pusher_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,8 +39,6 @@ class PusherApi extends ChangeNotifier {
   init(BuildContext context, TransportistsLocProvider transportistsLocProvider,
       ChatProvider chat,
       [bool isGenerator = false]) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? user = sharedPreferences.getString('user');
     // if (!fromPage) {
     _pusher.onConnectionStateChange((state) {
       print('\n\n\nESTADO DE CONECCION\n\n\n');
@@ -70,184 +67,137 @@ class PusherApi extends ChangeNotifier {
             SharedPreferences sharedPreferences =
                 await SharedPreferences.getInstance();
             String data = event.data.toString();
+            print('DATA DEL PUSHER: ' + data);
+            print(
+                'USUARIO: ' + (sharedPreferences.getString('user') ?? 'VACÍO'));
             Map jsonData = jsonDecode(data);
-            NotificationsApi.showNotification(
-              id: 10,
-              title: 'ENTRA CORRECTO',
-              body:
-                  'USUARIO ' + (sharedPreferences.getString('user') ?? 'VACÍO'),
-            );
-            User user = User.userFromArray(
-                jsonDecode(sharedPreferences.getString('user')!));
-
-            if (user.id != jsonData['sender_id']) {
-              if (user.id == jsonData['user_id']) {
-                print('user id');
-                print(user.id);
-                if (jsonData['ask_location']) {
-                  print('Pide ubicación');
+            if (sharedPreferences.getString('user') != null) {
+              User user = User.userFromArray(
+                  jsonDecode(sharedPreferences.getString('user')!));
+              if (user.id != jsonData['sender_id']) {
+                if (user.id == jsonData['user_id']) {
+                  print('user id');
+                  print(user.id);
+                  print(chat);
+                  print(chat.negotiationId);
                   if (jsonData['ask_location']) {
-                    print('enviar ubicacion por pusher');
-                    Position position = await Geolocator.getCurrentPosition();
-                    Map loc = {
-                      'coords': {
-                        'latitude': position.latitude,
-                        'longitude': position.longitude,
-                      }
-                    };
+                    print('Pide ubicación');
+                    if (jsonData['ask_location']) {
+                      print('enviar ubicacion por pusher');
+                      Position position = await Geolocator.getCurrentPosition();
+                      Map loc = {
+                        'coords': {
+                          'latitude': position.latitude,
+                          'longitude': position.longitude,
+                        }
+                      };
 
-                    try {
-                      Api api = Api();
-                      await api.postData('user/send-location', {
-                        'negotiation_id': jsonData['negotiation_id'],
-                        'user_id': jsonData['sender_id'],
-                        'location': loc
-                      });
-                    } on SocketException {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Compruebe su conexión a internet'),
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Ha ocurrido un error'),
-                        ),
-                      );
+                      try {
+                        Api api = Api();
+                        await api.postData('user/send-location', {
+                          'negotiation_id': jsonData['negotiation_id'],
+                          'user_id': jsonData['sender_id'],
+                          'location': loc
+                        });
+                      } on SocketException {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Compruebe su conexión a internet'),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Ha ocurrido un error'),
+                          ),
+                        );
+                      }
                     }
                   }
-                }
-                if ((Provider.of<ChatProvider>(context, listen: false)
-                        .negotiationId ==
-                    jsonData['negotiation_id'])) {
-                  NotificationsApi.showNotification(
-                    id: 10,
-                    title: 'ENTRA CORRECTO',
-                    body: 'ESTÁ EN LA MISMA NEGOCIACIÓN (1',
-                  );
-                  DateTime now = DateTime.now();
-                  String formattedDate =
-                      DateFormat('y-dd-MM kk:mm:ss').format(now);
-                  chat.addMessage(
-                    jsonData['negotiation_id'],
-                    ChatMessage(
-                      jsonData['message'],
-                      formattedDate,
-                      jsonData['sender_id'],
+                  if ((chat.negotiationId == jsonData['negotiation_id'])) {
+                    DateTime now = DateTime.now();
+                    String formattedDate =
+                        DateFormat('y-dd-MM kk:mm:ss').format(now);
+                    chat.addMessage(
                       jsonData['negotiation_id'],
-                      jsonData['is_location'] ?? false,
-                    ),
-                  );
-                  if (jsonData['normal_message']) {
-                    context.read<ChatProvider>().setCanOffer(true);
-                    NotificationsApi.showNotification(
-                      id: 10,
-                      title: 'ENTRA CORRECTO',
-                      body: 'ES UN MENSAJE NORMAL (2',
+                      ChatMessage(
+                        jsonData['message'],
+                        formattedDate,
+                        jsonData['sender_id'],
+                        jsonData['negotiation_id'],
+                        jsonData['is_location'],
+                      ),
                     );
-                  }
-                  if (jsonData['negotiation_state'] != null) {
-                    print('tiene negociacion state');
-                    context
-                        .read<ChatProvider>()
-                        .setLoadState(jsonData['negotiation_state']);
+
                     if (jsonData['normal_message']) {
-                      context.read<ChatProvider>().setCanOffer(true);
-                      NotificationsApi.showNotification(
-                        id: 10,
-                        title: 'ENTRA CORRECTO',
-                        body: 'ES UN MENSAJE NORMAL (2',
-                      );
+                      chat.setCanOffer(true);
                     }
-                  }
-                  if (jsonData['is_final_offer'] != "false") {
-                    print('Es una oferta final');
-                    context.read<ChatProvider>().setPaid(false);
-                    context.read<ChatProvider>().setCanOffer(false);
-                    context.read<ChatProvider>().setToPay(false);
+                    if (jsonData['negotiation_state'] != null) {
+                      print('tiene negociacion state');
+                      chat.setLoadState(jsonData['negotiation_state']);
+                      if (jsonData['negotiation_state'] == 13) {
+                        chat.setCanVote(true);
+                      }
+                    }
+                    if (jsonData['is_final_offer']) {
+                      print('Es una oferta final');
+                      chat.setPaid(false);
+                      chat.setCanOffer(false);
+                      chat.setToPay(false);
+                    }
+
+                    if (jsonData['accepted'] != null) {
+                      print('Se acepto la negociacion');
+                      chat.setCanOffer(false);
+                      chat.setToPay(true);
+                      chat.setPaid(false);
+                    }
+                    if (jsonData['paid']) {
+                      print('Se pagó la negociacion');
+                      chat.setCanOffer(false);
+                      chat.setToPay(false);
+                      chat.setPaid(true);
+                      chat.setShowDefaultMessages(true);
+                      chat.setLoadState(9);
+                    }
+                    if (jsonData['rejected'] != null) {
+                      print('Se canceló la negociacion');
+                      chat.setCanOffer(false);
+                      chat.setToPay(false);
+                      chat.setPaid(false);
+                    }
+                  } else {
+                    String title = 'Tiene una nueva notificación';
+                    if (jsonData['is_final_offer'] != null) {
+                      title = 'Ha recibido una oferta final';
+                    }
+                    if (jsonData['accepted'] != null) {
+                      title = 'La negociación ha sido aceptada';
+                    }
+                    if (jsonData['paid']) {
+                      title = 'La negociación ha sido pagada';
+                    }
+                    if (jsonData['rejected'] != null) {
+                      title = 'La negociación ha sido rechazada';
+                    }
                     NotificationsApi.showNotification(
-                      id: 10,
-                      title: 'ENTRA CORRECTO',
-                      body: 'ES UNA OFERTA FINAL (3',
+                      id: 21,
+                      title: title,
+                      body: jsonData['message'],
+                      payload:
+                          '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
                     );
                   }
                 }
-                if (jsonData['accepted'] != null) {
-                  print('Se acepto la negociacion');
-                  context.read<ChatProvider>().setCanOffer(false);
-                  context.read<ChatProvider>().setToPay(true);
-                  context.read<ChatProvider>().setPaid(false);
-                  NotificationsApi.showNotification(
-                    id: 10,
-                    title: 'ENTRA CORRECTO',
-                    body: 'OFERTA ACEPTADA (4',
-                  );
-                }
-                if (jsonData['paid']) {
-                  print('Se pagó la negociacion');
-                  context.read<ChatProvider>().setCanOffer(false);
-                  context.read<ChatProvider>().setToPay(false);
-                  context.read<ChatProvider>().setPaid(true);
-                  context.read<ChatProvider>().setShowDefaultMessages(true);
-                  context.read<ChatProvider>().setLoadState(9);
-                  NotificationsApi.showNotification(
-                    id: 10,
-                    title: 'ENTRA CORRECTO',
-                    body: 'OFERTA PAGADA (5',
-                  );
-                }
-                if (jsonData['rejected'] != null) {
-                  print('Se canceló la negociacion');
-                  context.read<ChatProvider>().setCanOffer(false);
-                  context.read<ChatProvider>().setToPay(false);
-                  context.read<ChatProvider>().setPaid(false);
-                  NotificationsApi.showNotification(
-                    id: 10,
-                    title: 'ENTRA CORRECTO',
-                    body: 'OFERTA RECHAZADA (6',
-                  );
-                }
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: 'ENTRA CORRECTO',
-                  body: 'NO ENTRA EN NADA (7',
-                );
-              } else {
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: 'ENTRA CORRECTO',
-                  body: 'NO esta dentro de la misma negociacion',
-                );
-                String title = 'Tiene una nueva notificación';
-                if (jsonData['is_final_offer'] != null) {
-                  title = 'Ha recibido una oferta final';
-                }
-                if (jsonData['accepted'] != null) {
-                  title = 'La negociación ha sido aceptada';
-                }
-                if (jsonData['paid']) {
-                  title = 'La negociación ha sido pagada';
-                }
-                if (jsonData['rejected'] != null) {
-                  title = 'La negociación ha sido rechazada';
-                }
-                NotificationsApi.showNotification(
-                  id: 10,
-                  title: title,
-                  body: jsonData['message'],
-                  payload:
-                      '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
-                );
               }
             }
           }
         }
       } catch (e) {
         NotificationsApi.showNotification(
-          id: 10,
-          title: 'HA OCURRIDO UN ERROR',
-          body: e.toString(),
+          id: 11,
+          title: 'Tiene un nuevo mensaje' + e.toString(),
+          body: '',
         );
       }
     });

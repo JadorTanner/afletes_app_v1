@@ -34,7 +34,8 @@ class MyProfilePage extends StatefulWidget {
   State<MyProfilePage> createState() => _MyProfilePageState();
 }
 
-class _MyProfilePageState extends State<MyProfilePage> {
+class _MyProfilePageState extends State<MyProfilePage>
+    with AutomaticKeepAliveClientMixin {
   String emailinitialValue = '',
       nombreinitialValue = '',
       apellidoinitialValue = '',
@@ -381,6 +382,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
       resizeToAvoidBottomInset: true,
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 class UpdateButton extends StatefulWidget {
@@ -419,7 +424,6 @@ class _UpdateButtonState extends State<UpdateButton> {
                   'street2': street2Controller.text,
                   'house_number': houseNumberController.text,
                 });
-                print(response.body);
                 Map resp = jsonDecode(response.body);
                 ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text(resp['message'])));

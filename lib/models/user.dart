@@ -99,13 +99,13 @@ class User extends ChangeNotifier {
           'email': email,
           'password': password,
         });
-        print(response.body);
+
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
             Map userJson = responseBody['data']['user'];
             context.read<User>().setUser(User.userFromArray(userJson));
-            print(context.read<User>().user);
+
             localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
             localStorage.setString('token', responseBody['data']['token']);
@@ -117,7 +117,6 @@ class User extends ChangeNotifier {
         }
         return false;
       } catch (e) {
-        print(e);
         return false;
       }
     }

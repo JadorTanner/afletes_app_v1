@@ -738,7 +738,6 @@ class RegisterButtonState extends State<RegisterButton> {
                     });
                 ScaffoldMessenger.of(context).clearSnackBars();
                 Map responseBody = jsonDecode(stringResponse);
-                print(responseBody['data']);
                 if (responseBody['success']) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -761,8 +760,6 @@ class RegisterButtonState extends State<RegisterButton> {
                         'id': responseBody['data']['user']['id'],
                         'device_token': token
                       });
-
-                      print(response.body);
                     }
                   } catch (e) {}
 

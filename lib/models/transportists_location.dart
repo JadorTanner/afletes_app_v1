@@ -6,7 +6,6 @@ class TransportistsLocProvider extends ChangeNotifier {
 
   addTransportist(TransportistLocation transportist) {
     _transportists.add(transportist);
-    print('AGREGAR TRANSPORTISTA ' + transportist.name);
     notifyListeners();
   }
 
@@ -15,7 +14,6 @@ class TransportistsLocProvider extends ChangeNotifier {
       [String name = '']) {
     int index = _transportists.indexWhere((t) =>
         ((t.transportistId == transportistId) && (t.vehicleId == vehicleId)));
-    print('ACTUALIZAR TRANSPORTISTA ' + name);
     if (index != -1) {
       _transportists[index].latitude = latitude;
       _transportists[index].longitude = longitude;

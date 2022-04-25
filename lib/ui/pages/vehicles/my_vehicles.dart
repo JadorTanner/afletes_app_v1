@@ -1,7 +1,6 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
@@ -21,7 +20,6 @@ Future<List<Vehicle>> getMyVehicles() async {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
-        log(data[0].toString());
         if (data.isNotEmpty) {
           data.asMap().forEach((key, vehicle) {
             vehicles.add(

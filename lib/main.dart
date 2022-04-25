@@ -113,10 +113,12 @@ void main() async {
 
   Route routes(RouteSettings settings) {
     if (settings.name != null) {
+      print(settings.name);
       if (settings.name!.startsWith("/negotiation_id/")) {
         try {
           int id = int.parse(settings.name!.split("/")[2]);
           print('RUTA DE NEGOCIACION A ID');
+          print('ID DE NEGOCIACIÓN ' + id.toString());
           return MaterialPageRoute(
             builder: (_) => NegotiationChat(id),
           );
@@ -145,8 +147,22 @@ void main() async {
             builder: (_) => const CreateVehicle(), settings: settings);
       } else if (settings.name == '/my-vehicles') {
         return MaterialPageRoute(builder: (_) => const MyVehiclesPage());
-      } else if (settings.name == '/my-negotiations') {
-        return MaterialPageRoute(builder: (_) => const MyNegotiations());
+      } else if (settings.name == '/my-negotiations' ||
+          settings.name!.startsWith("/my-negotiations")) {
+        try {
+          if (settings.name!.split("?").length > 1) {
+            String status = settings.name!.split("?")[1];
+            return MaterialPageRoute(
+                builder: (_) => MyNegotiations(payment: status.split('=')[1]));
+          } else {
+            return MaterialPageRoute(builder: (_) => MyNegotiations());
+          }
+        } catch (e) {
+          print(settings.name);
+          return MaterialPageRoute(
+            builder: (_) => const LoginPage(),
+          );
+        }
       } else if (settings.name == '/pending-loads') {
         return MaterialPageRoute(builder: (_) => const PendingLoadsPage());
       } else if (settings.name == '/create-vehicle-after-registration') {
@@ -157,10 +173,12 @@ void main() async {
         return MaterialPageRoute(builder: (_) => const ValidateCode());
       }
     } else {
+      print(settings.name);
       return MaterialPageRoute(
         builder: (_) => const LoginPage(),
       );
     }
+    print(settings.name);
     return MaterialPageRoute(
       builder: (_) => const LoginPage(),
     );
@@ -517,8 +535,8 @@ class _AfletesAppState extends State<AfletesApp> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
     NotificationsApi.init(context: context);
     listenNotifications();
@@ -540,6 +558,7 @@ class _AfletesAppState extends State<AfletesApp> {
       if (notification != null && (android != null || apple != null)) {
         print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
         if (data.keys.contains('alta')) {
+          print('ALTA DE USER');
           SharedPreferences shared = await SharedPreferences.getInstance();
           if (shared.getString('user') != null) {
             Map user = jsonDecode(shared.getString('user')!);
@@ -547,21 +566,25 @@ class _AfletesAppState extends State<AfletesApp> {
             shared.setString('user', jsonEncode(user));
           }
         }
+        print('PASA ALTA');
 
-        if (Provider.of<ChatProvider>(context, listen: false).negotiationId !=
-            int.parse(data['negotiation_id'])) {
-          print('ID DE LA NEGOCIACION SON DIFERENTES');
-          print(data);
-          print([notification.title, notification.body, notification.hashCode]);
-          NotificationsApi.showNotification(
-            id: notification.hashCode,
-            title: notification.title,
-            body: notification.body,
-            payload:
-                '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
-          );
-        } else {
-          print('ID DE LA NEGOCIACION IGUALES');
+        if (mounted) {
+          if (context.read<ChatProvider>().negotiationId !=
+              int.parse(data['negotiation_id'])) {
+            print('ID DE LA NEGOCIACION SON DIFERENTES');
+            print(data);
+            print(
+                [notification.title, notification.body, notification.hashCode]);
+            NotificationsApi.showNotification(
+              id: notification.hashCode,
+              title: notification.title,
+              body: notification.body,
+              payload:
+                  '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
+            );
+          } else {
+            print('ID DE LA NEGOCIACION IGUALES');
+          }
         }
       } else {
         print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');

@@ -247,7 +247,6 @@ class ValidateButtonState extends State<ValidateButton> {
 
                 shared.setString(
                     'user', jsonEncode(responseBody['data']['user']));
-                print(responseBody['data']['user']);
                 if (responseBody['data']['user']['habilitado']) {
                   if (responseBody['data']['user']['is_carrier']) {
                     if (responseBody['data']['cant_vehicles'] <= 0) {

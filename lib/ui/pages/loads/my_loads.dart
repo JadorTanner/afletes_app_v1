@@ -21,7 +21,6 @@ Future<List<Load>> getMyLoads() async {
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
         if (data.isNotEmpty) {
-          print(data[0]);
           data.asMap().forEach((key, load) {
             loads.add(
               Load(
