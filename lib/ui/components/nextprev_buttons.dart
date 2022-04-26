@@ -55,16 +55,20 @@ class NextPageButton extends StatelessWidget {
 }
 
 class PrevPageButton extends StatelessWidget {
-  PrevPageButton(this.pageController, {this.validator, Key? key})
+  PrevPageButton(this.pageController,
+      {this.validator, this.active = true, Key? key})
       : super(key: key);
   PageController pageController;
+  bool active;
   var validator;
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => pageController.previousPage(
-          duration: const Duration(milliseconds: 100), curve: Curves.ease),
+      onPressed: active
+          ? () => pageController.previousPage(
+              duration: const Duration(milliseconds: 100), curve: Curves.ease)
+          : () {},
       style: ButtonStyle(
         padding: MaterialStateProperty.all<EdgeInsets>(
             const EdgeInsets.symmetric(vertical: 20)),

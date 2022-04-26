@@ -308,6 +308,7 @@ class _AfletesAppState extends State<AfletesApp> {
                               api.postData('update-location', {
                                 'latitude': position!.latitude,
                                 'longitude': position.longitude,
+                                'heading': position.heading,
                               });
                             });
                           }

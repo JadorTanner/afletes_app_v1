@@ -67,10 +67,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           String? token = await FirebaseMessaging.instance.getToken();
           await Api().postData('user/set-device-token',
               {'id': user['id'], 'device_token': token ?? ''});
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ha ocurrido un error')));
-        }
+        } catch (e) {}
         if (user['confirmed']) {
           if (user['habilitado']) {
             if (user['is_carrier']) {

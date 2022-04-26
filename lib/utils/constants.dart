@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 
 class Constants {
 //casa
-  static String baseUrl = 'http://181.120.66.16/';
+  // static String baseUrl = 'http://181.120.66.16/';
 //oficina
   // static String baseUrl = 'http://192.168.1.196:9000/';
 //producción
-// String baseUrl = 'https://www.afletes.com/';
+  static String baseUrl = 'https://www.afletes.com/';
 
   static String apiUrl = baseUrl + 'api/';
 
@@ -15,10 +15,10 @@ class Constants {
   static String vehicleImgUrl = baseUrl + 'images/vehicle_images/';
 
 //PRODUCCION
-// static String pusherKey = 'db7228c00ec8ff09b106';
+  static String pusherKey = 'db7228c00ec8ff09b106';
 
 //DEVELOPMENT
-  static String pusherKey = '4a54c4ccefa7c6413910';
+  // static String pusherKey = '4a54c4ccefa7c6413910';
   static String googleMapKey = 'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs';
 
   static Color kGrey = const Color(0xFFC5C5C5);

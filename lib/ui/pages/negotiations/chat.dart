@@ -621,7 +621,12 @@ class ButtonsSection extends StatelessWidget {
             children = [
               TextButton(
                 style: buttonStyle,
-                onPressed: () => {
+                onPressed: () async {
+                  Api api = Api();
+                  await api.postData(Constants.apiUrl + 'ask-location', {
+                    'user_id': context.read<ChatProvider>().transportistId,
+                  });
+
                   showDialog(
                     context: context,
                     builder: (context) {
@@ -634,7 +639,7 @@ class ButtonsSection extends StatelessWidget {
                         ),
                       );
                     },
-                  )
+                  );
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -720,18 +725,25 @@ class ButtonsSection extends StatelessWidget {
                             const SizedBox(
                               height: 20,
                             ),
-                            TextField(
-                              controller: commentController,
-                              decoration: const InputDecoration(
-                                label: Text('Tienes algún comentario?'),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5),
+                            Expanded(
+                              flex: 0,
+                              child: Container(
+                                constraints:
+                                    const BoxConstraints(maxHeight: 200),
+                                child: TextField(
+                                  controller: commentController,
+                                  decoration: const InputDecoration(
+                                    label: Text('Tienes algún comentario?'),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(5),
+                                      ),
+                                    ),
                                   ),
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
                                 ),
                               ),
-                              keyboardType: TextInputType.multiline,
-                              maxLines: null,
                             ),
                             const SizedBox(
                               height: 20,
@@ -979,7 +991,7 @@ class OfferInputSection extends StatelessWidget {
                                   PillButton('En dónde estás?', widget.id),
                                   const SizedBox(width: 10),
                                   PillButton(
-                                      'Ya recogista la carga?', widget.id),
+                                      'Ya recogiste la carga?', widget.id),
                                   const SizedBox(width: 10),
                                   PillButton(
                                     'Enviar ubicación',

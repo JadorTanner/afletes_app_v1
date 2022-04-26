@@ -201,23 +201,54 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     '/pending-loads', 'Cargas pendientes', Icons.all_inbox)
                 : const SizedBox.shrink(),
             const SizedBox(
-              height: 200,
+              height: 150,
             ),
-            TextButton(
-              onPressed: () => {user.logout(context)},
-              child: const Text(
-                'Cerrar sesión',
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
+            LogOutButton(user),
             const SizedBox(
               height: 20,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class LogOutButton extends StatefulWidget {
+  LogOutButton(this.user, {Key? key}) : super(key: key);
+  User user;
+  @override
+  State<LogOutButton> createState() => _LogOutButtonState();
+}
+
+class _LogOutButtonState extends State<LogOutButton> {
+  bool isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: isLoading
+          ? () {}
+          : () async {
+              setState(() {
+                isLoading = !isLoading;
+              });
+              await widget.user.logout(context);
+              setState(() {
+                isLoading = !isLoading;
+              });
+            },
+      child: isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(),
+            )
+          : const Text(
+              'Cerrar sesión',
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+              ),
+            ),
     );
   }
 }

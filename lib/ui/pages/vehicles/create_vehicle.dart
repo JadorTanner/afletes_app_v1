@@ -102,6 +102,12 @@ class _CreateVehicleState extends State<CreateVehicle> {
 
   setValues(args) async {
     if (args != null) {
+      Api api = Api();
+      Response response =
+          await api.getData('vehicles/vehicle-images/' + args['id'].toString());
+      print('IMAGENES: ' + response.statusCode.toString());
+      print('IAMGENES: ' + response.body);
+
       imagenes.clear();
       imagenesNetwork.clear();
       hasVehicleData = true;
@@ -116,8 +122,10 @@ class _CreateVehicleState extends State<CreateVehicle> {
       vtoDinatranController.text = args['vtoDinatran'];
       vtoSenacsaController.text = args['vtoSenacsa'];
       vtoSeguroController.text = args['vtoSeguro'];
-      if (args['imgs'].isNotEmpty) {
-        imagenesNetwork = args['imgs'];
+      Map jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
+      if (jsonResponse['data'].isNotEmpty) {
+        imagenesNetwork = jsonResponse['data'];
       }
 
       dinatran = args['dinatranFront'] != ''
@@ -165,6 +173,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
               'images/vehicle_insurance/' +
               args['insuranceImg']
           : '';
+      setState(() {});
     } else {
       imagenes.clear();
       imagenesNetwork.clear();
@@ -190,6 +199,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
       senacsa = '';
       senacsaBack = '';
       seguro = '';
+      setState(() {});
     }
   }
 
@@ -209,13 +219,26 @@ class _CreateVehicleState extends State<CreateVehicle> {
   }
 }
 
-class RegisterVehicleForm extends StatelessWidget {
+class RegisterVehicleForm extends StatefulWidget {
   const RegisterVehicleForm({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterVehicleForm> createState() => _RegisterVehicleFormState();
+}
+
+class _RegisterVehicleFormState extends State<RegisterVehicleForm> {
+  late Future getB;
+
+  @override
+  void initState() {
+    super.initState();
+    getB = getBrands();
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: getBrands(),
+      future: getB,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return PageView(
@@ -235,9 +258,15 @@ class RegisterVehicleForm extends StatelessWidget {
   }
 }
 
-class DatosGenerales extends StatelessWidget {
+class DatosGenerales extends StatefulWidget {
   const DatosGenerales({Key? key}) : super(key: key);
 
+  @override
+  State<DatosGenerales> createState() => _DatosGeneralesState();
+}
+
+class _DatosGeneralesState extends State<DatosGenerales>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return FocusScope(
@@ -358,11 +387,20 @@ class DatosGenerales extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
-class Documentos extends StatelessWidget {
+class Documentos extends StatefulWidget {
   const Documentos({Key? key}) : super(key: key);
 
+  @override
+  State<StatefulWidget> createState() => _DocumentosState();
+}
+
+class _DocumentosState extends State<Documentos>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -484,11 +522,21 @@ class Documentos extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
-class Documentos2 extends StatelessWidget {
+class Documentos2 extends StatefulWidget {
   const Documentos2({Key? key}) : super(key: key);
 
+  @override
+  State<Documentos2> createState() => _Documentos2State();
+}
+
+class _Documentos2State extends State<Documentos2>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -568,36 +616,55 @@ class Documentos2 extends StatelessWidget {
                 DatePicker(
                     vtoSenacsaController, 'Fecha de vto. Habilitación SENACSA'),
               ]),
-          Positioned(
+          const Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Row(
-              children: [
-                Flexible(
-                  child: PrevPageButton(pageController),
-                ),
-                const Flexible(
-                  child: SendButton(),
-                ),
-              ],
-            ),
+            child: LoadingBackButtons(),
           )
         ],
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+class LoadingBackButtons extends StatefulWidget {
+  const LoadingBackButtons({Key? key}) : super(key: key);
+
+  @override
+  State<LoadingBackButtons> createState() => _LoadingBackButtonsState();
+}
+
+class _LoadingBackButtonsState extends State<LoadingBackButtons> {
+  bool isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Flexible(
+          child: PrevPageButton(pageController, active: !isLoading),
+        ),
+        Flexible(
+          child: SendButton(
+              isLoading, () => setState(() => isLoading = !isLoading)),
+        ),
+      ],
+    );
+  }
 }
 
 class SendButton extends StatefulWidget {
-  const SendButton({Key? key}) : super(key: key);
-
+  SendButton(this.isLoading, this.changeState, {Key? key}) : super(key: key);
+  bool isLoading;
+  var changeState;
   @override
   State<SendButton> createState() => _SendButtonState();
 }
 
 class _SendButtonState extends State<SendButton> {
-  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -613,12 +680,13 @@ class _SendButtonState extends State<SendButton> {
           ),
         ),
       ),
-      onPressed: isLoading
+      onPressed: widget.isLoading
           ? null
           : () async {
-              setState(() {
-                isLoading = !isLoading;
-              });
+              // setState(() {
+              //   widget.isLoading = !widget.isLoading;
+              // });
+              widget.changeState();
               Vehicle vehicle = Vehicle();
               await vehicle.createVehicle(
                 {
@@ -659,11 +727,20 @@ class _SendButtonState extends State<SendButton> {
                 dinatranBack: dinatranBack,
                 insurance: seguro,
               );
+              widget.changeState();
             },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: isLoading
-            ? [const CircularProgressIndicator()]
+        children: widget.isLoading
+            ? [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                )
+              ]
             : const [
                 Text(
                   'Enviar',
@@ -689,8 +766,11 @@ class _ImagesPickerState extends State<ImagesPicker> {
   int currentImage = 0;
   int totalIndex = 0;
   PageController imagePageController = PageController();
+
   @override
   Widget build(BuildContext context) {
+    print('IMAGENES DE LA NETWORK' + imagenesNetwork.length.toString());
+    print('IMAGENES DEL CELULAR' + imagenes.length.toString());
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height * 0.4,

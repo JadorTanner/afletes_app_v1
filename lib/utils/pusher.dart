@@ -85,20 +85,32 @@ class PusherApi extends ChangeNotifier {
                     if (jsonData['ask_location']) {
                       print('enviar ubicacion por pusher');
                       Position position = await Geolocator.getCurrentPosition();
+
+                      Api api = Api();
+                      api.postData('update-location', {
+                        'latitude': position.latitude,
+                        'longitude': position.longitude,
+                        'heading': position.heading,
+                      });
+
                       Map loc = {
                         'coords': {
                           'latitude': position.latitude,
                           'longitude': position.longitude,
+                          'heading': position.heading,
                         }
                       };
 
                       try {
                         Api api = Api();
-                        await api.postData('user/send-location', {
-                          'negotiation_id': jsonData['negotiation_id'],
-                          'user_id': jsonData['sender_id'],
-                          'location': loc
-                        });
+                        api.postData(
+                          'user/send-location',
+                          {
+                            'negotiation_id': jsonData['negotiation_id'],
+                            'user_id': jsonData['sender_id'],
+                            'location': loc,
+                          },
+                        );
                       } on SocketException {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -169,7 +181,9 @@ class PusherApi extends ChangeNotifier {
                   } else {
                     String title = 'Tiene una nueva notificación';
                     if (jsonData['is_final_offer'] != null) {
-                      title = 'Ha recibido una oferta final';
+                      if (jsonData['is_final_offer']) {
+                        title = 'Ha recibido una oferta final';
+                      }
                     }
                     if (jsonData['accepted'] != null) {
                       title = 'La negociación ha sido aceptada';
