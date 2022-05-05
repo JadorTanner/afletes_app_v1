@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
@@ -11,6 +12,7 @@ import 'package:afletes_app_v1/ui/pages/loads/pending_loads.dart';
 import 'package:afletes_app_v1/ui/pages/login.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
+import 'package:afletes_app_v1/ui/pages/notifications.dart';
 import 'package:afletes_app_v1/ui/pages/register.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
@@ -139,6 +141,8 @@ void main() async {
         return MaterialPageRoute(builder: (_) => Vehicles());
       } else if (settings.name == '/my-loads') {
         return MaterialPageRoute(builder: (_) => const MyLoadsPage());
+      } else if (settings.name == '/notifications') {
+        return MaterialPageRoute(builder: (_) => const NotificationsPage());
       } else if (settings.name == '/create-load') {
         return MaterialPageRoute(
             builder: (_) => const CreateLoadPage(), settings: settings);
@@ -196,6 +200,9 @@ void main() async {
         ),
         ChangeNotifierProvider<PusherApi>(
           create: (context) => PusherApi(),
+        ),
+        ChangeNotifierProvider<NotificationsModel>(
+          create: (context) => NotificationsModel(),
         ),
       ],
       child: MaterialApp(
@@ -261,6 +268,7 @@ class AfletesApp extends StatefulWidget {
 }
 
 class _AfletesAppState extends State<AfletesApp> {
+  late ChatProvider chatProvider;
   changeScreen() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission != LocationPermission.always &&
@@ -475,7 +483,7 @@ class _AfletesAppState extends State<AfletesApp> {
     if (user != null) {
       Map data = jsonDecode(user);
       PusherApi().init(context, context.read<TransportistsLocProvider>(),
-          context.read<ChatProvider>(), data['is_load_generator']);
+          chatProvider, data['is_load_generator']);
     }
 
     NotificationsApi.onNotifications.stream.listen((event) async {
@@ -533,14 +541,51 @@ class _AfletesAppState extends State<AfletesApp> {
         print('NO tiene route igual a chat');
       }
     });
-  }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+    FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((RemoteMessage? message) async {
+      if (message != null) {
+        RemoteNotification? notification = message.notification;
+        AndroidNotification? android = message.notification?.android;
+        AppleNotification? apple = message.notification?.apple;
+        Map data = message.data;
 
-    NotificationsApi.init(context: context);
-    listenNotifications();
+        print('#');
+        print('-');
+        print('#');
+        print('FIREBASE MESSAGE');
+        print(data);
+        print('#');
+        print('-');
+        print('#');
+        try {
+          if (notification != null && (android != null || apple != null)) {
+            print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
+            if (data.keys.contains('alta')) {
+              print('ALTA DE USER');
+              SharedPreferences shared = await SharedPreferences.getInstance();
+              if (shared.getString('user') != null) {
+                Map user = jsonDecode(shared.getString('user')!);
+                user['habilitado'] = true;
+                shared.setString('user', jsonEncode(user));
+              }
+            }
+            print('PASA ALTA');
+            print('CHAT PROVIDER');
+            print(chatProvider);
+            if (chatProvider.negotiationId !=
+                int.parse(data['negotiation_id'])) {
+              Navigator.of(context).pushNamed(
+                  '/negotiation_id/' + data['negotiation_id'].toString());
+            }
+          }
+        } catch (e) {
+          print('HA OCURRIDO UN ERROR CON FIREBASE MESSAGE ONMESSAGE.LISTEN');
+          print(e);
+        }
+      }
+    });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
@@ -556,22 +601,22 @@ class _AfletesAppState extends State<AfletesApp> {
       print('#');
       print('-');
       print('#');
-      if (notification != null && (android != null || apple != null)) {
-        print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
-        if (data.keys.contains('alta')) {
-          print('ALTA DE USER');
-          SharedPreferences shared = await SharedPreferences.getInstance();
-          if (shared.getString('user') != null) {
-            Map user = jsonDecode(shared.getString('user')!);
-            user['habilitado'] = true;
-            shared.setString('user', jsonEncode(user));
+      try {
+        if (notification != null && (android != null || apple != null)) {
+          print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
+          if (data.keys.contains('alta')) {
+            print('ALTA DE USER');
+            SharedPreferences shared = await SharedPreferences.getInstance();
+            if (shared.getString('user') != null) {
+              Map user = jsonDecode(shared.getString('user')!);
+              user['habilitado'] = true;
+              shared.setString('user', jsonEncode(user));
+            }
           }
-        }
-        print('PASA ALTA');
-
-        if (mounted) {
-          if (context.read<ChatProvider>().negotiationId !=
-              int.parse(data['negotiation_id'])) {
+          print('PASA ALTA');
+          print('CHAT PROVIDER');
+          print(chatProvider);
+          if (chatProvider.negotiationId != int.parse(data['negotiation_id'])) {
             print('ID DE LA NEGOCIACION SON DIFERENTES');
             print(data);
             print(
@@ -586,9 +631,12 @@ class _AfletesAppState extends State<AfletesApp> {
           } else {
             print('ID DE LA NEGOCIACION IGUALES');
           }
+        } else {
+          print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');
         }
-      } else {
-        print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');
+      } catch (e) {
+        print('HA OCURRIDO UN ERROR CON FIREBASE MESSAGE ONMESSAGE.LISTEN');
+        print(e);
       }
     });
 
@@ -619,8 +667,7 @@ class _AfletesAppState extends State<AfletesApp> {
           }
         }
 
-        if (context.read<ChatProvider>().negotiationId !=
-            data['negotiation_id']) {
+        if (chatProvider.negotiationId != data['negotiation_id']) {
           // Future.delayed(Duration.zero, () {
           // widget.navigatorKey.currentState!.push(MaterialPageRoute(
           //   builder: (context) => NegotiationChat(data["negotiation_id"]),
@@ -631,12 +678,20 @@ class _AfletesAppState extends State<AfletesApp> {
         }
       }
     });
+  }
 
-    changeScreen();
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    chatProvider = context.read<ChatProvider>();
+    NotificationsApi.init(context: context);
+    listenNotifications();
+
+    changeScreen();
     return Scaffold(
       body: Column(
         children: const [],

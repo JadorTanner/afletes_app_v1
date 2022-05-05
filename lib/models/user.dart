@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_init_to_null
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
@@ -106,10 +107,14 @@ class User extends ChangeNotifier {
             Map userJson = responseBody['data']['user'];
             context.read<User>().setUser(User.userFromArray(userJson));
 
-            localStorage.setString(
+            await localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));
-            localStorage.setString('token', responseBody['data']['token']);
-            localStorage.setInt('vehicles', responseBody['data']['vehicles']);
+            await localStorage.setString(
+                'token', responseBody['data']['token']);
+            await localStorage.setInt(
+                'vehicles', responseBody['data']['vehicles']);
+            NotificationsModel().getNotifications();
+
             return true;
           } else {
             return false;

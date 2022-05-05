@@ -269,23 +269,24 @@ class _LoadsState extends State<Loads> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      child: BaseApp(
-        FutureBuilder<List<Load>>(
-          future: getLoads(),
-          builder: (context, snapshot) =>
-              snapshot.connectionState == ConnectionState.done
-                  ? const LoadsMap()
-                  : const Center(child: CircularProgressIndicator()),
-        ),
-        isMap: true,
+    // return WillPopScope(
+    //   child:
+    return BaseApp(
+      FutureBuilder<List<Load>>(
+        future: getLoads(),
+        builder: (context, snapshot) =>
+            snapshot.connectionState == ConnectionState.done
+                ? const LoadsMap()
+                : const Center(child: CircularProgressIndicator()),
       ),
-      onWillPop: () => Future(
-        () {
-          Navigator.pop(context);
-          return true;
-        },
-      ),
+      isMap: true,
+      // ),
+      // onWillPop: () => Future(
+      //   () {
+      //     Navigator.pop(context);
+      //     return true;
+      //   },
+      // ),
     );
   }
 }

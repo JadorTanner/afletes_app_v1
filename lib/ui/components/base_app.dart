@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
@@ -200,6 +201,41 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 ? DrawerItem(
                     '/pending-loads', 'Cargas pendientes', Icons.all_inbox)
                 : const SizedBox.shrink(),
+            Stack(
+              children: [
+                TextButton.icon(
+                  onPressed: () =>
+                      {Navigator.of(context).pushNamed('/notifications')},
+                  icon: CircleAvatar(
+                    backgroundColor: Constants.kGrey,
+                    child: const Icon(
+                      Icons.notification_important,
+                      color: Colors.white,
+                    ),
+                  ),
+                  label: Container(
+                    padding: const EdgeInsets.all(15),
+                    width: double.infinity,
+                    child: Text(
+                      'Notificaciones',
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
+                  ),
+                ),
+                Provider.of<NotificationsModel>(context)
+                        .notifications
+                        .isNotEmpty
+                    ? const Positioned(
+                        top: 5,
+                        left: 5,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.red,
+                          maxRadius: 10,
+                        ),
+                      )
+                    : const SizedBox.shrink()
+              ],
+            ),
             const SizedBox(
               height: 150,
             ),

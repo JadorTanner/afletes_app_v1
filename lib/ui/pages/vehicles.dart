@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/components/car_card.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
@@ -33,7 +34,10 @@ class Vehicles extends StatefulWidget {
 Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
   try {
     vehicles.clear();
-    Response response = await Api().getData(url);
+    print('obteniendo vehiculos');
+    Response response = await Api().getData('user/find-vehicles');
+    print(response);
+    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
@@ -59,6 +63,8 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
 
     return vehicles;
   } catch (e) {
+    print('ERROR AL OBTENER VEHICULOS');
+    print(e);
     return [];
   }
 }
@@ -749,6 +755,26 @@ class _VehiclesListState extends State<VehiclesList> {
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
         ),
+
+        Positioned(
+          bottom: 200,
+          right: 30,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(50))),
+            child: IconButton(
+              color: Constants.kBlack,
+              onPressed: () async {
+                mapController.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                      LatLng(position.latitude, position.longitude), 14),
+                );
+              },
+              icon: const Icon(Icons.location_searching_rounded),
+            ),
+          ),
+        ),
         // Positioned(
         //   bottom: 60,
         //   right: 30,
@@ -766,25 +792,72 @@ class _VehiclesListState extends State<VehiclesList> {
         //     ),
         //   ),
         // ),
+
         Positioned(
-          bottom: 60,
-          right: 30,
-          child: Container(
-            decoration: const BoxDecoration(
+            child: DraggableScrollableSheet(
+          minChildSize: 0.2,
+          maxChildSize: 0.5,
+          initialChildSize: 0.2,
+          snap: true,
+          builder: (context, scrollController) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(50))),
-            child: IconButton(
-              color: Constants.kBlack,
-              onPressed: () async {
-                mapController.animateCamera(
-                  CameraUpdate.newLatLngZoom(
-                      LatLng(position.latitude, position.longitude), 14),
-                );
-              },
-              icon: const Icon(Icons.location_searching_rounded),
-            ),
-          ),
-        )
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Constants.kBlack,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Transportistas disponibles',
+                    style: Theme.of(context).textTheme.headline6,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ...List.generate(
+                    vehicles.length,
+                    (index) => CarCard2(
+                      vehicles[index],
+                      onTap: () async {
+                        onVehicleTap(vehicles[index].id, context);
+                        // setLoadMarkerInfo(loads[index], position, context);
+                      },
+                    ),
+                  ),
+                  vehicles.isEmpty
+                      ? const Text(
+                          'No hay vehiculos disponibles',
+                          textAlign: TextAlign.center,
+                        )
+                      : const SizedBox.shrink()
+                ],
+              ),
+            );
+          },
+        )),
       ],
     );
   }

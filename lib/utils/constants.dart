@@ -5,9 +5,9 @@ class Constants {
 //casa
   // static String baseUrl = 'http://181.120.66.16/';
 //oficina
-  // static String baseUrl = 'http://192.168.1.196:9000/';
+  static String baseUrl = 'http://192.168.1.200:9000/';
 //producción
-  static String baseUrl = 'https://www.afletes.com/';
+  // static String baseUrl = 'https://www.afletes.com/';
 
   static String apiUrl = baseUrl + 'api/';
 
@@ -19,6 +19,7 @@ class Constants {
 
 //DEVELOPMENT
   // static String pusherKey = '4a54c4ccefa7c6413910';
+
   static String googleMapKey = 'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs';
 
   static Color kGrey = const Color(0xFFC5C5C5);

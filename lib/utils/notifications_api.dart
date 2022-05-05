@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,8 @@ class NotificationsApi {
           jsonDecode(user),
         ),
       );
+
+      NotificationsModel().getNotifications();
     }
 
     const settings = InitializationSettings(

@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
+import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -181,8 +182,10 @@ class PusherApi extends ChangeNotifier {
                   } else {
                     String title = 'Tiene una nueva notificación';
                     if (jsonData['is_final_offer'] != null) {
-                      if (jsonData['is_final_offer']) {
-                        title = 'Ha recibido una oferta final';
+                      if (jsonData['is_final_offer'].runtimeType == bool) {
+                        if (jsonData['is_final_offer']) {
+                          title = 'Ha recibido una oferta final';
+                        }
                       }
                     }
                     if (jsonData['accepted'] != null) {
@@ -201,6 +204,17 @@ class PusherApi extends ChangeNotifier {
                       payload:
                           '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
                     );
+
+                    NotificationsModel().addNotification(
+                      NotificationsModel(
+                        mensaje: jsonData['mensaje']
+                            .replaceAll(Constants.htmlTagRegExp, ''),
+                        negotiationId: jsonData['negotiation_id'],
+                        userId: jsonData['user_id'],
+                        senderId: jsonData['sender_id'],
+                        id: 1,
+                      ),
+                    );
                   }
                 }
               }
@@ -208,9 +222,11 @@ class PusherApi extends ChangeNotifier {
           }
         }
       } catch (e) {
+        print("ERROR EN PUSHER");
+        print(e);
         NotificationsApi.showNotification(
           id: 11,
-          title: 'Tiene un nuevo mensaje' + e.toString(),
+          title: 'Tiene un nuevo mensaje ',
           body: '',
         );
       }
