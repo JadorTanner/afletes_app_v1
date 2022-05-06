@@ -1,10 +1,10 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
+import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -101,6 +101,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   late User user;
   late Load loadProvider;
   late ThemeData theme;
+  late NotificationsApi notifications;
   @override
   void initState() {
     super.initState();
@@ -116,6 +117,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     user = Provider.of<User>(context).user;
+    notifications = Provider.of<NotificationsApi>(context);
+    print('CANTIDAD DE NOTIFICACIONES: ' +
+        notifications.notifications.length.toString());
     return Drawer(
       child: SafeArea(
         minimum: const EdgeInsets.all(15),
@@ -222,9 +226,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ),
                   ),
                 ),
-                Provider.of<NotificationsModel>(context)
-                        .notifications
-                        .isNotEmpty
+                notifications.notifications.isNotEmpty
                     ? const Positioned(
                         top: 5,
                         left: 5,

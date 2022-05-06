@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_init_to_null
 import 'dart:convert';
 
-import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -113,7 +113,7 @@ class User extends ChangeNotifier {
                 'token', responseBody['data']['token']);
             await localStorage.setInt(
                 'vehicles', responseBody['data']['vehicles']);
-            NotificationsModel().getNotifications();
+            NotificationsApi().getNotifications();
 
             return true;
           } else {

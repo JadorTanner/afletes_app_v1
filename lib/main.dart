@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:afletes_app_v1/models/chat.dart';
-import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
@@ -201,8 +200,8 @@ void main() async {
         ChangeNotifierProvider<PusherApi>(
           create: (context) => PusherApi(),
         ),
-        ChangeNotifierProvider<NotificationsModel>(
-          create: (context) => NotificationsModel(),
+        ChangeNotifierProvider<NotificationsApi>(
+          create: (context) => NotificationsApi(),
         ),
       ],
       child: MaterialApp(
@@ -482,8 +481,12 @@ class _AfletesAppState extends State<AfletesApp> {
     print(user);
     if (user != null) {
       Map data = jsonDecode(user);
-      PusherApi().init(context, context.read<TransportistsLocProvider>(),
-          chatProvider, data['is_load_generator']);
+      PusherApi().init(
+          context,
+          context.read<NotificationsApi>(),
+          context.read<TransportistsLocProvider>(),
+          chatProvider,
+          data['is_load_generator']);
     }
 
     NotificationsApi.onNotifications.stream.listen((event) async {

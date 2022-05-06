@@ -37,8 +37,8 @@ class PusherApi extends ChangeNotifier {
     pusher.disconnect();
   }
 
-  init(BuildContext context, TransportistsLocProvider transportistsLocProvider,
-      ChatProvider chat,
+  init(BuildContext context, NotificationsApi notificationsApi,
+      TransportistsLocProvider transportistsLocProvider, ChatProvider chat,
       [bool isGenerator = false]) async {
     // if (!fromPage) {
     _pusher.onConnectionStateChange((state) {
@@ -52,7 +52,8 @@ class PusherApi extends ChangeNotifier {
       print("error: ${error!.message}");
 
       disconnect();
-      init(context, transportistsLocProvider, chat, isGenerator);
+      init(context, notificationsApi, transportistsLocProvider, chat,
+          isGenerator);
     });
 
     pusherChannel = _pusher.subscribe("negotiation-chat");
@@ -197,17 +198,9 @@ class PusherApi extends ChangeNotifier {
                     if (jsonData['rejected'] != null) {
                       title = 'La negociación ha sido rechazada';
                     }
-                    NotificationsApi.showNotification(
-                      id: 21,
-                      title: title,
-                      body: jsonData['message'],
-                      payload:
-                          '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
-                    );
-
-                    NotificationsModel().addNotification(
-                      NotificationsModel(
-                        mensaje: jsonData['mensaje']
+                    notificationsApi.addNotification(
+                      NotificationModel(
+                        mensaje: jsonData['message']
                             .replaceAll(Constants.htmlTagRegExp, ''),
                         negotiationId: jsonData['negotiation_id'],
                         userId: jsonData['user_id'],
@@ -215,6 +208,15 @@ class PusherApi extends ChangeNotifier {
                         id: 1,
                       ),
                     );
+                    if (!Platform.isAndroid) {
+                      NotificationsApi.showNotification(
+                        id: 21,
+                        title: title,
+                        body: jsonData['message'],
+                        payload:
+                            '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                      );
+                    }
                   }
                 }
               }
@@ -224,11 +226,13 @@ class PusherApi extends ChangeNotifier {
       } catch (e) {
         print("ERROR EN PUSHER");
         print(e);
-        NotificationsApi.showNotification(
-          id: 11,
-          title: 'Tiene un nuevo mensaje ',
-          body: '',
-        );
+        if (!Platform.isAndroid) {
+          NotificationsApi.showNotification(
+            id: 11,
+            title: 'Tiene un nuevo mensaje ',
+            body: '',
+          );
+        }
       }
     });
     // } else {

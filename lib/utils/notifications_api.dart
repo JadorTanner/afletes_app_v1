@@ -2,14 +2,19 @@ import 'dart:convert';
 
 import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class NotificationsApi {
+class NotificationsApi extends ChangeNotifier {
   static final _notifications = FlutterLocalNotificationsPlugin();
   static final onNotifications = BehaviorSubject<String?>();
+  final List<NotificationModel> notifications = [];
 
   static Future _notificationDetails() async {
     return const NotificationDetails(
@@ -34,7 +39,7 @@ class NotificationsApi {
         ),
       );
 
-      NotificationsModel().getNotifications();
+      NotificationsApi().getNotifications();
     }
 
     const settings = InitializationSettings(
@@ -57,5 +62,76 @@ class NotificationsApi {
     _notifications
         .show(id, title, body, await _notificationDetails(), payload: payload)
         .then((value) => print('SE HA MOSTRADO LA NOTIFICACIÓN'));
+  }
+
+  addNotification(NotificationModel notification) {
+    try {
+      print('AGREGANDO UNA NUEVA NOTIFICACION');
+      notifications.add(notification);
+      print(notifications);
+      notifyListeners();
+    } catch (e) {
+      print('ERROR AL AGREGAR UNA NOTIFICACION');
+      print(e);
+    }
+  }
+
+  removeNotification(NotificationModel notification) {
+    try {
+      notifications.removeWhere((item) => (notification.id == item.id ||
+          notification.negotiationId == item.negotiationId));
+      notifyListeners();
+    } catch (e) {
+      print('ERROR AL REMOVER UNA NOTIFICACION');
+      print(e);
+    }
+  }
+
+  getNotifications() async {
+    try {
+      Api api = Api();
+      Response response = await api.getData('get-notifications');
+      print(response.body);
+      Map jsonResponse = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        if (jsonResponse['success']) {
+          List nots = jsonResponse['data'];
+          notifications.clear();
+          for (Map element in nots) {
+            addNotification(
+              NotificationModel(
+                  id: element['id'],
+                  mensaje: element['mensaje']
+                      .replaceAll(Constants.htmlTagRegExp, ''),
+                  negotiationId: element['negotiation_id'],
+                  userId: element['user_id'],
+                  senderId: element['created_by'],
+                  sentAt: element['created_at']),
+            );
+          }
+        } else {
+          throw Exception('Ha ocurrido un error al obtener las notificaciones');
+        }
+      } else {
+        throw Exception('Ha ocurrido un error al obtener las notificaciones');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  readNotification(NotificationModel notification, BuildContext context) async {
+    int id = notification.negotiationId;
+    try {
+      Api api = Api();
+      await api.postData('read-notification', {
+        'negotiation_id': id,
+      });
+      context.read<NotificationsApi>().removeNotification(notification);
+      Navigator.of(context).pushNamed('/negotiation_id/' + id.toString());
+    } catch (e) {
+      Navigator.of(context).pushNamed('/my-negotiations');
+      context.read<NotificationsApi>().removeNotification(notification);
+    }
   }
 }
