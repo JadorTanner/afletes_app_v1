@@ -10,6 +10,7 @@ class CustomFormField extends StatefulWidget {
       this.autofocus = false,
       this.focus,
       this.showCursor,
+      this.validator,
       this.readOnly = false,
       this.enabled = true,
       this.onFocus,
@@ -39,6 +40,7 @@ class CustomFormField extends StatefulWidget {
   String hint;
   String? helperText;
   TextInputAction action;
+  var validator;
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
 }
@@ -56,7 +58,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       onTap: widget.onFocus,
       maxLines: widget.maxLines,
       showCursor: widget.showCursor,
@@ -82,32 +84,36 @@ class _CustomFormFieldState extends State<CustomFormField> {
             : () => {};
       },
       decoration: InputDecoration(
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: Constants.kInputBorder),
-            borderRadius: BorderRadius.all(
-              Radius.circular(widget.radius),
-            ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: Constants.kInputBorder),
+          borderRadius: BorderRadius.all(
+            Radius.circular(widget.radius),
           ),
-          prefixIcon: widget.icon != null
-              ? Icon(
-                  widget.icon,
-                  color: Constants.kInputBorder,
-                  size: 22,
-                )
-              : null,
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                  color: Constants.kBlack, style: BorderStyle.solid)),
-          hintText: widget.hint,
-          hintStyle: TextStyle(color: Constants.kInputBorder),
-          label: Text(widget.label),
-          floatingLabelStyle: TextStyle(color: Constants.kBlack),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 5,
-            horizontal: 20,
-          ),
-          helperText: widget.helperText),
+        ),
+        prefixIcon: widget.icon != null
+            ? Icon(
+                widget.icon,
+                color: Constants.kInputBorder,
+                size: 22,
+              )
+            : null,
+        focusedBorder: OutlineInputBorder(
+            borderSide:
+                BorderSide(color: Constants.kBlack, style: BorderStyle.solid)),
+        hintText: widget.hint,
+        hintStyle: TextStyle(color: Constants.kInputBorder),
+        label: Text(widget.label),
+        floatingLabelStyle: TextStyle(color: Constants.kBlack),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 5,
+          horizontal: 20,
+        ),
+        helperText: widget.helperText,
+      ),
+      validator: widget.validator != null
+          ? (String? txt) => widget.validator(txt)
+          : (String? txt) => null,
     );
   }
 }

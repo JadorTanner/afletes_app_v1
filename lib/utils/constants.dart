@@ -1,11 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Constants {
 //casa
-  static String baseUrl = 'http://181.120.66.16/';
+  // static String baseUrl = 'http://181.120.66.16/';
 //oficina
-  // static String baseUrl = 'http://192.168.1.103:9000/';
+  static String baseUrl = 'http://192.168.1.187:9000/';
 //producción
   // static String baseUrl = 'https://www.afletes.com/';
 
@@ -37,5 +39,14 @@ class Constants {
     return symbol +
         ' ' +
         format.format(amount).replaceAll('.00', '').replaceAll(',', '.');
+  }
+
+  static double calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
+    var p = 0.017453292519943295;
+    var a = 0.5 -
+        cos((lat2 - lat1) * p) / 2 +
+        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
   }
 }

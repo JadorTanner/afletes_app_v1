@@ -198,6 +198,9 @@ class PusherApi extends ChangeNotifier {
                     if (jsonData['rejected'] != null) {
                       title = 'La negociación ha sido rechazada';
                     }
+                    DateTime now = DateTime.now();
+                    String formattedDate =
+                        DateFormat('y-M-d kk:mm').format(now);
                     notificationsApi.addNotification(
                       NotificationModel(
                         mensaje: jsonData['message']
@@ -206,6 +209,7 @@ class PusherApi extends ChangeNotifier {
                         userId: jsonData['user_id'],
                         senderId: jsonData['sender_id'],
                         id: 1,
+                        sentAt: formattedDate,
                       ),
                     );
                     if (!Platform.isAndroid) {

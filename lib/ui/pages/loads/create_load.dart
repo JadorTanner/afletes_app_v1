@@ -198,10 +198,10 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
             return PageView(
               controller: pageController,
               physics: const NeverScrollableScrollPhysics(),
-              children: const [
+              children: [
                 DatosGenerales(),
-                DatosUbicacion(),
-                DatosUbicacionDelivery(),
+                const DatosUbicacion(),
+                const DatosUbicacionDelivery(),
                 PaginaFinal(),
               ],
             );
@@ -216,176 +216,229 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
 }
 
 class DatosGenerales extends StatelessWidget {
-  const DatosGenerales({Key? key}) : super(key: key);
+  DatosGenerales({Key? key}) : super(key: key);
+
+  GlobalKey<FormState> datosGeneralesKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return FocusScope(
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        margin: const EdgeInsets.only(
-          top: 70,
-          left: 20,
-          right: 20,
-        ),
-        child: Stack(
-          children: [
-            ListView(
-              padding: const EdgeInsets.only(
-                top: 20,
-                left: 20,
-                bottom: 60,
-                right: 20,
-              ),
-              children: [
-                const ImagesPicker(),
-                const SizedBox(
-                  height: 20,
+    return Form(
+      key: datosGeneralesKey,
+      child: FocusScope(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          ),
+          margin: const EdgeInsets.only(
+            top: 70,
+            left: 20,
+            right: 20,
+          ),
+          child: Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.only(
+                  top: 20,
+                  left: 20,
+                  bottom: 60,
+                  right: 20,
                 ),
-                //producto
-                CustomFormField(productController, 'Producto *', maxLength: 10),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    //Categoría
-                    Flexible(
-                      child: CategoriaSelect(),
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Flexible(child: MeasurementUnit()),
-                    //Unidad de medida
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    //Peso
-                    Flexible(
-                      child: CustomFormField(
-                        pesoController,
-                        'Peso *',
-                        type: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        defaultValue: '0',
+                children: [
+                  const ImagesPicker(),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  //producto
+                  CustomFormField(
+                    productController,
+                    'Producto *',
+                    maxLength: 10,
+                    validator: (String? txt) {
+                      if (productController.text == '') {
+                        return 'Ingrese un producto';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      //Categoría
+                      Flexible(
+                        child: CategoriaSelect(),
                       ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    //Volumen
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Flexible(child: MeasurementUnit()),
+                      //Unidad de medida
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      //Peso
+                      Flexible(
+                        child: CustomFormField(
+                          pesoController,
+                          'Peso *',
+                          type: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          defaultValue: '0',
+                          validator: (String? txt) {
+                            if (pesoController.text == '') {
+                              return 'Peso obligatorio';
+                            } else {
+                              if (int.parse(pesoController.text) <= 0) {
+                                return 'Ingrese un valor correcto';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      //Volumen
+                      Flexible(
+                        child: CustomFormField(
+                          volumenController,
+                          'Volumen',
+                          type: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          defaultValue: '0',
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      //Vehiculos requeridos
+                      Flexible(
+                        child: CustomFormField(
+                          vehiculosController,
+                          'Cant. vehículos *',
+                          type: TextInputType.number,
+                          defaultValue: '1',
+                          validator: (String? txt) {
+                            if (vehiculosController.text == '') {
+                              return 'Cantidad de vehiculos obligatorio';
+                            } else {
+                              if (int.parse(vehiculosController.text) <= 0) {
+                                return 'Ingrese un valor correcto';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      //Ayudante requeridos
+                      Flexible(
+                        child: CustomFormField(
+                          ayudantesController,
+                          'Ayudantes *',
+                          type: TextInputType.number,
+                          defaultValue: '0',
+                          validator: (String? txt) {
+                            if (ayudantesController.text == '') {
+                              return 'Cantidad de ayudantes obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  //Precio
+                  CustomFormField(
+                    ofertaInicialController,
+                    'Oferta inicial *',
+                    type: TextInputType.number,
+                    defaultValue: '0',
+                    validator: (String? txt) {
+                      if (ofertaInicialController.text == '') {
+                        return 'Oferta inicial obligatoria';
+                      } else {
+                        if (int.parse(ofertaInicialController.text) <= 0) {
+                          return 'Ingrese un valor correcto';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  //Descripción
+                  CustomFormField(
+                    descriptionController,
+                    'Descripción *',
+                    type: TextInputType.multiline,
+                    action: TextInputAction.newline,
+                    maxLines: 5,
+                    radius: 10,
+                    validator: (String? txt) {
+                      if (descriptionController.text == '') {
+                        return 'Descripcion de la carga obligatoria';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                ],
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
                     Flexible(
-                      child: CustomFormField(
-                        volumenController,
-                        'Volumen',
-                        type: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        defaultValue: '0',
+                      child: NextPageButton(
+                        pageController,
+                        validator: () {
+                          if (datosGeneralesKey.currentState != null) {
+                            if (datosGeneralesKey.currentState!.validate()) {
+                              if (productController.text == '' ||
+                                  pesoController.text == '' ||
+                                  volumenController.text == '' ||
+                                  vehiculosController.text == '' ||
+                                  ayudantesController.text == '' ||
+                                  ofertaInicialController.text == '' ||
+                                  descriptionController.text == '') {
+                                return false;
+                              }
+                              return true;
+                            }
+                          }
+                          return false;
+                        },
                       ),
                     )
                   ],
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    //Vehiculos requeridos
-                    Flexible(
-                      child: CustomFormField(
-                        vehiculosController,
-                        'Cant. vehículos *',
-                        type: TextInputType.number,
-                        defaultValue: '1',
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    //Ayudante requeridos
-                    Flexible(
-                      child: CustomFormField(
-                        ayudantesController,
-                        'Ayudantes *',
-                        type: TextInputType.number,
-                        defaultValue: '0',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                //Precio
-                CustomFormField(
-                  ofertaInicialController,
-                  'Oferta inicial *',
-                  type: TextInputType.number,
-                  defaultValue: '0',
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                //Descripción
-                CustomFormField(descriptionController, 'Descripción *',
-                    type: TextInputType.multiline,
-                    action: TextInputAction.newline,
-                    maxLines: 5,
-                    radius: 10),
-                const SizedBox(
-                  height: 40,
-                ),
-              ],
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Row(
-                children: [
-                  Flexible(
-                    child: NextPageButton(
-                      pageController,
-                      validator: () {
-                        if (productController.text == '') {
-                          return false;
-                        }
-                        if (pesoController.text == '') {
-                          return false;
-                        }
-                        if (volumenController.text == '') {
-                          return false;
-                        }
-                        if (vehiculosController.text == '') {
-                          return false;
-                        }
-                        if (ayudantesController.text == '') {
-                          return false;
-                        }
-                        if (ofertaInicialController.text == '') {
-                          return false;
-                        }
-                        if (descriptionController.text == '') {
-                          return false;
-                        }
-                        return true;
-                      },
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -739,100 +792,113 @@ class DatosUbicacion extends StatefulWidget {
 }
 
 class _DatosUbicacionState extends State<DatosUbicacion> {
+  GlobalKey<FormState> datosUbicacionKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-      ),
-      margin: const EdgeInsets.only(
-        top: 70,
-        left: 20,
-        right: 20,
-      ),
-      child: Stack(children: [
-        ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(
-            top: 40,
-            left: 20,
-            bottom: 60,
-            right: 20,
-          ),
-          children: [
-            Text(
-              'Dónde está tu carga?',
-              style: titleStyles,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const StateAndCityPicker(),
-            const SizedBox(
-              height: 20,
-            ),
-            SearchPlace(originAddressController, originCoordsController),
-            Visibility(
-              child: CustomFormField(originCoordsController, 'Coordenadas'),
-              visible: false,
-            ),
-            const SizedBox(
-              height: 40,
-            ),
-            // ButtonBar(
-            //   alignment: MainAxisAlignment.center,
-            //   children: [
-            //     const Flexible(
-            //       child: PrevPageButton(pageController),
-            //     ),
-            //     Flexible(
-            //       child: NextPageButton(
-            //         validator: (callback) {
-            //           if (originStateController.text == '') {
-            //             return false;
-            //           }
-            //           if (originCityController.text == '') {
-            //             return false;
-            //           }
-            //           if (originAddressController.text == '') {
-            //             return false;
-            //           }
-            //           if (originCoordsController.text == '') {
-            //             return false;
-            //           }
-            //           callback();
-            //           return true;
-            //         },
-            //       ),
-            //     ),
-            //   ],
-            // )
-          ],
+    return Form(
+      key: datosUbicacionKey,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Row(
+        margin: const EdgeInsets.only(
+          top: 70,
+          left: 20,
+          right: 20,
+        ),
+        child: Stack(children: [
+          ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(
+              top: 40,
+              left: 20,
+              bottom: 60,
+              right: 20,
+            ),
             children: [
-              Flexible(
-                child: PrevPageButton(pageController),
+              Text(
+                'Dónde está tu carga?',
+                style: titleStyles,
               ),
-              Flexible(
-                child: NextPageButton(
-                  pageController,
-                  validator: () {
-                    return (originAddressController.text != '' &&
-                        originCoordsController.text != '');
-                  },
+              const SizedBox(
+                height: 20,
+              ),
+              const StateAndCityPicker(),
+              const SizedBox(
+                height: 20,
+              ),
+              SearchPlace(originAddressController, originCoordsController),
+              Visibility(
+                child: CustomFormField(
+                  originCoordsController,
+                  'Coordenadas',
                 ),
+                visible: false,
               ),
+              const SizedBox(
+                height: 40,
+              ),
+              // ButtonBar(
+              //   alignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Flexible(
+              //       child: PrevPageButton(pageController),
+              //     ),
+              //     Flexible(
+              //       child: NextPageButton(
+              //         validator: (callback) {
+              //           if (originStateController.text == '') {
+              //             return false;
+              //           }
+              //           if (originCityController.text == '') {
+              //             return false;
+              //           }
+              //           if (originAddressController.text == '') {
+              //             return false;
+              //           }
+              //           if (originCoordsController.text == '') {
+              //             return false;
+              //           }
+              //           callback();
+              //           return true;
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // )
             ],
           ),
-        )
-      ]),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              children: [
+                Flexible(
+                  child: PrevPageButton(pageController),
+                ),
+                Flexible(
+                  child: NextPageButton(
+                    pageController,
+                    validator: () {
+                      if (datosUbicacionKey.currentState != null) {
+                        if (datosUbicacionKey.currentState!.validate()) {
+                          return (originAddressController.text != '' &&
+                              originCoordsController.text != '');
+                        }
+                      }
+                      return false;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          )
+        ]),
+      ),
     );
   }
 }
@@ -941,6 +1007,12 @@ class _SearchPlaceState extends State<SearchPlace>
                 widget.addressController,
                 'Dirección *',
                 action: TextInputAction.done,
+                validator: (String? txt) {
+                  if (widget.addressController.text == '') {
+                    return 'Dirección de origen obligatoria';
+                  }
+                  return null;
+                },
               ),
             ),
             const SizedBox(
@@ -1082,86 +1154,97 @@ class DatosUbicacionDelivery extends StatefulWidget {
 }
 
 class _DatosUbicacionDeliveryState extends State<DatosUbicacionDelivery> {
+  GlobalKey<FormState> datosUbicacionDeliveryKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-      ),
-      margin: const EdgeInsets.only(
-        top: 70,
-        left: 20,
-        right: 20,
-      ),
-      child: Stack(children: [
-        ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(
-            top: 40,
-            left: 20,
-            bottom: 60,
-            right: 20,
-          ),
-          children: [
-            Text(
-              'Dónde quieres llevarla?',
-              style: titleStyles,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const DestinStateAndCityPicker(),
-            const SizedBox(
-              height: 20,
-            ),
-            SearchPlace(destinAddressController, destinCoordsController),
-            const SizedBox(
-              height: 20,
-            ),
-            Visibility(
-              child: CustomFormField(destinCoordsController, 'Coordenadas'),
-              visible: false,
-            ),
-            const SizedBox(
-              height: 40,
-            ),
-            // ButtonBar(
-            //   alignment: MainAxisAlignment.center,
-            //   children: [
-            //     const Flexible(
-            //       child: PrevPageButton(pageController),
-            //     ),
-            //     Flexible(
-            //       child: NextPageButton(pageController),
-            //     ),
-            //   ],
-            // )
-          ],
+    return Form(
+      key: datosUbicacionDeliveryKey,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Row(
+        margin: const EdgeInsets.only(
+          top: 70,
+          left: 20,
+          right: 20,
+        ),
+        child: Stack(children: [
+          ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(
+              top: 40,
+              left: 20,
+              bottom: 60,
+              right: 20,
+            ),
             children: [
-              Flexible(
-                child: PrevPageButton(pageController),
+              Text(
+                'Dónde quieres llevarla?',
+                style: titleStyles,
               ),
-              Flexible(
-                child: NextPageButton(
-                  pageController,
-                  validator: () {
-                    return (destinAddressController.text != '' &&
-                        destinCoordsController.text != '');
-                  },
-                ),
+              const SizedBox(
+                height: 20,
               ),
+              const DestinStateAndCityPicker(),
+              const SizedBox(
+                height: 20,
+              ),
+              SearchPlace(destinAddressController, destinCoordsController),
+              const SizedBox(
+                height: 20,
+              ),
+              Visibility(
+                child: CustomFormField(destinCoordsController, 'Coordenadas'),
+                visible: false,
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              // ButtonBar(
+              //   alignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Flexible(
+              //       child: PrevPageButton(pageController),
+              //     ),
+              //     Flexible(
+              //       child: NextPageButton(pageController),
+              //     ),
+              //   ],
+              // )
             ],
           ),
-        )
-      ]),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              children: [
+                Flexible(
+                  child: PrevPageButton(pageController),
+                ),
+                Flexible(
+                  child: NextPageButton(
+                    pageController,
+                    validator: () {
+                      if (datosUbicacionDeliveryKey.currentState != null) {
+                        if (datosUbicacionDeliveryKey.currentState!
+                            .validate()) {
+                          return (destinAddressController.text != '' &&
+                              destinCoordsController.text != '');
+                        }
+                      }
+                      return false;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          )
+        ]),
+      ),
     );
   }
 }
@@ -1336,126 +1419,144 @@ class CityPickerState extends State<CityPicker> {
 
 //PAGINA FINAL DEL FORMULARIO
 class PaginaFinal extends StatelessWidget {
-  const PaginaFinal({Key? key}) : super(key: key);
+  PaginaFinal({Key? key}) : super(key: key);
+
+  GlobalKey<FormState> paginaFinalKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-      ),
-      margin: const EdgeInsets.only(
-        top: 70,
-        left: 20,
-        right: 20,
-      ),
-      child: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.only(
-              top: 40,
-              left: 20,
-              bottom: 60,
-              right: 20,
-            ),
-            children: [
-              Text(
-                'Cuándo debe ser recogida?',
-                style: titleStyles,
+    return Form(
+      key: paginaFinalKey,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        margin: const EdgeInsets.only(
+          top: 70,
+          left: 20,
+          right: 20,
+        ),
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.only(
+                top: 40,
+                left: 20,
+                bottom: 60,
+                right: 20,
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    child: DatePicker(loadDateController, 'Fecha de carga'),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Flexible(
-                    child: LoadTimePicker(loadHourController, 'Hora de carga'),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    child: CustomFormField(
-                      esperaCargaController,
-                      'Espera en carga *',
-                      type: TextInputType.number,
-                      hint: 'Minutos',
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Flexible(
-                    child: CustomFormField(
-                      esperaDescargaController,
-                      'Espera en descarga *',
-                      type: TextInputType.number,
-                      hint: 'Minutos',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: const [
-                  Flexible(
-                    child: IsUrgent(),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Text(
-                'Danos más detalles de tu carga',
-                style: titleStyles,
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-
-              //Descripción
-              CustomFormField(
-                observacionesController,
-                'Observaciones',
-                type: TextInputType.multiline,
-                action: TextInputAction.newline,
-                maxLines: 5,
-                radius: 10,
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Row(
               children: [
-                Flexible(
-                  child: PrevPageButton(pageController),
+                Text(
+                  'Cuándo debe ser recogida?',
+                  style: titleStyles,
                 ),
-                const Flexible(child: EnviarButton())
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: DatePicker(loadDateController, 'Fecha de carga'),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child:
+                          LoadTimePicker(loadHourController, 'Hora de carga'),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: CustomFormField(
+                        esperaCargaController,
+                        'Espera en carga *',
+                        type: TextInputType.number,
+                        hint: 'Minutos',
+                        validator: (String? txt) {
+                          if (esperaCargaController.text == '') {
+                            return 'Espera en carga obligatoria (en minutos)';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: CustomFormField(
+                        esperaDescargaController,
+                        'Espera en descarga *',
+                        type: TextInputType.number,
+                        hint: 'Minutos',
+                        validator: (String? txt) {
+                          if (esperaDescargaController.text == '') {
+                            return 'Espera en descarga obligatoria (en minutos)';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: const [
+                    Flexible(
+                      child: IsUrgent(),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  'Danos más detalles de tu carga',
+                  style: titleStyles,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+
+                //Descripción
+                CustomFormField(
+                  observacionesController,
+                  'Observaciones',
+                  type: TextInputType.multiline,
+                  action: TextInputAction.newline,
+                  maxLines: 5,
+                  radius: 10,
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
               ],
             ),
-          )
-        ],
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: PrevPageButton(pageController),
+                  ),
+                  const Flexible(child: EnviarButton())
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

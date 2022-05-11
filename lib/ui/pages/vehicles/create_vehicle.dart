@@ -267,122 +267,160 @@ class DatosGenerales extends StatefulWidget {
 
 class _DatosGeneralesState extends State<DatosGenerales>
     with AutomaticKeepAliveClientMixin {
+  GlobalKey<FormState> datosGeneralesKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    return FocusScope(
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        margin: const EdgeInsets.only(
-          top: 70,
-          left: 20,
-          right: 20,
-        ),
-        child: Stack(
-          children: [
-            ListView(
-              padding: const EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                bottom: 70,
-              ),
-              children: [
-                const ImagesPicker(),
-                const Text('Imágenes del vehículo'),
-                const SizedBox(
-                  height: 20,
+    return Form(
+      key: datosGeneralesKey,
+      child: FocusScope(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          ),
+          margin: const EdgeInsets.only(
+            top: 70,
+            left: 20,
+            right: 20,
+          ),
+          child: Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.only(
+                  top: 20,
+                  left: 20,
+                  right: 20,
+                  bottom: 70,
                 ),
-                //chapa
-                CustomFormField(chapaController, 'Dominio o chapa *'),
-                const SizedBox(
-                  height: 20,
-                ),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    //Marca
-                    const Flexible(
-                      child: MarcaSelect(),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    //Modelo
-                    Flexible(
-                      child: CustomFormField(
-                        modeloController,
-                        'Modelo *',
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    const Flexible(
-                      child: MeasurementUnit(),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    //Peso
-                    Flexible(
-                      child: CustomFormField(
-                        pesoController,
-                        'Peso *',
-                        type: const TextInputType.numberWithOptions(
-                            decimal: true),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-
-                CustomFormField(
-                  fabricacionController,
-                  'Año de producción *',
-                  type: const TextInputType.numberWithOptions(decimal: true),
-                ),
-                const SizedBox(
-                  height: 40,
-                ),
-              ],
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Row(
                 children: [
-                  Flexible(
-                    child: NextPageButton(
-                      pageController,
-                      validator: () {
-                        return (chapaController.text != '' &&
-                            modeloController.text != '' &&
-                            chapaController.text != '' &&
-                            pesoController.text != '' &&
-                            fabricacionController.text != '' &&
-                            unidadMedidaController.text != '' &&
-                            (imagenes.isNotEmpty ||
-                                imagenesNetwork.isNotEmpty));
-                      },
-                    ),
+                  const ImagesPicker(),
+                  const Text('Imágenes del vehículo *'),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  //chapa
+                  CustomFormField(
+                    chapaController,
+                    'Dominio o chapa *',
+                    validator: (String? txt) {
+                      if (chapaController.text == '') {
+                        return 'Ingrese la chapa de su vehiculo';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      //Marca
+                      const Flexible(
+                        child: MarcaSelect(),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      //Modelo
+                      Flexible(
+                        child: CustomFormField(
+                          modeloController,
+                          'Modelo *',
+                          validator: (String? txt) {
+                            if (modeloController.text == '') {
+                              return 'Ingrese el modelo de su vehiculo';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      const Flexible(
+                        child: MeasurementUnit(),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      //Peso
+                      Flexible(
+                        child: CustomFormField(
+                          pesoController,
+                          'Peso máx. *',
+                          type: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          validator: (String? txt) {
+                            if (pesoController.text == '') {
+                              return 'Ingrese el peso máximo.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  CustomFormField(
+                    fabricacionController,
+                    'Año de producción *',
+                    type: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (String? txt) {
+                      if (fabricacionController.text == '') {
+                        return 'Ingrese el año de fabricación';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 40,
                   ),
                 ],
               ),
-            )
-          ],
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: NextPageButton(
+                        pageController,
+                        validator: () {
+                          if (datosGeneralesKey.currentState != null) {
+                            if (datosGeneralesKey.currentState!.validate()) {
+                              return true;
+                            }
+                          }
+                          return (chapaController.text != '' &&
+                              modeloController.text != '' &&
+                              chapaController.text != '' &&
+                              pesoController.text != '' &&
+                              fabricacionController.text != '' &&
+                              unidadMedidaController.text != '' &&
+                              (imagenes.isNotEmpty ||
+                                  imagenesNetwork.isNotEmpty));
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/load_image.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:flutter/material.dart';
@@ -103,10 +104,13 @@ class _StateTrayectoMap extends State<TrayectoMap> {
 
   Future<MarkerId> setPolylinesInMap(LatLng origin, LatLng destin) async {
     var result = await polylinePoints.getRouteBetweenCoordinates(
-      'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs',
+      Constants.googleMapKey,
       PointLatLng(origin.latitude, origin.longitude),
       PointLatLng(destin.latitude, destin.longitude),
     );
+    print(result.errorMessage);
+    print(result.points);
+    print(result.status);
     if (result.points.isNotEmpty) {
       MarkerId marcadorOrigen = const MarkerId('marcador_origen');
       MarkerId marcadorDestino = const MarkerId('marcador_destino');
@@ -117,7 +121,11 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           markerId: marcadorOrigen,
           position: origin,
           infoWindow: InfoWindow(
-            title: 'Origen',
+            title: 'Origen (' +
+                Constants.calculateDistance(origin.latitude, origin.longitude,
+                        destin.latitude, destin.longitude)
+                    .toStringAsFixed(2) +
+                ' Km.)',
             snippet: widget.load.addressFrom,
           ),
           icon: BitmapDescriptor.fromBytes(
@@ -151,12 +159,25 @@ class _StateTrayectoMap extends State<TrayectoMap> {
         ));
       });
 
-      mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          origin,
-          10,
-        ),
-      );
+      // mapController.animateCamera(
+      //   CameraUpdate.newLatLngZoom(
+      //     origin,
+      //     10,
+      //   ),
+      // );
+      late LatLng bottomLeft;
+      late LatLng topRight;
+
+      if (origin.latitude <= destin.latitude) {
+        bottomLeft = origin;
+        topRight = destin;
+      } else {
+        bottomLeft = destin;
+        topRight = origin;
+      }
+
+      mapController.animateCamera(CameraUpdate.newLatLngBounds(
+          LatLngBounds(southwest: bottomLeft, northeast: topRight), 20));
       return _markers[0].markerId;
     }
     return const MarkerId('');
@@ -178,9 +199,11 @@ class _StateTrayectoMap extends State<TrayectoMap> {
       ),
     );
 
-    Future.delayed(const Duration(seconds: 1), () {
-      mapController.showMarkerInfoWindow(mkinfo);
-    });
+    if (mkinfo.value != '') {
+      Future.delayed(const Duration(seconds: 1), () {
+        mapController.showMarkerInfoWindow(mkinfo);
+      });
+    }
   }
 
   setMarkers(

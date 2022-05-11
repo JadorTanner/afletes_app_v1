@@ -373,6 +373,19 @@ class NegotiationChat extends StatefulWidget {
 
 class _NegotiationChatState extends State<NegotiationChat> {
   @override
+  void dispose() {
+    context.read<ChatProvider>().setNegotiationId(0);
+    context.read<ChatProvider>().setTransportistId(0);
+
+    context.read<ChatProvider>().setCanOffer(false);
+    context.read<ChatProvider>().setPaid(false);
+    context.read<ChatProvider>().setCanVote(false);
+    context.read<ChatProvider>().setShowDefaultMessages(false);
+    context.read<ChatProvider>().setToPay(false);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
         child: FutureBuilder(

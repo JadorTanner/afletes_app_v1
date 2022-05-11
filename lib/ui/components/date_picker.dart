@@ -85,6 +85,8 @@ class LoadTimePickerState extends State<LoadTimePicker> {
   TimeOfDay selectedTime = TimeOfDay.now();
 
   Future<void> _selectTime(BuildContext context) async {
+    widget.controller.text =
+        selectedTime.hour.toString() + ':' + selectedTime.minute.toString();
     final TimeOfDay? picked = await showTimePicker(
         context: context,
         initialTime: selectedTime,
