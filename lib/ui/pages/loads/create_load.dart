@@ -31,6 +31,8 @@ List<StateModel> states = [];
 List<City> cities = [];
 PageController pageController = PageController();
 
+GlobalKey<ScaffoldState> scaffKey = GlobalKey<ScaffoldState>();
+
 TextStyle titleStyles =
     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
@@ -211,6 +213,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         },
       ),
       resizeToAvoidBottomInset: true,
+      key: scaffKey,
     );
   }
 }
@@ -599,13 +602,47 @@ class _ImagesPickerState extends State<ImagesPicker> {
                       ),
                       GestureDetector(
                         onTap: () async {
-                          List<XFile>? imgs = await _picker.pickMultiImage();
-                          imagenes.addAll((imgs ?? []));
-                          if (imagenes.isNotEmpty) {
-                            setState(() {
-                              // imagePageController.jumpToPage(0);
-                            });
-                          }
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Row(
+                                children: [
+                                  Flexible(
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        List<XFile>? imgs =
+                                            await _picker.pickMultiImage();
+                                        imagenes.addAll((imgs ?? []));
+                                        if (imagenes.isNotEmpty) {
+                                          setState(() {
+                                            // imagePageController.jumpToPage(0);
+                                          });
+                                        }
+                                      },
+                                      icon: const Icon(Icons.image_search),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        XFile? img = await _picker.pickImage(
+                                            source: ImageSource.camera);
+                                        if (img != null) {
+                                          imagenes.add(img);
+                                          if (imagenes.isNotEmpty) {
+                                            setState(() {
+                                              // imagePageController.jumpToPage(0);
+                                            });
+                                          }
+                                        }
+                                      },
+                                      icon: const Icon(Icons.camera_alt),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                         child: Container(
                           color: Colors.grey,
@@ -648,16 +685,59 @@ class _ImagesPickerState extends State<ImagesPicker> {
             )
           : GestureDetector(
               onTap: () async {
-                List<XFile>? imgs = await _picker.pickMultiImage();
-                imagenes.addAll((imgs ?? []));
-                if (imagenes.isNotEmpty) {
-                  if (mounted) {
-                    setState(() {
-                      // imagePageController.jumpToPage(0);
-                    });
-                  }
-                }
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Row(
+                      children: [
+                        Flexible(
+                          child: IconButton(
+                            onPressed: () async {
+                              List<XFile>? imgs =
+                                  await _picker.pickMultiImage();
+                              imagenes.addAll((imgs ?? []));
+                              if (imagenes.isNotEmpty) {
+                                setState(() {
+                                  // imagePageController.jumpToPage(0);
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.image_search),
+                          ),
+                        ),
+                        Flexible(
+                          child: IconButton(
+                            onPressed: () async {
+                              XFile? img = await _picker.pickImage(
+                                  source: ImageSource.camera);
+                              if (img != null) {
+                                imagenes.add(img);
+                                if (imagenes.isNotEmpty) {
+                                  setState(() {
+                                    // imagePageController.jumpToPage(0);
+                                  });
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.camera_alt),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
+              // onTap: () async {
+              //   List<XFile>? imgs = await _picker.pickMultiImage();
+              //   imagenes.addAll((imgs ?? []));
+              //   if (imagenes.isNotEmpty) {
+              //     if (mounted) {
+              //       setState(() {
+              //         // imagePageController.jumpToPage(0);
+              //       });
+              //     }
+              //   }
+              // },
               child: Container(
                 color: Colors.grey,
                 child: const Icon(
