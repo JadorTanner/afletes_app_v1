@@ -142,9 +142,10 @@ class PusherApi extends ChangeNotifier {
                         jsonData['is_location'],
                       ),
                     );
-
+                    print('ESTADO DE NEGOCIACION');
+                    print(chat.negState);
                     if (jsonData['normal_message'] &&
-                        (chat.negotiationId == 6 || chat.negotiationId == 1)) {
+                        (chat.negState == 6 || chat.negState == 1)) {
                       chat.setCanOffer(true);
                     }
                     if (jsonData['negotiation_state'] != null) {

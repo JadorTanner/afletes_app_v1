@@ -558,6 +558,8 @@ class _AfletesAppState extends State<AfletesApp> {
         print('-');
         print('#');
         print('FIREBASE MESSAGE');
+        print(notification?.title);
+        print(notification?.body);
         print(data);
         print('#');
         print('-');
@@ -565,23 +567,32 @@ class _AfletesAppState extends State<AfletesApp> {
         try {
           if (notification != null && (android != null || apple != null)) {
             print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
-            if (data.keys.contains('alta')) {
+            if (data.containsKey('alta')) {
               print('ALTA DE USER');
               SharedPreferences shared = await SharedPreferences.getInstance();
               if (shared.getString('user') != null) {
                 Map user = jsonDecode(shared.getString('user')!);
                 user['habilitado'] = true;
                 shared.setString('user', jsonEncode(user));
+                return true;
               }
             }
             print('PASA ALTA');
             print('CHAT PROVIDER');
             print(chatProvider);
-            if (chatProvider.negotiationId !=
-                int.parse(data['negotiation_id'])) {
-              Navigator.of(context).pushNamed(
-                  '/negotiation_id/' + data['negotiation_id'].toString());
+            if (data.containsKey('negotiation_id')) {
+              if (chatProvider.negotiationId !=
+                  int.parse(data['negotiation_id'])) {
+                Navigator.of(context).pushNamed(
+                    '/negotiation_id/' + data['negotiation_id'].toString());
+                return true;
+              }
             }
+            NotificationsApi.showNotification(
+              id: 50,
+              title: message.notification!.title ?? 'Título',
+              body: message.notification!.body ?? '',
+            );
           }
         } catch (e) {
           print('HA OCURRIDO UN ERROR CON FIREBASE MESSAGE ONMESSAGE.LISTEN');
@@ -600,6 +611,8 @@ class _AfletesAppState extends State<AfletesApp> {
       print('-');
       print('#');
       print('FIREBASE MESSAGE');
+      print(notification?.title);
+      print(notification?.body);
       print(data);
       print('#');
       print('-');
@@ -607,7 +620,7 @@ class _AfletesAppState extends State<AfletesApp> {
       try {
         if (notification != null && (android != null || apple != null)) {
           print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
-          if (data.keys.contains('alta')) {
+          if (data.containsKey('alta')) {
             print('ALTA DE USER');
             SharedPreferences shared = await SharedPreferences.getInstance();
             if (shared.getString('user') != null) {
@@ -619,20 +632,42 @@ class _AfletesAppState extends State<AfletesApp> {
           print('PASA ALTA');
           print('CHAT PROVIDER');
           print(chatProvider);
-          if (chatProvider.negotiationId != int.parse(data['negotiation_id'])) {
-            print('ID DE LA NEGOCIACION SON DIFERENTES');
-            print(data);
-            print(
-                [notification.title, notification.body, notification.hashCode]);
-            NotificationsApi.showNotification(
-              id: notification.hashCode,
-              title: notification.title,
-              body: notification.body,
-              payload:
-                  '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
-            );
-          } else {
-            print('ID DE LA NEGOCIACION IGUALES');
+          if (data.containsKey('negotiation_id')) {
+            if (chatProvider.negotiationId !=
+                int.parse(data['negotiation_id'])) {
+              print('ID DE LA NEGOCIACION SON DIFERENTES');
+              print(data);
+              print([
+                notification.title,
+                notification.body,
+                notification.hashCode
+              ]);
+              NotificationsApi.showNotification(
+                id: notification.hashCode,
+                title: notification.title,
+                body: notification.body,
+                payload:
+                    '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
+              );
+            } else {
+              print('ID DE LA NEGOCIACION IGUALES');
+            }
+          }
+          if (message.from == '/topics/new-loads' ||
+              message.from == 'new-loads') {
+            print('ALTA DE USER');
+            SharedPreferences shared = await SharedPreferences.getInstance();
+            if (shared.getString('user') != null) {
+              Map user = jsonDecode(shared.getString('user')!);
+              if (user['is_carrier']) {
+                print(message.from);
+                NotificationsApi.showNotification(
+                  id: notification.hashCode,
+                  title: notification.title,
+                  body: notification.body,
+                );
+              }
+            }
           }
         } else {
           print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');

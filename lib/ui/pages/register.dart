@@ -769,6 +769,9 @@ class RegisterButtonState extends State<RegisterButton> {
                       'token', responseBody['data']['token']);
 
                   if (responseBody['data']['user']['is_carrier']) {
+                    await FirebaseMessaging.instance
+                        .subscribeToTopic("new-loads");
+
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const CreateVehicleAfterReg()));
                   } else {

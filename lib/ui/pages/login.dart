@@ -72,6 +72,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (user['confirmed']) {
           if (user['habilitado']) {
             if (user['is_carrier']) {
+              await FirebaseMessaging.instance.subscribeToTopic("new-loads");
               //ENVIAR UBICACION CUANDO CAMBIE
               LocationSettings locationSettings = const LocationSettings(
                 accuracy: LocationAccuracy.best,

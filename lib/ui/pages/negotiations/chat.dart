@@ -42,10 +42,13 @@ TextEditingController commentController = TextEditingController();
 TextEditingController starsController = TextEditingController();
 
 ButtonStyle pillStyle = ButtonStyle(
-    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-        RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: const BorderSide(color: Colors.orange))));
+  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+    RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18.0),
+      side: const BorderSide(color: Colors.orange),
+    ),
+  ),
+);
 
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   starsController.text = '0';
@@ -82,6 +85,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
     chatProvider.setTransportistId(jsonResp['data']['vehicle']['owner_id']);
+    chatProvider.setnegotiationWith(jsonResp['data']['user']['full_name']);
     if (listMessages.isNotEmpty) {
       listMessages.asMap().forEach((key, message) {
         providerMessages.add(ChatMessage(
@@ -373,19 +377,6 @@ class NegotiationChat extends StatefulWidget {
 
 class _NegotiationChatState extends State<NegotiationChat> {
   @override
-  void dispose() {
-    context.read<ChatProvider>().setNegotiationId(0);
-    context.read<ChatProvider>().setTransportistId(0);
-
-    context.read<ChatProvider>().setCanOffer(false);
-    context.read<ChatProvider>().setPaid(false);
-    context.read<ChatProvider>().setCanVote(false);
-    context.read<ChatProvider>().setShowDefaultMessages(false);
-    context.read<ChatProvider>().setToPay(false);
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return WillPopScope(
         child: FutureBuilder(
@@ -398,6 +389,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20)),
               ),
+              clipBehavior: Clip.hardEdge,
               margin: const EdgeInsets.only(
                 top: 70,
                 left: 20,
@@ -415,108 +407,129 @@ class _NegotiationChatState extends State<NegotiationChat> {
                     ],
                   ),
                   Positioned(
-                    top: 20,
-                    right: 20,
-                    child: IconButton(
-                      onPressed: () => {
-                        showDialog(
-                          context: context,
-                          builder: (context) => Dialog(
-                            insetPadding: const EdgeInsets.all(20),
-                            child: ListView(
-                              padding: const EdgeInsets.all(20),
-                              children: [
-                                Text('Información de la carga',
-                                    style:
-                                        Theme.of(context).textTheme.headline5),
-                                const SizedBox(
-                                  height: 20,
+                    top: 0,
+                    right: 0,
+                    left: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration:
+                          BoxDecoration(color: Colors.white, boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(50),
+                          blurRadius: 5,
+                        )
+                      ]),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(context.watch<ChatProvider>().negotiationWith),
+                          IconButton(
+                            onPressed: () => {
+                              showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                  insetPadding: const EdgeInsets.all(20),
+                                  child: ListView(
+                                    padding: const EdgeInsets.all(20),
+                                    children: [
+                                      Text('Información de la carga',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      Text('Producto: ' + load.product),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Descripción: ' + load.description),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Peso: ' + load.weight.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Volumen: ' +
+                                          load.volumen.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Fecha de servicio: ' +
+                                          load.pickUpDate +
+                                          ' a las ' +
+                                          load.pickUpTime),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Cantidad de vehículos: ' +
+                                          load.vehicleQuantity.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Cantidad de ayudantes: ' +
+                                          load.helpersQuantity.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Tiempo de espera (origen): ' +
+                                          load.loadWait.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Tiempo de espera (descarga): ' +
+                                          load.deliveryWait.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Oferta inicial: ' +
+                                          load.initialOffer.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Observaciones: ' +
+                                          load.observations),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      const Divider(),
+                                      Text('Información del vehículo',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      Text('Chapa: ' + vehicle.licensePlate),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Modelo: ' + vehicle.model),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Año de producción: ' +
+                                          vehicle.yearOfProd.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('Capacidad máxima: ' +
+                                          vehicle.maxCapacity.toString()),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                Text('Producto: ' + load.product),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Descripción: ' + load.description),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Peso: ' + load.weight.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Volumen: ' + load.volumen.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Fecha de servicio: ' +
-                                    load.pickUpDate +
-                                    ' a las ' +
-                                    load.pickUpTime),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Cantidad de vehículos: ' +
-                                    load.vehicleQuantity.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Cantidad de ayudantes: ' +
-                                    load.helpersQuantity.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Tiempo de espera (origen): ' +
-                                    load.loadWait.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Tiempo de espera (descarga): ' +
-                                    load.deliveryWait.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Oferta inicial: ' +
-                                    load.initialOffer.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Observaciones: ' + load.observations),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                const Divider(),
-                                Text('Información del vehículo',
-                                    style:
-                                        Theme.of(context).textTheme.headline5),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                Text('Chapa: ' + vehicle.licensePlate),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Modelo: ' + vehicle.model),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Año de producción: ' +
-                                    vehicle.yearOfProd.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text('Capacidad máxima: ' +
-                                    vehicle.maxCapacity.toString()),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                              ],
+                              ),
+                            },
+                            icon: const Icon(
+                              Icons.info_outline,
+                              size: 30,
                             ),
                           ),
-                        ),
-                      },
-                      icon: const Icon(
-                        Icons.info_outline,
-                        size: 30,
+                        ],
                       ),
                     ),
                   ),
@@ -1032,7 +1045,7 @@ class _ChatPanelState extends State<ChatPanel> {
   Widget build(BuildContext context) {
     List<ChatMessage> chat = context.watch<ChatProvider>().messages;
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20).copyWith(top: 100),
       reverse: true,
       children: List.generate(
         chat.length,

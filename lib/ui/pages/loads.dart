@@ -280,6 +280,7 @@ class _LoadsState extends State<Loads> {
                 : const Center(child: CircularProgressIndicator()),
       ),
       isMap: true,
+      resizeToAvoidBottomInset: true,
       // ),
       // onWillPop: () => Future(
       //   () {
@@ -306,6 +307,9 @@ class _LoadsMapState extends State<LoadsMap>
   late PolylinePoints polylinePoints;
   //ESTILOS DEL MAPA
   String _darkMapStyle = '';
+
+  DraggableScrollableController scrollableController =
+      DraggableScrollableController();
 
   setMapStyles() async {
     _darkMapStyle =
@@ -522,6 +526,7 @@ class _LoadsMapState extends State<LoadsMap>
           maxChildSize: 0.5,
           initialChildSize: 0.2,
           snap: true,
+          controller: scrollableController,
           builder: (context, scrollController) {
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),

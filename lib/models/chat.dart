@@ -4,6 +4,13 @@ import 'package:flutter/cupertino.dart';
 
 class ChatProvider extends ChangeNotifier {
   ChatProvider();
+  String _negotiationWith = '';
+  String get negotiationWith => _negotiationWith;
+  setnegotiationWith(String newNegotiationWith) {
+    _negotiationWith = newNegotiationWith;
+    notifyListeners();
+  }
+
   int _negotiationId = 0;
   int get negotiationId => _negotiationId;
 

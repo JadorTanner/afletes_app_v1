@@ -9,6 +9,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VerTrayecto extends StatefulWidget {
   VerTrayecto(this.load,
@@ -56,6 +57,25 @@ class _VerTrayectoState extends State<VerTrayecto> {
             'Trayecto a seguir',
             style: Theme.of(context).textTheme.headline5,
           ),
+          TextButton(
+              onPressed: () async {
+                try {
+                  Position position = await Geolocator.getCurrentPosition();
+                  String latOrigin = load.latitudeFrom;
+                  String lngOrigin = load.longitudeFrom;
+                  String latDestination = load.destinLatitude;
+                  String lngDestination = load.destinLongitude;
+                  String url =
+                      "https://www.google.com/maps/dir/?api=1&origin=${position.latitude.toString()},${position.longitude.toString()}&destination=$latDestination,$lngDestination&waypoints=$latOrigin,$lngOrigin&travelmode=driving&dir_action=navigate";
+                  await launch(url);
+                } catch (e) {
+                  print('ERROR AL ABRIR MAPA');
+                  print(e);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Lo sentimos, no pudimos abrir el mapa')));
+                }
+              },
+              child: const Text('Ver en el mapa')),
           const SizedBox(
             height: 20,
           ),
@@ -114,20 +134,27 @@ class _StateTrayectoMap extends State<TrayectoMap> {
     if (result.points.isNotEmpty) {
       MarkerId marcadorOrigen = const MarkerId('marcador_origen');
       MarkerId marcadorDestino = const MarkerId('marcador_destino');
-
       _markers.clear();
       _markers.add(
         Marker(
           markerId: marcadorOrigen,
           position: origin,
           infoWindow: InfoWindow(
-            title: 'Origen (' +
-                Constants.calculateDistance(origin.latitude, origin.longitude,
-                        destin.latitude, destin.longitude)
-                    .toStringAsFixed(2) +
-                ' Km.)',
-            snippet: widget.load.addressFrom,
-          ),
+              title: 'Origen  - (Pulsa aquí para abrir con el mapa)',
+              snippet: widget.load.addressFrom,
+              onTap: () async {
+                try {
+                  var uri = Uri.parse(
+                      "google.navigation:q=${origin.latitude.toString()},${origin.longitude.toString()}&mode=d");
+                  if (await canLaunch(uri.toString())) {
+                    await launch(uri.toString());
+                  } else {
+                    throw 'Could not launch ${uri.toString()}';
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              }),
           icon: BitmapDescriptor.fromBytes(
             await getBytesFromAsset('assets/img/start.png', 50),
           ),
@@ -138,9 +165,21 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           markerId: marcadorDestino,
           position: destin,
           infoWindow: InfoWindow(
-            title: 'Destino',
-            snippet: widget.load.destinAddress,
-          ),
+              title: 'Destino - (Pulsa aquí para abrir con el mapa)',
+              snippet: widget.load.destinAddress,
+              onTap: () async {
+                try {
+                  var uri = Uri.parse(
+                      "google.navigation:q=${destin.latitude.toString()},${destin.longitude.toString()}&mode=d");
+                  if (await canLaunch(uri.toString())) {
+                    await launch(uri.toString());
+                  } else {
+                    throw 'Could not launch ${uri.toString()}';
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              }),
           icon: BitmapDescriptor.fromBytes(
             await getBytesFromAsset('assets/img/finish.png', 50),
           ),
