@@ -70,14 +70,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('#');
-  print('#');
-  print('#');
-  print('BACKGROUND FIREBASE MESSAGE');
-  print(message.data);
-  print('#');
-  print('#');
-  print('#');
 }
 
 void main() async {
@@ -114,12 +106,10 @@ void main() async {
 
   Route routes(RouteSettings settings) {
     if (settings.name != null) {
-      print(settings.name);
       if (settings.name!.startsWith("/negotiation_id/")) {
         try {
           int id = int.parse(settings.name!.split("/")[2]);
-          print('RUTA DE NEGOCIACION A ID');
-          print('ID DE NEGOCIACIÓN ' + id.toString());
+
           return MaterialPageRoute(
             builder: (_) => NegotiationChat(id),
           );
@@ -161,7 +151,6 @@ void main() async {
             return MaterialPageRoute(builder: (_) => MyNegotiations());
           }
         } catch (e) {
-          print(settings.name);
           return MaterialPageRoute(
             builder: (_) => const LoginPage(),
           );
@@ -176,12 +165,11 @@ void main() async {
         return MaterialPageRoute(builder: (_) => const ValidateCode());
       }
     } else {
-      print(settings.name);
       return MaterialPageRoute(
         builder: (_) => const LoginPage(),
       );
     }
-    print(settings.name);
+
     return MaterialPageRoute(
       builder: (_) => const LoginPage(),
     );
@@ -268,6 +256,7 @@ class AfletesApp extends StatefulWidget {
 
 class _AfletesAppState extends State<AfletesApp> {
   late ChatProvider chatProvider;
+  late NotificationsApi notificationsApiProvider;
   changeScreen() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission != LocationPermission.always &&
@@ -276,8 +265,6 @@ class _AfletesAppState extends State<AfletesApp> {
       showDialog(
         context: context,
         builder: (context) {
-          print('PIDE PERMISOS DE UBICACION');
-
           return AlertDialog(
             content: Column(
               children: [
@@ -411,7 +398,6 @@ class _AfletesAppState extends State<AfletesApp> {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       String? user = sharedPreferences.getString('user');
-      print(user);
 
       if (user != null) {
         context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
@@ -477,13 +463,12 @@ class _AfletesAppState extends State<AfletesApp> {
   listenNotifications() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
-    print('DATOS DE USUARIO ANTES DE INIT PUSHER');
-    print(user);
+
     if (user != null) {
       Map data = jsonDecode(user);
       PusherApi().init(
           context,
-          context.read<NotificationsApi>(),
+          notificationsApiProvider,
           context.read<TransportistsLocProvider>(),
           chatProvider,
           data['is_load_generator']);
@@ -495,22 +480,11 @@ class _AfletesAppState extends State<AfletesApp> {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       String? user = sharedPreferences.getString('user');
-      print('#');
-      print('-');
-      print('#');
-      print('NOTIFICATIONS API');
-      print(data);
-      print('#');
-      print('-');
-      print('#');
+
       if (data['route'] == 'chat') {
-        print('Tiene route igual a chat');
         if (user != null && user != 'null') {
-          print('Existe usuario');
           if (data['id'] != null) {
-            print('tiene id');
             if (widget.navigatorKey.currentState != null) {
-              print('tiene state');
               // Future.delayed(Duration.zero, () {
               //   widget.navigatorKey.currentState!.push(MaterialPageRoute(
               //     builder: (context) => NegotiationChat(data["id"]),
@@ -518,11 +492,8 @@ class _AfletesAppState extends State<AfletesApp> {
               // });
               widget.navigatorKey.currentState!
                   .pushNamed('/negotiation_id/' + data['id'].toString());
-            } else {
-              print('NO tiene state');
-            }
+            } else {}
           } else {
-            print('NO tiene id');
             widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
               jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles',
               ModalRoute.withName(
@@ -530,7 +501,6 @@ class _AfletesAppState extends State<AfletesApp> {
             );
           }
         } else {
-          print('NO existe usuario');
           widget.navigatorKey.currentState!.push(MaterialPageRoute(
             builder: (context) => const LoginPage(),
           ));
@@ -540,9 +510,7 @@ class _AfletesAppState extends State<AfletesApp> {
         //     builder: (context) => NegotiationChat(data['negotiation_id']),
         //   ),
         // );
-      } else {
-        print('NO tiene route igual a chat');
-      }
+      } else {}
     });
 
     FirebaseMessaging.instance
@@ -554,21 +522,9 @@ class _AfletesAppState extends State<AfletesApp> {
         AppleNotification? apple = message.notification?.apple;
         Map data = message.data;
 
-        print('#');
-        print('-');
-        print('#');
-        print('FIREBASE MESSAGE');
-        print(notification?.title);
-        print(notification?.body);
-        print(data);
-        print('#');
-        print('-');
-        print('#');
         try {
           if (notification != null && (android != null || apple != null)) {
-            print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
             if (data.containsKey('alta')) {
-              print('ALTA DE USER');
               SharedPreferences shared = await SharedPreferences.getInstance();
               if (shared.getString('user') != null) {
                 Map user = jsonDecode(shared.getString('user')!);
@@ -577,9 +533,7 @@ class _AfletesAppState extends State<AfletesApp> {
                 return true;
               }
             }
-            print('PASA ALTA');
-            print('CHAT PROVIDER');
-            print(chatProvider);
+
             if (data.containsKey('negotiation_id')) {
               if (chatProvider.negotiationId !=
                   int.parse(data['negotiation_id'])) {
@@ -594,10 +548,7 @@ class _AfletesAppState extends State<AfletesApp> {
               body: message.notification!.body ?? '',
             );
           }
-        } catch (e) {
-          print('HA OCURRIDO UN ERROR CON FIREBASE MESSAGE ONMESSAGE.LISTEN');
-          print(e);
-        }
+        } catch (e) {}
       }
     });
 
@@ -607,21 +558,9 @@ class _AfletesAppState extends State<AfletesApp> {
       AppleNotification? apple = message.notification?.apple;
       Map data = message.data;
 
-      print('#');
-      print('-');
-      print('#');
-      print('FIREBASE MESSAGE');
-      print(notification?.title);
-      print(notification?.body);
-      print(data);
-      print('#');
-      print('-');
-      print('#');
       try {
         if (notification != null && (android != null || apple != null)) {
-          print('NOITIFICACION Y ANDROID O APPLE NO ESTAN VACIOS');
           if (data.containsKey('alta')) {
-            print('ALTA DE USER');
             SharedPreferences shared = await SharedPreferences.getInstance();
             if (shared.getString('user') != null) {
               Map user = jsonDecode(shared.getString('user')!);
@@ -629,19 +568,10 @@ class _AfletesAppState extends State<AfletesApp> {
               shared.setString('user', jsonEncode(user));
             }
           }
-          print('PASA ALTA');
-          print('CHAT PROVIDER');
-          print(chatProvider);
+
           if (data.containsKey('negotiation_id')) {
             if (chatProvider.negotiationId !=
                 int.parse(data['negotiation_id'])) {
-              print('ID DE LA NEGOCIACION SON DIFERENTES');
-              print(data);
-              print([
-                notification.title,
-                notification.body,
-                notification.hashCode
-              ]);
               NotificationsApi.showNotification(
                 id: notification.hashCode,
                 title: notification.title,
@@ -649,18 +579,14 @@ class _AfletesAppState extends State<AfletesApp> {
                 payload:
                     '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
               );
-            } else {
-              print('ID DE LA NEGOCIACION IGUALES');
             }
           }
           if (message.from == '/topics/new-loads' ||
               message.from == 'new-loads') {
-            print('ALTA DE USER');
             SharedPreferences shared = await SharedPreferences.getInstance();
             if (shared.getString('user') != null) {
               Map user = jsonDecode(shared.getString('user')!);
               if (user['is_carrier']) {
-                print(message.from);
                 NotificationsApi.showNotification(
                   id: notification.hashCode,
                   title: notification.title,
@@ -669,13 +595,23 @@ class _AfletesAppState extends State<AfletesApp> {
               }
             }
           }
-        } else {
-          print('NOITIFICACION Y ANDROID O APPLE ESTAN VACIOS');
-        }
-      } catch (e) {
-        print('HA OCURRIDO UN ERROR CON FIREBASE MESSAGE ONMESSAGE.LISTEN');
-        print(e);
-      }
+
+          if (message.from == '/topics/new-loads' ||
+              message.from == 'new-loads') {
+            SharedPreferences shared = await SharedPreferences.getInstance();
+            if (shared.getString('user') != null) {
+              Map user = jsonDecode(shared.getString('user')!);
+              if (user['is_carrier']) {
+                NotificationsApi.showNotification(
+                  id: notification.hashCode,
+                  title: notification.title,
+                  body: notification.body,
+                );
+              }
+            }
+          }
+        } else {}
+      } catch (e) {}
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
@@ -685,17 +621,7 @@ class _AfletesAppState extends State<AfletesApp> {
       AndroidNotification? android = message.notification?.android;
       AppleNotification? apple = message.notification?.apple;
 
-      print('#');
-      print('-');
-      print('#');
-      print('FIREBASE MESSAGE OPENED');
-      print(message.data);
-      print('#');
-      print('-');
-      print('#');
-
       if (notification != null && (android != null || apple != null)) {
-        print('NOTIFICACION Y ANDROID NO NULOS');
         if (data.keys.contains('alta')) {
           SharedPreferences shared = await SharedPreferences.getInstance();
           if (shared.getString('user') != null) {
@@ -725,8 +651,9 @@ class _AfletesAppState extends State<AfletesApp> {
 
   @override
   Widget build(BuildContext context) {
-    chatProvider = context.read<ChatProvider>();
     NotificationsApi.init(context: context);
+    chatProvider = context.read<ChatProvider>();
+    notificationsApiProvider = context.read<NotificationsApi>();
     listenNotifications();
 
     changeScreen();

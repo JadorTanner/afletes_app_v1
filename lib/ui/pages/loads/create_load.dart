@@ -132,7 +132,9 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         hasLoadData = true;
         loadId = arguments!['id'];
         productController.text = arguments['product'];
-        pesoController.text = arguments['peso'].toString();
+        pesoController.text = arguments['peso']
+            .toString()
+            .substring(0, arguments['peso'].toString().indexOf('.'));
         volumenController.text = arguments['volumen'].toString();
         descriptionController.text = arguments['description'];
         categoriaController.text = arguments['categoria'].toString();
@@ -464,263 +466,272 @@ class _ImagesPickerState extends State<ImagesPicker> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.4,
-      decoration: BoxDecoration(
-        color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
-            ? Colors.transparent
-            : Colors.grey[200],
-        borderRadius: const BorderRadius.all(
-          Radius.circular(20),
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height * 0.4,
+        decoration: BoxDecoration(
+          color: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
+              ? Colors.transparent
+              : Colors.grey[200],
+          borderRadius: const BorderRadius.all(
+            Radius.circular(20),
+          ),
         ),
-      ),
-      child: (imagenes.isNotEmpty || imagenesNetwork.isNotEmpty)
-          ? Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                PageView(
-                    controller: imagePageController,
-                    onPageChanged: (value) => setState(() {
-                          currentImage = value;
-                        }),
-                    children: [
-                      ...List.generate(
-                        imagenesNetwork.length,
-                        (index) => SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.4,
-                          child: Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => Dialog(
-                                      child: InteractiveViewer(
-                                        panEnabled: true,
-                                        minScale: 0.5,
-                                        maxScale: 4,
-                                        clipBehavior: Clip.none,
-                                        child: Image.network(Constants
-                                                .loadImgUrl +
-                                            imagenesNetwork[index]['filename']),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  color: Colors.white,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.4,
-                                  child: Image.network(
-                                    Constants.loadImgUrl +
-                                        imagenesNetwork[index]['filename'],
-                                    fit: BoxFit.cover,
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            PageView(
+                controller: imagePageController,
+                onPageChanged: (value) => setState(() {
+                      currentImage = value;
+                    }),
+                children: [
+                  ...List.generate(
+                    imagenesNetwork.length,
+                    (index) => SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      child: Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                  child: InteractiveViewer(
+                                    panEnabled: true,
+                                    minScale: 0.5,
+                                    maxScale: 4,
+                                    clipBehavior: Clip.none,
+                                    child: Image.network(Constants.loadImgUrl +
+                                        imagenesNetwork[index]['filename']),
                                   ),
                                 ),
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              color: Colors.white,
+                              height: MediaQuery.of(context).size.height * 0.4,
+                              child: Image.network(
+                                Constants.loadImgUrl +
+                                    imagenesNetwork[index]['filename'],
+                                fit: BoxFit.cover,
                               ),
-                              Positioned(
-                                child: TextButton(
-                                  onPressed: () async {
-                                    Api api = Api();
-
-                                    Response response = await api.postData(
-                                      'load/load-image-delete',
-                                      {
-                                        'id': imagenesNetwork[index]['id'],
-                                      },
-                                    );
-
-                                    imagenesNetwork.removeAt(index);
-                                    setState(() {});
-                                  },
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    child: Icon(
-                                      Icons.close,
-                                      color: Constants.kBlack,
-                                    ),
-                                  ),
-                                ),
-                                top: 20,
-                                right: 20,
-                              )
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                      ...List.generate(
-                        imagenes.length,
-                        (index) => Stack(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => Dialog(
-                                    child: InteractiveViewer(
-                                      panEnabled: true,
-                                      minScale: 0.5,
-                                      maxScale: 4,
-                                      clipBehavior: Clip.none,
-                                      child: Image.file(
-                                        File(imagenes[index].path),
-                                      ),
-                                    ),
-                                  ),
+                          Positioned(
+                            child: TextButton(
+                              onPressed: () async {
+                                Api api = Api();
+
+                                Response response = await api.postData(
+                                  'load/load-image-delete',
+                                  {
+                                    'id': imagenesNetwork[index]['id'],
+                                  },
                                 );
+
+                                imagenesNetwork.removeAt(index);
+                                setState(() {});
                               },
-                              child: SizedBox(
-                                width: double.infinity,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.4,
-                                child: Image.file(
-                                  File(imagenes[index].path),
-                                  fit: BoxFit.cover,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(
+                                  Icons.close,
+                                  color: Constants.kBlack,
                                 ),
                               ),
                             ),
-                            Positioned(
-                              top: 20,
-                              right: 20,
-                              child: TextButton(
-                                onPressed: () async {
-                                  imagenes.removeAt(index);
-                                  setState(() {});
-                                },
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Constants.kBlack,
+                            top: 20,
+                            right: 20,
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  ...List.generate(
+                    imagenes.length,
+                    (index) => Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => Dialog(
+                                child: InteractiveViewer(
+                                  panEnabled: true,
+                                  minScale: 0.5,
+                                  maxScale: 4,
+                                  clipBehavior: Clip.none,
+                                  child: Image.file(
+                                    File(imagenes[index].path),
                                   ),
                                 ),
                               ),
-                            )
-                          ],
+                            );
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: Image.file(
+                              File(imagenes[index].path),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Row(
-                                children: [
-                                  Flexible(
-                                    child: IconButton(
-                                      onPressed: () async {
-                                        List<XFile>? imgs =
-                                            await _picker.pickMultiImage();
-                                        imagenes.addAll((imgs ?? []));
-                                        if (imagenes.isNotEmpty) {
-                                          setState(() {
-                                            // imagePageController.jumpToPage(0);
-                                          });
-                                        }
-                                      },
-                                      icon: const Icon(Icons.image_search),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: IconButton(
-                                      onPressed: () async {
-                                        XFile? img = await _picker.pickImage(
-                                            source: ImageSource.camera);
-                                        if (img != null) {
-                                          imagenes.add(img);
-                                          if (imagenes.isNotEmpty) {
-                                            setState(() {
-                                              // imagePageController.jumpToPage(0);
-                                            });
-                                          }
-                                        }
-                                      },
-                                      icon: const Icon(Icons.camera_alt),
-                                    ),
-                                  ),
-                                ],
-                              );
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: TextButton(
+                            onPressed: () async {
+                              imagenes.removeAt(index);
+                              setState(() {});
                             },
+                            child: CircleAvatar(
+                              backgroundColor: Colors.white,
+                              child: Icon(
+                                Icons.close,
+                                color: Constants.kBlack,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: const Text(
+                                'Desde dónde quieres cargar la imágen?'),
+                            actions: [
+                              TextButton.icon(
+                                onPressed: () async {
+                                  XFile? img = await _picker.pickImage(
+                                      source: ImageSource.camera);
+                                  if (img != null) {
+                                    imagenes.add(img);
+                                    if (imagenes.isNotEmpty) {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        // imagePageController.jumpToPage(0);
+                                      });
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.camera_alt,
+                                    color: Color(0xFFF58633)),
+                                label: const Text('Cámara',
+                                    style: TextStyle(color: Color(0xFFF58633))),
+                              ),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  List<XFile>? imgs =
+                                      await _picker.pickMultiImage();
+                                  if (imgs != null) {
+                                    imagenes.addAll((imgs));
+                                    if (imagenes.isNotEmpty) {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        // imagePageController.jumpToPage(0);
+                                      });
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.image_search_sharp,
+                                    color: Color(0xFFF58633)),
+                                label: const Text('Galería',
+                                    style: TextStyle(color: Color(0xFFF58633))),
+                              ),
+                            ],
                           );
                         },
-                        child: Container(
-                          color: Colors.grey,
-                          child: const Icon(
-                            Icons.add,
-                            size: 50,
-                            color: Colors.white,
-                          ),
-                        ),
+                      );
+                    },
+                    child: Container(
+                      color: Colors.grey,
+                      child: const Icon(
+                        Icons.add,
+                        size: 50,
+                        color: Colors.white,
                       ),
-                    ]),
-                Positioned(
-                  bottom: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      (imagenes.length + imagenesNetwork.length + 1),
-                      (index) => Container(
-                        width: 10,
-                        height: 10,
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                        decoration: BoxDecoration(
-                          color: index == currentImage
-                              ? const Color(0xFF686868)
-                              : const Color(0xFFEEEEEE),
-                          border: Border.all(
-                            color: index == currentImage
-                                ? const Color(0xFF686868)
-                                : const Color(0xFFEEEEEE),
-                          ),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(20),
-                          ),
-                        ),
+                    ),
+                  ),
+                ]),
+            Positioned(
+              bottom: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  (imagenes.length + imagenesNetwork.length + 1),
+                  (index) => Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                    decoration: BoxDecoration(
+                      color: index == currentImage
+                          ? const Color(0xFF686868)
+                          : const Color(0xFFEEEEEE),
+                      border: Border.all(
+                        color: index == currentImage
+                            ? const Color(0xFF686868)
+                            : const Color(0xFFEEEEEE),
+                      ),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(20),
                       ),
                     ),
                   ),
                 ),
-              ],
-            )
-          : GestureDetector(
+              ),
+            ),
+          ],
+        )
+        /* GestureDetector(
               onTap: () async {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return Row(
-                      children: [
-                        Flexible(
-                          child: IconButton(
-                            onPressed: () async {
-                              List<XFile>? imgs =
-                                  await _picker.pickMultiImage();
-                              imagenes.addAll((imgs ?? []));
+                    return AlertDialog(
+                      content:
+                          const Text('Desde dónde quieres cargar la imágen?'),
+                      actions: [
+                        TextButton.icon(
+                          onPressed: () async {
+                            XFile? img = await _picker.pickImage(
+                                source: ImageSource.camera);
+                            if (img != null) {
+                              imagenes.add(img);
                               if (imagenes.isNotEmpty) {
                                 setState(() {
                                   // imagePageController.jumpToPage(0);
                                 });
                               }
-                            },
-                            icon: const Icon(Icons.image_search),
-                          ),
+                            }
+                          },
+                          icon: const Icon(Icons.camera_alt,
+                              color: Color(0xFFF58633)),
+                          label: const Text('Cámara',
+                              style: TextStyle(color: Color(0xFFF58633))),
                         ),
-                        Flexible(
-                          child: IconButton(
-                            onPressed: () async {
-                              XFile? img = await _picker.pickImage(
-                                  source: ImageSource.camera);
-                              if (img != null) {
-                                imagenes.add(img);
-                                if (imagenes.isNotEmpty) {
-                                  setState(() {
-                                    // imagePageController.jumpToPage(0);
-                                  });
-                                }
+                        TextButton.icon(
+                          onPressed: () async {
+                            List<XFile>? imgs = await _picker.pickMultiImage();
+                            if (imgs != null) {
+                              imagenes.addAll((imgs));
+                              if (imagenes.isNotEmpty) {
+                                setState(() {
+                                  // imagePageController.jumpToPage(0);
+                                });
                               }
-                            },
-                            icon: const Icon(Icons.camera_alt),
-                          ),
+                            }
+                          },
+                          icon: const Icon(Icons.image_search_sharp,
+                              color: Color(0xFFF58633)),
+                          label: const Text('Galería',
+                              style: TextStyle(color: Color(0xFFF58633))),
                         ),
                       ],
                     );
@@ -746,8 +757,8 @@ class _ImagesPickerState extends State<ImagesPicker> {
                   color: Colors.white,
                 ),
               ),
-            ),
-    );
+            ), */
+        );
   }
 }
 

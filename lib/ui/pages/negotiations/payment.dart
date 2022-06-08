@@ -182,7 +182,7 @@ class _PaymentState extends State<Payment> {
                                   String url = Constants.apiUrl +
                                       'bancard-view?app=true&process_id=' +
                                       jsonResponse['data']['process_id'];
-                                  print(url);
+
                                   try {
                                     if (await canLaunch(url)) {
                                       await launch(url);
@@ -190,7 +190,6 @@ class _PaymentState extends State<Payment> {
                                       throw "Could not launch $url";
                                     }
                                   } catch (e) {
-                                    print(e);
                                     showDialog(
                                       context: context,
                                       builder: (context) => AlertDialog(
@@ -306,7 +305,6 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   int selectedMethod = 0;
   @override
   Widget build(BuildContext context) {
-    print(widget.saldoTransportista);
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.start,

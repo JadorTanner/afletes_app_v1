@@ -105,8 +105,6 @@ class _CreateVehicleState extends State<CreateVehicle> {
       Api api = Api();
       Response response =
           await api.getData('vehicles/vehicle-images/' + args['id'].toString());
-      print('IMAGENES: ' + response.statusCode.toString());
-      print('IAMGENES: ' + response.body);
 
       imagenes.clear();
       imagenesNetwork.clear();
@@ -123,7 +121,7 @@ class _CreateVehicleState extends State<CreateVehicle> {
       vtoSenacsaController.text = args['vtoSenacsa'];
       vtoSeguroController.text = args['vtoSeguro'];
       Map jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
+
       if (jsonResponse['data'].isNotEmpty) {
         imagenesNetwork = jsonResponse['data'];
       }
@@ -807,8 +805,6 @@ class _ImagesPickerState extends State<ImagesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    print('IMAGENES DE LA NETWORK' + imagenesNetwork.length.toString());
-    print('IMAGENES DEL CELULAR' + imagenes.length.toString());
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height * 0.4,

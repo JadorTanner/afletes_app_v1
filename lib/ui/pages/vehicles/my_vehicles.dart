@@ -20,7 +20,7 @@ Future<List<Vehicle>> getMyVehicles() async {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
-        print(data[0]['vehicleattachments']);
+
         if (data.isNotEmpty) {
           data.asMap().forEach((key, vehicle) {
             vehicles.add(
@@ -115,75 +115,99 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
   @override
   Widget build(BuildContext context) {
     return BaseApp(
-      FutureBuilder<List<Vehicle>>(
-        initialData: const [],
-        future: getMyVehicles(),
-        builder: (context, snapshot) {
-          List items = [];
-          if (snapshot.connectionState == ConnectionState.done) {
-            items = vehicles.isNotEmpty
-                ? List.generate(
-                    vehicles.length,
-                    (index) => VehicleCard(
-                          index,
-                          hasData: true,
-                        ))
-                : [
-                    const Center(
-                      child: Text('No hay vehículos aún'),
-                    )
-                  ];
-          } else {
-            items = List.generate(
-              5,
-              (index) => VehicleCard(
-                index,
-                hasData: false,
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () async => setState(() {}),
-            child: ListView(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 80,
-                bottom: 20,
-              ),
-              children: [
-                TextButton.icon(
-                  onPressed: () => Navigator.of(context)
-                      .pushNamed('/create-vehicle', arguments: null),
-                  style: ButtonStyle(
-                    padding: MaterialStateProperty.all<EdgeInsets>(
-                        const EdgeInsets.symmetric(vertical: 20)),
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                      Constants.kBlack,
-                    ),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(0)),
+      Stack(
+        children: [
+          FutureBuilder<List<Vehicle>>(
+            initialData: const [],
+            future: getMyVehicles(),
+            builder: (context, snapshot) {
+              List items = [];
+              if (snapshot.connectionState == ConnectionState.done) {
+                items = vehicles.isNotEmpty
+                    ? List.generate(
+                        vehicles.length,
+                        (index) => VehicleCard(
+                              index,
+                              hasData: true,
+                            ))
+                    : [
+                        const Center(
+                          child: Text('No hay vehículos aún'),
+                        )
+                      ];
+              } else {
+                items = List.generate(
+                  5,
+                  (index) => VehicleCard(
+                    index,
+                    hasData: false,
+                  ),
+                );
+              }
+              return ListView(
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 80,
+                  bottom: 20,
+                ),
+                children: [
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context)
+                        .pushNamed('/create-vehicle', arguments: null),
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all<EdgeInsets>(
+                          const EdgeInsets.symmetric(vertical: 20)),
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                        Constants.kBlack,
+                      ),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(0)),
+                        ),
                       ),
                     ),
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Agregar vehículo',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                  icon: const Icon(
-                    Icons.add,
-                    color: Colors.white,
+                  const SizedBox(
+                    height: 20,
                   ),
-                  label: const Text(
-                    'Agregar vehículo',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  ...items
+                ],
+              );
+            },
+          ),
+          Positioned(
+            bottom: 60,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(50),
                 ),
-                const SizedBox(
-                  height: 20,
+                border: Border.all(
+                  color: Colors.grey,
+                  style: BorderStyle.solid,
+                  width: 1,
                 ),
-                ...items
-              ],
+              ),
+              child: IconButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                icon: const Icon(Icons.refresh),
+              ),
             ),
-          );
-        },
+          ),
+        ],
       ),
       title: 'Mis vehículos',
     );
@@ -207,7 +231,6 @@ class VehicleCard extends StatelessWidget {
           ? CarCard2(
               vehicles[index],
               onTap: () {
-                print(vehicles[index].imgs);
                 Navigator.of(context).pushNamed('/create-vehicle', arguments: {
                   'id': vehicles[index].id,
                   'chapa': vehicles[index].licensePlate,

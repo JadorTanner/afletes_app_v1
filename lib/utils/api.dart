@@ -34,9 +34,6 @@ class Api {
           title: 'Error',
           body: 'Revise su conexión a internet',
           payload: '{}');
-    } catch (e) {
-      print('HA OCURRIDO UN ERROR');
-      print(e);
     }
   }
 

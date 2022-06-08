@@ -69,8 +69,6 @@ class _VerTrayectoState extends State<VerTrayecto> {
                       "https://www.google.com/maps/dir/?api=1&origin=${position.latitude.toString()},${position.longitude.toString()}&destination=$latDestination,$lngDestination&waypoints=$latOrigin,$lngOrigin&travelmode=driving&dir_action=navigate";
                   await launch(url);
                 } catch (e) {
-                  print('ERROR AL ABRIR MAPA');
-                  print(e);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text('Lo sentimos, no pudimos abrir el mapa')));
                 }
@@ -142,9 +140,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
                 } else {
                   throw 'Could not launch ${uri.toString()}';
                 }
-              } catch (e) {
-                print(e);
-              }
+              } catch (e) {}
             }),
         icon: BitmapDescriptor.fromBytes(
           await getBytesFromAsset('assets/img/start.png', 50),
@@ -167,9 +163,7 @@ class _StateTrayectoMap extends State<TrayectoMap> {
                 } else {
                   throw 'Could not launch ${uri.toString()}';
                 }
-              } catch (e) {
-                print(e);
-              }
+              } catch (e) {}
             }),
         icon: BitmapDescriptor.fromBytes(
           await getBytesFromAsset('assets/img/finish.png', 50),
@@ -179,8 +173,33 @@ class _StateTrayectoMap extends State<TrayectoMap> {
 
     setState(() {});
 
-    mapController.animateCamera(CameraUpdate.newLatLng(origin));
+    await mapController.animateCamera(CameraUpdate.newLatLng(origin));
 
+    double southwestLat = 0;
+    double southwestLng = 0;
+    double northeastLat = 0;
+    double northeastLng = 0;
+
+    if (origin.latitude <= destin.latitude) {
+      southwestLat = origin.latitude;
+      northeastLat = destin.latitude;
+    } else {
+      southwestLat = destin.latitude;
+      northeastLat = origin.latitude;
+    }
+    if (origin.longitude <= destin.longitude) {
+      southwestLng = origin.longitude;
+      northeastLng = destin.longitude;
+    } else {
+      southwestLng = destin.longitude;
+      northeastLng = origin.longitude;
+    }
+
+    mapController.animateCamera(CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+            southwest: LatLng(southwestLat, southwestLng),
+            northeast: LatLng(northeastLat, northeastLng)),
+        20));
     var result = await polylinePoints.getRouteBetweenCoordinates(
       Constants.googleMapKey,
       PointLatLng(origin.latitude, origin.longitude),
@@ -199,19 +218,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           points: polylineCoordinates,
         ));
       });
-      late LatLng bottomLeft;
-      late LatLng topRight;
-
-      if (origin.latitude <= destin.latitude) {
-        bottomLeft = origin;
-        topRight = destin;
-      } else {
-        bottomLeft = destin;
-        topRight = origin;
-      }
-
-      mapController.animateCamera(CameraUpdate.newLatLngBounds(
-          LatLngBounds(southwest: bottomLeft, northeast: topRight), 20));
       return _markers[0].markerId;
     }
     return const MarkerId('');

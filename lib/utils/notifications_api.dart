@@ -59,64 +59,46 @@ class NotificationsApi extends ChangeNotifier {
     String? body,
     String? payload,
   }) async {
-    _notifications
-        .show(id, title, body, await _notificationDetails(), payload: payload)
-        .then((value) => print('SE HA MOSTRADO LA NOTIFICACIÓN'));
+    _notifications.show(id, title, body, await _notificationDetails(),
+        payload: payload);
   }
 
   addNotification(NotificationModel notification) {
-    try {
-      print('AGREGANDO UNA NUEVA NOTIFICACION');
-      notifications.add(notification);
-      print(notifications);
-      notifyListeners();
-    } catch (e) {
-      print('ERROR AL AGREGAR UNA NOTIFICACION');
-      print(e);
-    }
+    notifications.add(notification);
+    notifyListeners();
   }
 
   removeNotification(NotificationModel notification) {
-    try {
-      notifications.removeWhere((item) => (notification.id == item.id ||
-          notification.negotiationId == item.negotiationId));
-      notifyListeners();
-    } catch (e) {
-      print('ERROR AL REMOVER UNA NOTIFICACION');
-      print(e);
-    }
+    notifications.removeWhere((item) => (notification.id == item.id ||
+        notification.negotiationId == item.negotiationId));
+    notifyListeners();
   }
 
   getNotifications() async {
-    try {
-      Api api = Api();
-      Response response = await api.getData('get-notifications');
-      print(response.body);
-      Map jsonResponse = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        if (jsonResponse['success']) {
-          List nots = jsonResponse['data'];
-          notifications.clear();
-          for (Map element in nots) {
-            addNotification(
-              NotificationModel(
-                  id: element['id'],
-                  mensaje: element['mensaje']
-                      .replaceAll(Constants.htmlTagRegExp, ''),
-                  negotiationId: element['negotiation_id'],
-                  userId: element['user_id'],
-                  senderId: element['created_by'],
-                  sentAt: element['created_at']),
-            );
-          }
-        } else {
-          throw Exception('Ha ocurrido un error al obtener las notificaciones');
+    Api api = Api();
+    Response response = await api.getData('get-notifications');
+    Map jsonResponse = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      if (jsonResponse['success']) {
+        List nots = jsonResponse['data'];
+        notifications.clear();
+        for (Map element in nots) {
+          addNotification(
+            NotificationModel(
+                id: element['id'],
+                mensaje:
+                    element['mensaje'].replaceAll(Constants.htmlTagRegExp, ''),
+                negotiationId: element['negotiation_id'],
+                userId: element['user_id'],
+                senderId: element['created_by'],
+                sentAt: element['created_at']),
+          );
         }
       } else {
         throw Exception('Ha ocurrido un error al obtener las notificaciones');
       }
-    } catch (e) {
-      print(e);
+    } else {
+      throw Exception('Ha ocurrido un error al obtener las notificaciones');
     }
   }
 

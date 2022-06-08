@@ -20,6 +20,7 @@ Future<List<Load>> getMyLoads() async {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         var data = jsonResponse['data'];
+
         if (data.isNotEmpty) {
           data.asMap().forEach((key, load) {
             loads.add(
@@ -87,36 +88,37 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
   @override
   Widget build(BuildContext context) {
     return BaseApp(
-      FutureBuilder(
-        initialData: const [],
-        future: getMyLoads(),
-        builder: (context, snapshot) {
-          List items = [];
-          if (snapshot.connectionState == ConnectionState.done) {
-            items = loads.isNotEmpty
-                ? List.generate(
-                    loads.length,
-                    (index) => LoadCard(
-                      loads[index],
-                      hasData: true,
-                    ),
-                  )
-                : [
-                    const Center(
-                      child: Text('No hay cargas aún'),
-                    )
-                  ];
-          } else {
-            items = List.generate(
-              5,
-              (index) => LoadCard(
-                null,
-                hasData: false,
-              ),
-            );
-          }
-          return RefreshIndicator(
-              child: ListView(
+      Stack(
+        children: [
+          FutureBuilder(
+            initialData: const [],
+            future: getMyLoads(),
+            builder: (context, snapshot) {
+              List items = [];
+              if (snapshot.connectionState == ConnectionState.done) {
+                items = loads.isNotEmpty
+                    ? List.generate(
+                        loads.length,
+                        (index) => LoadCard(
+                          loads[index],
+                          hasData: true,
+                        ),
+                      )
+                    : [
+                        const Center(
+                          child: Text('No hay cargas aún'),
+                        )
+                      ];
+              } else {
+                items = List.generate(
+                  5,
+                  (index) => LoadCard(
+                    null,
+                    hasData: false,
+                  ),
+                );
+              }
+              return ListView(
                 padding: const EdgeInsets.only(
                   top: 80,
                   bottom: 20,
@@ -153,9 +155,33 @@ class _MyLoadsPageState extends State<MyLoadsPage> {
                   ),
                   ...items
                 ],
+              );
+            },
+          ),
+          Positioned(
+            bottom: 60,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(50),
+                ),
+                border: Border.all(
+                  color: Colors.grey,
+                  style: BorderStyle.solid,
+                  width: 1,
+                ),
               ),
-              onRefresh: () async => setState(() => {}));
-        },
+              child: IconButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                icon: const Icon(Icons.refresh),
+              ),
+            ),
+          ),
+        ],
       ),
       title: 'Mis cargas',
     );
@@ -263,7 +289,7 @@ class LoadInformation extends StatelessWidget {
         TimelineTile(
           nodeAlign: TimelineNodeAlign.start,
           crossAxisExtent: double.infinity,
-          mainAxisExtent: 60,
+          // mainAxisExtent: 60,
           contents: Container(
             padding: const EdgeInsets.only(left: 15),
             child: Column(
@@ -285,17 +311,20 @@ class LoadInformation extends StatelessWidget {
         TimelineTile(
           nodeAlign: TimelineNodeAlign.start,
           crossAxisExtent: double.infinity,
-          mainAxisExtent: 60,
+          // mainAxisExtent: 60,
           contents: Container(
             padding: const EdgeInsets.only(left: 15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                const SizedBox(height: 20),
                 Text(data['destination_address'] ?? ''),
-                Text((data['destination_state_name'] ?? '') +
-                    ' - ' +
-                    (data['destination_city_name'] ?? '')),
+                Text(
+                  (data['destination_state_name'] ?? '') +
+                      ' - ' +
+                      (data['destination_city_name'] ?? ''),
+                ),
               ],
             ),
           ),

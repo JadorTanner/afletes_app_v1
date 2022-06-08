@@ -118,8 +118,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     user = Provider.of<User>(context).user;
-    notifications = Provider.of<NotificationsApi>(context).notifications;
-    print('CANTIDAD DE NOTIFICACIONES: ' + notifications.length.toString());
+    notifications = context.watch<NotificationsApi>().notifications;
+
     return Drawer(
       child: SafeArea(
         minimum: const EdgeInsets.all(15),

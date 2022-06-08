@@ -99,8 +99,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     }
     receiverId = jsonResp['data']['negotiation']
         [user.isCarrier ? 'generator_id' : 'transportist_id'];
-    print('Estado de la negociación: ' +
-        jsonResp['data']['negotiation_state']['id'].toString());
 
     chatProvider.setNegState(jsonResp['data']['negotiation_state']['id']);
     votes = jsonResp['data']['votes'];
@@ -190,12 +188,35 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     Position? location;
     String mapImgUrl = "";
     String mapKey = Constants.googleMapKey;
+    DateTime time = DateTime.now();
     if (isLocation) {
       location = await Geolocator.getCurrentPosition();
       mapImgUrl =
           "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$mapKey";
       message =
           """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
+
+      chat.addMessage(
+        id,
+        ChatMessage(
+          mapImgUrl,
+          "${time.year.toString()}-${time.month.toString()}-${time.day > 10 ? '0' + time.day.toString() : time.day.toString()} ${time.hour.toString()}:${time.minute.toString()}:${time.second.toString()}",
+          user.id,
+          id,
+          isLocation,
+        ),
+      );
+    } else {
+      chat.addMessage(
+        id,
+        ChatMessage(
+          isDefaultMessage ? message : offer,
+          "${time.year.toString()}-${time.month.toString()}-${time.day > 10 ? '0' + time.day.toString() : time.day.toString()} ${time.hour.toString()}:${time.minute.toString()}:${time.second.toString()}",
+          user.id,
+          id,
+          isLocation,
+        ),
+      );
     }
     Api api = Api();
     Response response = await api.postData('negotiation/send-message', {
@@ -209,12 +230,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     });
 
     Map jsonResp = jsonDecode(response.body);
-    if (jsonResp['success']) {
-      chat.addMessage(
-          id,
-          ChatMessage(isLocation ? mapImgUrl : jsonResp['data']['message'],
-              jsonResp['data']['created_at'], user.id, id, isLocation));
-    } else {
+    if (!jsonResp['success']) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(jsonResp['message']),
         duration: const Duration(seconds: 3),
@@ -249,6 +265,7 @@ Future cancelNegotiation(id, context) async {
               Response response = await api.postData('negotiation/reject', {
                 'id': id,
               });
+
               if (response.statusCode == 200) {
                 context.read<ChatProvider>().setCanOffer(false);
                 context.read<ChatProvider>().setToPay(false);

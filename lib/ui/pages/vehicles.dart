@@ -34,10 +34,9 @@ class Vehicles extends StatefulWidget {
 Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
   try {
     vehicles.clear();
-    print('obteniendo vehiculos');
+
     Response response = await Api().getData('user/find-vehicles');
-    print(response);
-    print(response.body);
+
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
@@ -63,8 +62,6 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
 
     return vehicles;
   } catch (e) {
-    print('ERROR AL OBTENER VEHICULOS');
-    print(e);
     return [];
   }
 }

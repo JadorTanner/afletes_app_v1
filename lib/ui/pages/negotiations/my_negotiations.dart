@@ -89,7 +89,7 @@ class _MyNegotiationsState extends State<MyNegotiations> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print(widget.payment);
+
     if (widget.payment != null) {
       Future.delayed(
         Duration.zero,
@@ -119,307 +119,326 @@ class _MyNegotiationsState extends State<MyNegotiations> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseApp(FutureBuilder<List<Negotiation>>(
-        initialData: const [],
-        future: getNegotiations(context),
-        builder: (context, snapshot) {
-          return RefreshIndicator(
-            onRefresh: () {
-              setState(() {});
-              return Future(() => {});
-            },
-            child: Consumer<NotificationsApi>(
-              builder: (context, notifications, child) {
-                return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20)),
-                  ),
-                  margin: const EdgeInsets.only(
-                    top: 70,
+    return BaseApp(
+      Stack(
+        children: [
+          FutureBuilder<List<Negotiation>>(
+            initialData: const [],
+            future: getNegotiations(context),
+            builder: (context, snapshot) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20)),
+                ),
+                margin: const EdgeInsets.only(
+                  top: 70,
+                  left: 20,
+                  right: 20,
+                ),
+                child: ListView(
+                  primary: true,
+                  padding: const EdgeInsets.only(
+                    top: 20,
+                    bottom: 20,
                     left: 20,
                     right: 20,
                   ),
-                  child: ListView(
-                    padding: const EdgeInsets.only(
-                      top: 20,
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
+                  children: [
+                    Text(
+                      'Mis negociaciones',
+                      style: Theme.of(context).textTheme.headline5,
                     ),
-                    children: [
-                      Text(
-                        'Mis negociaciones',
-                        style: Theme.of(context).textTheme.headline5,
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      TextButton.icon(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(user.isCarrier ? '/loads' : '/vehicles'),
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.all<EdgeInsets>(
-                              const EdgeInsets.symmetric(vertical: 20)),
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                            Constants.kBlack,
-                          ),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                            const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(0)),
-                            ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    TextButton.icon(
+                      onPressed: () => Navigator.of(context)
+                          .pushNamed(user.isCarrier ? '/loads' : '/vehicles'),
+                      style: ButtonStyle(
+                        padding: MaterialStateProperty.all<EdgeInsets>(
+                            const EdgeInsets.symmetric(vertical: 20)),
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                          Constants.kBlack,
+                        ),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(0)),
                           ),
                         ),
-                        icon: const Icon(
-                          Icons.add,
+                      ),
+                      icon: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        user.isCarrier
+                            ? 'Buscar cargas'
+                            : 'Buscar transportistas',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ...List.generate(
+                      snapshot.connectionState == ConnectionState.done
+                          ? (negotiations.isNotEmpty ? negotiations.length : 1)
+                          : 7,
+                      (index) => Container(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        decoration: BoxDecoration(
                           color: Colors.white,
-                        ),
-                        label: Text(
-                          user.isCarrier
-                              ? 'Buscar cargas'
-                              : 'Buscar transportistas',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      ...List.generate(
-                        snapshot.connectionState == ConnectionState.done
-                            ? (negotiations.isNotEmpty
-                                ? negotiations.length
-                                : 1)
-                            : 7,
-                        (index) => Container(
-                          margin: const EdgeInsets.only(bottom: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    negotiations.isNotEmpty
-                                ? [
-                                    const BoxShadow(
-                                      blurRadius: 5,
-                                      color: Color(0xAAA7A7A7),
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: (snapshot.connectionState ==
+                          boxShadow: snapshot.connectionState ==
                                       ConnectionState.done &&
-                                  negotiations.isEmpty)
-                              ? Container(
-                                  padding: const EdgeInsets.all(10),
-                                  width: double.infinity,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: const [
-                                      Text('No hay negociaciones'),
-                                    ],
+                                  negotiations.isNotEmpty
+                              ? [
+                                  const BoxShadow(
+                                    blurRadius: 5,
+                                    color: Color(0xAAA7A7A7),
                                   ),
-                                )
-                              : GestureDetector(
-                                  onTap: negotiations.isNotEmpty
-                                      ? () {
-                                          int position = notifications
-                                              .notifications
-                                              .indexWhere((element) =>
-                                                  element.negotiationId ==
-                                                  negotiations[index].id);
-                                          if (position != -1) {
-                                            notifications.readNotification(
-                                                notifications
-                                                    .notifications[position],
-                                                context);
-                                          } else {
-                                            Navigator.of(context).pushNamed(
-                                                '/negotiation_id/' +
-                                                    negotiations[index]
-                                                        .id
-                                                        .toString());
-                                          }
+                                ]
+                              : [],
+                        ),
+                        child: (snapshot.connectionState ==
+                                    ConnectionState.done &&
+                                negotiations.isEmpty)
+                            ? Container(
+                                padding: const EdgeInsets.all(10),
+                                width: double.infinity,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: const [
+                                    Text('No hay negociaciones'),
+                                  ],
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: negotiations.isNotEmpty
+                                    ? () {
+                                        int position = context
+                                            .read<NotificationsApi>()
+                                            .notifications
+                                            .indexWhere((element) =>
+                                                element.negotiationId ==
+                                                negotiations[index].id);
+                                        if (position != -1) {
+                                          context
+                                              .read<NotificationsApi>()
+                                              .readNotification(
+                                                  context
+                                                      .read<NotificationsApi>()
+                                                      .notifications[position],
+                                                  context);
+                                        } else {
+                                          Navigator.of(context).pushNamed(
+                                              '/negotiation_id/' +
+                                                  negotiations[index]
+                                                      .id
+                                                      .toString());
                                         }
-                                      : () => {},
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        decoration: const BoxDecoration(),
-                                        clipBehavior: Clip.hardEdge,
-                                        // padding: const EdgeInsets.all(10),
-                                        width: double.infinity,
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 110,
-                                              height: 110,
-                                              // alignment: Alignment.center,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.transparent,
-                                              ),
-                                              clipBehavior: Clip.hardEdge,
-                                              child: snapshot.connectionState ==
-                                                      ConnectionState.done
-                                                  ? (negotiations[index]
+                                      }
+                                    : () => {},
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      decoration: const BoxDecoration(),
+                                      clipBehavior: Clip.hardEdge,
+                                      // padding: const EdgeInsets.all(10),
+                                      width: double.infinity,
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 110,
+                                            height: 110,
+                                            // alignment: Alignment.center,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.transparent,
+                                            ),
+                                            clipBehavior: Clip.hardEdge,
+                                            child: snapshot.connectionState ==
+                                                    ConnectionState.done
+                                                ? (negotiations[index]
+                                                        .negotiationLoad!
+                                                        .attachments
+                                                        .isNotEmpty
+                                                    ? Image.network(
+                                                        Constants.loadImgUrl +
+                                                            negotiations[index]
+                                                                    .negotiationLoad!
+                                                                    .attachments[
+                                                                0]['filename'],
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                    : const SizedBox.shrink())
+                                                : const SizedBox.shrink(),
+                                          ),
+                                          const SizedBox(
+                                            width: 20,
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              negotiations.isNotEmpty
+                                                  ? Text(negotiations[index]
+                                                              .negotiationLoad!
+                                                              .product !=
+                                                          ''
+                                                      ? negotiations[index]
                                                           .negotiationLoad!
-                                                          .attachments
-                                                          .isNotEmpty
-                                                      ? Image.network(
-                                                          Constants.loadImgUrl +
-                                                              negotiations[
+                                                          .product
+                                                      : 'Producto')
+                                                  : CustomPaint(
+                                                      painter: OpenPainter(
+                                                          50, 10, 10, -40),
+                                                    ),
+                                              negotiations.isNotEmpty
+                                                  ? Text(negotiations[index]
+                                                              .negotiationLoad!
+                                                              .negWith !=
+                                                          ''
+                                                      ? negotiations[index]
+                                                          .negotiationLoad!
+                                                          .negWith
+                                                      : user.isCarrier
+                                                          ? 'Generador'
+                                                          : 'Transportista')
+                                                  : CustomPaint(
+                                                      painter: OpenPainter(
+                                                          100, 10, 10, -25),
+                                                    ),
+                                              negotiations.isNotEmpty
+                                                  ? Text('Oferta inicial: ' +
+                                                      negotiations[index]
+                                                          .negotiationLoad!
+                                                          .initialOffer
+                                                          .toString())
+                                                  : CustomPaint(
+                                                      painter: OpenPainter(
+                                                          150, 10, 10, -5),
+                                                    ),
+                                              negotiations.isNotEmpty
+                                                  ? Text('Peso: ' +
+                                                      negotiations[index]
+                                                          .negotiationLoad!
+                                                          .weight
+                                                          .toString())
+                                                  : CustomPaint(
+                                                      painter: OpenPainter(
+                                                          100, 10, 10, 15),
+                                                    ),
+                                              negotiations.isNotEmpty
+                                                  ? Text(
+                                                      'Estado: ' +
+                                                          Negotiation
+                                                              .getStateName(
+                                                                  negotiations[
                                                                           index]
-                                                                      .negotiationLoad!
-                                                                      .attachments[
-                                                                  0]['filename'],
-                                                          fit: BoxFit.cover,
+                                                                      .state),
+                                                    )
+                                                  : CustomPaint(
+                                                      painter: OpenPainter(
+                                                          100, 10, 10, 25),
+                                                    ),
+                                              negotiations.isNotEmpty
+                                                  ? ((negotiations[index]
+                                                                  .stateId ==
+                                                              2 ||
+                                                          negotiations[index]
+                                                                  .stateId ==
+                                                              7 ||
+                                                          negotiations[index]
+                                                                  .stateId ==
+                                                              8)
+                                                      ? Text(
+                                                          'Oferta final: ' +
+                                                              negotiations[
+                                                                      index]
+                                                                  .negotiationLoad!
+                                                                  .finalOffer
+                                                                  .toString(),
                                                         )
                                                       : const SizedBox.shrink())
                                                   : const SizedBox.shrink(),
-                                            ),
-                                            const SizedBox(
-                                              width: 20,
-                                            ),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                negotiations.isNotEmpty
-                                                    ? Text(negotiations[index]
-                                                                .negotiationLoad!
-                                                                .product !=
-                                                            ''
-                                                        ? negotiations[index]
-                                                            .negotiationLoad!
-                                                            .product
-                                                        : 'Producto')
-                                                    : CustomPaint(
-                                                        painter: OpenPainter(
-                                                            50, 10, 10, -40),
-                                                      ),
-                                                negotiations.isNotEmpty
-                                                    ? Text(negotiations[index]
-                                                                .negotiationLoad!
-                                                                .negWith !=
-                                                            ''
-                                                        ? negotiations[index]
-                                                            .negotiationLoad!
-                                                            .negWith
-                                                        : user.isCarrier
-                                                            ? 'Generador'
-                                                            : 'Transportista')
-                                                    : CustomPaint(
-                                                        painter: OpenPainter(
-                                                            100, 10, 10, -25),
-                                                      ),
-                                                negotiations.isNotEmpty
-                                                    ? Text('Oferta inicial: ' +
-                                                        negotiations[index]
-                                                            .negotiationLoad!
-                                                            .initialOffer
-                                                            .toString())
-                                                    : CustomPaint(
-                                                        painter: OpenPainter(
-                                                            150, 10, 10, -5),
-                                                      ),
-                                                negotiations.isNotEmpty
-                                                    ? Text('Peso: ' +
-                                                        negotiations[index]
-                                                            .negotiationLoad!
-                                                            .weight
-                                                            .toString())
-                                                    : CustomPaint(
-                                                        painter: OpenPainter(
-                                                            100, 10, 10, 15),
-                                                      ),
-                                                negotiations.isNotEmpty
-                                                    ? Text(
-                                                        'Estado: ' +
-                                                            Negotiation
-                                                                .getStateName(
-                                                                    negotiations[
-                                                                            index]
-                                                                        .state),
-                                                      )
-                                                    : CustomPaint(
-                                                        painter: OpenPainter(
-                                                            100, 10, 10, 25),
-                                                      ),
-                                                negotiations.isNotEmpty
-                                                    ? ((negotiations[index]
-                                                                    .stateId ==
-                                                                2 ||
-                                                            negotiations[index]
-                                                                    .stateId ==
-                                                                7 ||
-                                                            negotiations[index]
-                                                                    .stateId ==
-                                                                8)
-                                                        ? Text(
-                                                            'Oferta final: ' +
-                                                                negotiations[
-                                                                        index]
-                                                                    .negotiationLoad!
-                                                                    .finalOffer
-                                                                    .toString(),
-                                                          )
-                                                        : const SizedBox
-                                                            .shrink())
-                                                    : const SizedBox.shrink(),
-                                              ],
-                                            )
-                                          ],
-                                        ),
+                                            ],
+                                          )
+                                        ],
                                       ),
-                                      Positioned(
-                                        child: negotiations.isNotEmpty
-                                            ? Container(
-                                                color: Colors.white,
-                                                padding: const EdgeInsets.all(3)
-                                                    .copyWith(
-                                                        left: 4, right: 4),
-                                                child: Text(
-                                                  negotiations[index]
-                                                      .id
-                                                      .toString(),
-                                                ))
-                                            : const SizedBox.shrink(),
-                                        top: 0,
-                                        left: 0,
-                                      ),
-                                      negotiations.isNotEmpty
-                                          ? notifications.notifications
-                                                      .indexWhere((element) =>
-                                                          element
-                                                              .negotiationId ==
-                                                          negotiations[index]
-                                                              .id) !=
-                                                  -1
-                                              ? const Positioned(
-                                                  child: CircleAvatar(
-                                                    backgroundColor: Colors.red,
-                                                    maxRadius: 10,
-                                                  ),
-                                                  top: 10,
-                                                  right: 10,
-                                                )
-                                              : const SizedBox.shrink()
+                                    ),
+                                    Positioned(
+                                      child: negotiations.isNotEmpty
+                                          ? Container(
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(3)
+                                                  .copyWith(left: 4, right: 4),
+                                              child: Text(
+                                                negotiations[index]
+                                                    .id
+                                                    .toString(),
+                                              ))
                                           : const SizedBox.shrink(),
-                                    ],
-                                  ),
+                                      top: 0,
+                                      left: 0,
+                                    ),
+                                    negotiations.isNotEmpty
+                                        ? context
+                                                    .watch<NotificationsApi>()
+                                                    .notifications
+                                                    .indexWhere((element) =>
+                                                        element.negotiationId ==
+                                                        negotiations[index]
+                                                            .id) !=
+                                                -1
+                                            ? const Positioned(
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.red,
+                                                  maxRadius: 10,
+                                                ),
+                                                top: 10,
+                                                right: 10,
+                                              )
+                                            : const SizedBox.shrink()
+                                        : const SizedBox.shrink(),
+                                  ],
                                 ),
-                        ),
+                              ),
                       ),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          Positioned(
+            bottom: 60,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(50),
+                ),
+                border: Border.all(
+                  color: Colors.grey,
+                  style: BorderStyle.solid,
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                icon: const Icon(Icons.refresh),
+              ),
             ),
-          );
-        }));
+          ),
+        ],
+      ),
+    );
   }
 }

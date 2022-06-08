@@ -298,8 +298,7 @@ class LoadsMap extends StatefulWidget {
   State<LoadsMap> createState() => _LoadsMapState();
 }
 
-class _LoadsMapState extends State<LoadsMap>
-    with AutomaticKeepAliveClientMixin {
+class _LoadsMapState extends State<LoadsMap> {
   late GoogleMapController mapController;
 
   final Set<Polyline> _polylines = <Polyline>{};
@@ -598,7 +597,4 @@ class _LoadsMapState extends State<LoadsMap>
       ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

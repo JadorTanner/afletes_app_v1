@@ -68,7 +68,7 @@ class Negotiation {
         st = 'Aceptado';
         break;
       case 'IN_NEGOTIATION':
-        st = 'Aceptado';
+        st = 'Negociando';
         break;
       case 'PENDING':
         st = 'Pendiente de pago';

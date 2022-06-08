@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -40,17 +38,7 @@ class PusherApi extends ChangeNotifier {
   init(BuildContext context, NotificationsApi notificationsApi,
       TransportistsLocProvider transportistsLocProvider, ChatProvider chat,
       [bool isGenerator = false]) async {
-    // if (!fromPage) {
-    _pusher.onConnectionStateChange((state) {
-      print('\n\n\nESTADO DE CONECCION\n\n\n');
-      print(
-          "previousState: ${state!.previousState}, currentState: ${state.currentState}");
-    });
-
     _pusher.onConnectionError((error) {
-      print('\n\n\nERROR EN PUSHER\n\n\n');
-      print("error: ${error!.message}");
-
       disconnect();
       init(context, notificationsApi, transportistsLocProvider, chat,
           isGenerator);
@@ -62,30 +50,20 @@ class PusherApi extends ChangeNotifier {
     bindEvent(pusherChannel!, 'App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
       try {
-        print('EVENTO DE CHAT');
         if (event != null) {
-          print('EVENTO NO ESTA VACIO');
           if (event.data != null) {
             SharedPreferences sharedPreferences =
                 await SharedPreferences.getInstance();
             String data = event.data.toString();
-            print('DATA DEL PUSHER: ' + data);
-            print(
-                'USUARIO: ' + (sharedPreferences.getString('user') ?? 'VACÍO'));
+
             Map jsonData = jsonDecode(data);
             if (sharedPreferences.getString('user') != null) {
               User user = User.userFromArray(
                   jsonDecode(sharedPreferences.getString('user')!));
               if (user.id != jsonData['sender_id']) {
                 if (user.id == jsonData['user_id']) {
-                  print('user id');
-                  print(user.id);
-                  print(chat);
-                  print(chat.negotiationId);
                   if (jsonData['ask_location']) {
-                    print('Pide ubicación');
                     if (jsonData['ask_location']) {
-                      print('enviar ubicacion por pusher');
                       Position position = await Geolocator.getCurrentPosition();
 
                       Api api = Api();
@@ -142,34 +120,29 @@ class PusherApi extends ChangeNotifier {
                         jsonData['is_location'],
                       ),
                     );
-                    print('ESTADO DE NEGOCIACION');
-                    print(chat.negState);
+
                     if (jsonData['normal_message'] &&
                         (chat.negState == 6 || chat.negState == 1)) {
                       chat.setCanOffer(true);
                     }
                     if (jsonData['negotiation_state'] != null) {
-                      print('tiene negociacion state');
                       chat.setLoadState(jsonData['negotiation_state']);
                       if (jsonData['negotiation_state'] == 13) {
                         chat.setCanVote(true);
                       }
                     }
                     if (jsonData['is_final_offer']) {
-                      print('Es una oferta final');
                       chat.setPaid(false);
                       chat.setCanOffer(false);
                       chat.setToPay(false);
                     }
 
                     if (jsonData['accepted'] != null) {
-                      print('Se acepto la negociacion');
                       chat.setCanOffer(false);
                       chat.setToPay(true);
                       chat.setPaid(false);
                     }
                     if (jsonData['paid']) {
-                      print('Se pagó la negociacion');
                       chat.setCanOffer(false);
                       chat.setToPay(false);
                       chat.setPaid(true);
@@ -177,7 +150,6 @@ class PusherApi extends ChangeNotifier {
                       chat.setLoadState(9);
                     }
                     if (jsonData['rejected'] != null) {
-                      print('Se canceló la negociacion');
                       chat.setCanOffer(false);
                       chat.setToPay(false);
                       chat.setPaid(false);
@@ -230,8 +202,6 @@ class PusherApi extends ChangeNotifier {
           }
         }
       } catch (e) {
-        print("ERROR EN PUSHER");
-        print(e);
         if (!Platform.isAndroid) {
           NotificationsApi.showNotification(
             id: 11,
@@ -252,12 +222,9 @@ class PusherApi extends ChangeNotifier {
           pusher.subscribe("transportist-location");
       bindEvent(transportistsLocationChannel,
           'App\\Events\\TransportistLocationEvent', (PusherEvent? event) async {
-        print('EVENTO DE LOCATION TRANSPORTISTA');
         if (event != null) {
           if (event.data != null) {
             Map data = jsonDecode(event.data.toString());
-            print('DATOS DEL EVENTO TRANSPORTISTA LOCATION: ' +
-                event.data.toString());
             if (data['isLoggingOut']) {
               transportistsLocProvider.removeTransportist(
                   data['user_id'], data['vehicle_id']);

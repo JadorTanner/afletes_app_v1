@@ -937,8 +937,9 @@ class _LoadCardState extends State<LoadCard> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                  color: Colors.red,
+                  color: Colors.white,
                   width: 150,
+                  height: 150,
                   child: widget.hasData
                       ? (widget.load!.attachments.isNotEmpty
                           ? Image.network(
@@ -993,16 +994,17 @@ class _LoadCardState extends State<LoadCard> {
                           ? SizedBox(
                               width: 200,
                               child: Text(
-                                (widget.load!.addressFrom.substring(0, 9) +
-                                        (widget.load!.addressFrom.length > 10
-                                            ? '...'
-                                            : '')) +
+                                ((widget.load!.addressFrom.length > 10
+                                        ? widget.load!.addressFrom
+                                                .substring(0, 8) +
+                                            '...'
+                                        : widget.load!.addressFrom)) +
                                     ' - ' +
-                                    (widget.load!.destinAddress
-                                            .substring(0, 9) +
-                                        (widget.load!.destinAddress.length > 10
-                                            ? '...'
-                                            : '')),
+                                    ((widget.load!.destinAddress.length > 10
+                                        ? widget.load!.destinAddress
+                                                .substring(0, 8) +
+                                            '...'
+                                        : widget.load!.destinAddress)),
                               ),
                             )
                           : CustomPaint(
