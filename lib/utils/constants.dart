@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 
 class Constants {
 //casa
-  // static String baseUrl = 'http://181.120.66.16/';
+  static String baseUrl = 'http://181.120.66.16/';
 //oficina
-  static String baseUrl = 'http://192.168.1.171:8000/';
+  // static String baseUrl = 'http://192.168.1.171:8000/';
 //producción
   // static String baseUrl = 'https://www.afletes.com/';
 

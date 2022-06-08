@@ -33,14 +33,14 @@ class _VerTrayectoState extends State<VerTrayecto> {
   @override
   void initState() {
     // TODO: implement initState
-    super.initState();
     load = widget.load;
+    super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
     size = MediaQuery.of(context).size;
+    super.didChangeDependencies();
   }
 
   @override
@@ -123,68 +123,70 @@ class _StateTrayectoMap extends State<TrayectoMap> {
   }
 
   Future<MarkerId> setPolylinesInMap(LatLng origin, LatLng destin) async {
+    MarkerId marcadorOrigen = const MarkerId('marcador_origen');
+    MarkerId marcadorDestino = const MarkerId('marcador_destino');
+    _markers.clear();
+    _markers.add(
+      Marker(
+        markerId: marcadorOrigen,
+        position: origin,
+        infoWindow: InfoWindow(
+            title: 'Origen  - (Pulsa aquí para abrir con el mapa)',
+            snippet: widget.load.addressFrom,
+            onTap: () async {
+              try {
+                var uri = Uri.parse(
+                    "google.navigation:q=${origin.latitude.toString()},${origin.longitude.toString()}&mode=d");
+                if (await canLaunch(uri.toString())) {
+                  await launch(uri.toString());
+                } else {
+                  throw 'Could not launch ${uri.toString()}';
+                }
+              } catch (e) {
+                print(e);
+              }
+            }),
+        icon: BitmapDescriptor.fromBytes(
+          await getBytesFromAsset('assets/img/start.png', 50),
+        ),
+      ),
+    );
+    _markers.add(
+      Marker(
+        markerId: marcadorDestino,
+        position: destin,
+        infoWindow: InfoWindow(
+            title: 'Destino - (Pulsa aquí para abrir con el mapa)',
+            snippet: widget.load.destinAddress,
+            onTap: () async {
+              try {
+                var uri = Uri.parse(
+                    "google.navigation:q=${destin.latitude.toString()},${destin.longitude.toString()}&mode=d");
+                if (await canLaunch(uri.toString())) {
+                  await launch(uri.toString());
+                } else {
+                  throw 'Could not launch ${uri.toString()}';
+                }
+              } catch (e) {
+                print(e);
+              }
+            }),
+        icon: BitmapDescriptor.fromBytes(
+          await getBytesFromAsset('assets/img/finish.png', 50),
+        ),
+      ),
+    );
+
+    setState(() {});
+
+    mapController.animateCamera(CameraUpdate.newLatLng(origin));
+
     var result = await polylinePoints.getRouteBetweenCoordinates(
       Constants.googleMapKey,
       PointLatLng(origin.latitude, origin.longitude),
       PointLatLng(destin.latitude, destin.longitude),
     );
-    print(result.errorMessage);
-    print(result.points);
-    print(result.status);
     if (result.points.isNotEmpty) {
-      MarkerId marcadorOrigen = const MarkerId('marcador_origen');
-      MarkerId marcadorDestino = const MarkerId('marcador_destino');
-      _markers.clear();
-      _markers.add(
-        Marker(
-          markerId: marcadorOrigen,
-          position: origin,
-          infoWindow: InfoWindow(
-              title: 'Origen  - (Pulsa aquí para abrir con el mapa)',
-              snippet: widget.load.addressFrom,
-              onTap: () async {
-                try {
-                  var uri = Uri.parse(
-                      "google.navigation:q=${origin.latitude.toString()},${origin.longitude.toString()}&mode=d");
-                  if (await canLaunch(uri.toString())) {
-                    await launch(uri.toString());
-                  } else {
-                    throw 'Could not launch ${uri.toString()}';
-                  }
-                } catch (e) {
-                  print(e);
-                }
-              }),
-          icon: BitmapDescriptor.fromBytes(
-            await getBytesFromAsset('assets/img/start.png', 50),
-          ),
-        ),
-      );
-      _markers.add(
-        Marker(
-          markerId: marcadorDestino,
-          position: destin,
-          infoWindow: InfoWindow(
-              title: 'Destino - (Pulsa aquí para abrir con el mapa)',
-              snippet: widget.load.destinAddress,
-              onTap: () async {
-                try {
-                  var uri = Uri.parse(
-                      "google.navigation:q=${destin.latitude.toString()},${destin.longitude.toString()}&mode=d");
-                  if (await canLaunch(uri.toString())) {
-                    await launch(uri.toString());
-                  } else {
-                    throw 'Could not launch ${uri.toString()}';
-                  }
-                } catch (e) {
-                  print(e);
-                }
-              }),
-          icon: BitmapDescriptor.fromBytes(
-            await getBytesFromAsset('assets/img/finish.png', 50),
-          ),
-        ),
-      );
       for (var pointLatLng in result.points) {
         polylineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
@@ -197,13 +199,6 @@ class _StateTrayectoMap extends State<TrayectoMap> {
           points: polylineCoordinates,
         ));
       });
-
-      // mapController.animateCamera(
-      //   CameraUpdate.newLatLngZoom(
-      //     origin,
-      //     10,
-      //   ),
-      // );
       late LatLng bottomLeft;
       late LatLng topRight;
 
