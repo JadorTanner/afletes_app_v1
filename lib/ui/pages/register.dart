@@ -724,20 +724,23 @@ class RegisterButtonState extends State<RegisterButton> {
               request.fields['password'] = password.text;
               request.fields['password_confirmation'] =
                   passwordConfirmation.text;
-
-              request.files.add(await MultipartFile.fromPath(
-                  'identity_card_attachment', cedulaFrente));
-              request.files.add(await MultipartFile.fromPath(
-                  'identity_card_back_attachment', cedulaAtras));
+              if (cedulaFrente != '') {
+                request.files.add(await MultipartFile.fromPath(
+                    'identity_card_attachment', cedulaFrente));
+              }
+              if (cedulaAtras != '') {
+                request.files.add(await MultipartFile.fromPath(
+                    'identity_card_back_attachment', cedulaAtras));
+              }
               StreamedResponse response = await request.send();
               String stringResponse = await response.stream.bytesToString();
 
+              Map responseBody = jsonDecode(stringResponse);
               if (response.statusCode == 200) {
                 setState(() => {
                       isLoading = !isLoading,
                     });
                 ScaffoldMessenger.of(context).clearSnackBars();
-                Map responseBody = jsonDecode(stringResponse);
                 if (responseBody['success']) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -787,10 +790,10 @@ class RegisterButtonState extends State<RegisterButton> {
                   );
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  duration: Duration(seconds: 5),
-                  content: Text(
-                      'Ha ocurrido un error, verifique sus datos e inténtelo de nuevo'),
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  duration: const Duration(seconds: 5),
+                  content:
+                      Text('Ha ocurrido un error. ' + responseBody['message']),
                 ));
 
                 setState(() => {

@@ -186,15 +186,15 @@ class PusherApi extends ChangeNotifier {
                         sentAt: formattedDate,
                       ),
                     );
-                    if (!Platform.isAndroid) {
-                      NotificationsApi.showNotification(
-                        id: 21,
-                        title: title,
-                        body: jsonData['message'],
-                        payload:
-                            '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
-                      );
-                    }
+                    // if (!Platform.isAndroid) {
+                    NotificationsApi.showNotification(
+                      id: 21,
+                      title: title,
+                      body: jsonData['message'],
+                      payload:
+                          '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                    );
+                    // }
                   }
                 }
               }

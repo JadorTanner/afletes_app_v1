@@ -210,7 +210,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
       chat.addMessage(
         id,
         ChatMessage(
-          isDefaultMessage ? message : offer,
+          isDefaultMessage ? message : 'Oferto ' + offer,
           "${time.year.toString()}-${time.month.toString()}-${time.day > 10 ? '0' + time.day.toString() : time.day.toString()} ${time.hour.toString()}:${time.minute.toString()}:${time.second.toString()}",
           user.id,
           id,
