@@ -77,14 +77,7 @@ class _VehiclesState extends State<Vehicles> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.connectionState == ConnectionState.done) {
-            return RefreshIndicator(
-                backgroundColor: const Color(0xFFEBE3CD),
-                color: Colors.white,
-                child: const VehiclesList(),
-                onRefresh: () async {
-                  // await getVehicles();
-                  setState(() {});
-                });
+            return const VehiclesList();
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -502,7 +495,6 @@ class _VehiclesListState extends State<VehiclesList> {
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
         ),
-
         Positioned(
           bottom: 200,
           right: 30,
@@ -522,24 +514,24 @@ class _VehiclesListState extends State<VehiclesList> {
             ),
           ),
         ),
-        // Positioned(
-        //   bottom: 60,
-        //   right: 30,
-        //   child: Container(
-        //     decoration: const BoxDecoration(
-        //         color: Colors.white,
-        //         borderRadius: BorderRadius.all(Radius.circular(50))),
-        //     child: IconButton(
-        //       color: kBlack,
-        //       onPressed: () async {
-        //         vehicles = await getVehicles('user/find-vehicles');
-        //         setState(() {});
-        //       },
-        //       icon: const Icon(Icons.refresh),
-        //     ),
-        //   ),
-        // ),
-
+        Positioned(
+          bottom: 260,
+          right: 30,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(50))),
+            child: IconButton(
+              color: Constants.kBlack,
+              onPressed: () async {
+                print('REFRESCANDO VEHICULOS');
+                await getVehicles('user/find-vehicles');
+                setState(() {});
+              },
+              icon: const Icon(Icons.refresh),
+            ),
+          ),
+        ),
         Positioned(
             child: DraggableScrollableSheet(
           minChildSize: 0.2,

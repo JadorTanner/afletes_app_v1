@@ -121,6 +121,11 @@ class PusherApi extends ChangeNotifier {
                       ),
                     );
 
+                    Api api = Api();
+                    api.postData('read-notification', {
+                      'negotiation_id': jsonData['negotiation_id'],
+                    });
+
                     if (jsonData['normal_message'] &&
                         (chat.negState == 6 || chat.negState == 1)) {
                       chat.setCanOffer(true);
@@ -187,13 +192,16 @@ class PusherApi extends ChangeNotifier {
                       ),
                     );
                     // if (!Platform.isAndroid) {
-                    NotificationsApi.showNotification(
-                      id: 21,
-                      title: title,
-                      body: jsonData['message'],
-                      payload:
-                          '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
-                    );
+                    if (WidgetsBinding.instance.lifecycleState ==
+                        AppLifecycleState.resumed) {
+                      NotificationsApi.showNotification(
+                        id: 21,
+                        title: title,
+                        body: jsonData['message'],
+                        payload:
+                            '{"route": "chat", "id":"${jsonData["negotiation_id"].toString()}"}',
+                      );
+                    }
                     // }
                   }
                 }
@@ -202,13 +210,16 @@ class PusherApi extends ChangeNotifier {
           }
         }
       } catch (e) {
-        if (!Platform.isAndroid) {
+        // if (!Platform.isAndroid) {
+        if (WidgetsBinding.instance.lifecycleState ==
+            AppLifecycleState.resumed) {
           NotificationsApi.showNotification(
             id: 11,
             title: 'Tiene un nuevo mensaje ',
             body: '',
           );
         }
+        // }
       }
     });
     // } else {

@@ -112,7 +112,7 @@ class User extends ChangeNotifier {
                 'token', responseBody['data']['token']);
             await localStorage.setInt(
                 'vehicles', responseBody['data']['vehicles']);
-            NotificationsApi().getNotifications();
+            NotificationsApi().getNotifications(context);
 
             return true;
           } else {

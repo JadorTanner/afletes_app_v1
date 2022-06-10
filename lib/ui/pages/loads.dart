@@ -432,11 +432,31 @@ class _LoadsMapState extends State<LoadsMap> {
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
       }
 
+      double southwestLat = 0;
+      double southwestLng = 0;
+      double northeastLat = 0;
+      double northeastLng = 0;
+
+      if (origin.latitude <= destin.latitude) {
+        southwestLat = origin.latitude;
+        northeastLat = destin.latitude;
+      } else {
+        southwestLat = destin.latitude;
+        northeastLat = origin.latitude;
+      }
+      if (origin.longitude <= destin.longitude) {
+        southwestLng = origin.longitude;
+        northeastLng = destin.longitude;
+      } else {
+        southwestLng = destin.longitude;
+        northeastLng = origin.longitude;
+      }
+
       mapController.animateCamera(
         CameraUpdate.newLatLngBounds(
           LatLngBounds(
-              southwest: LatLng(destin.latitude, destin.longitude),
-              northeast: LatLng(origin.latitude, origin.longitude)),
+              southwest: LatLng(southwestLat, southwestLng),
+              northeast: LatLng(northeastLat, northeastLng)),
           10,
         ),
       );

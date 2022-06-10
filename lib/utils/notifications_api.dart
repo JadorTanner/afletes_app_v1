@@ -39,7 +39,7 @@ class NotificationsApi extends ChangeNotifier {
         ),
       );
 
-      NotificationsApi().getNotifications();
+      NotificationsApi().getNotifications(context);
     }
 
     const settings = InitializationSettings(
@@ -74,7 +74,7 @@ class NotificationsApi extends ChangeNotifier {
     notifyListeners();
   }
 
-  getNotifications() async {
+  getNotifications(BuildContext context) async {
     Api api = Api();
     Response response = await api.getData('get-notifications');
     Map jsonResponse = jsonDecode(response.body);
@@ -83,16 +83,16 @@ class NotificationsApi extends ChangeNotifier {
         List nots = jsonResponse['data'];
         notifications.clear();
         for (Map element in nots) {
-          addNotification(
-            NotificationModel(
-                id: element['id'],
-                mensaje:
-                    element['mensaje'].replaceAll(Constants.htmlTagRegExp, ''),
-                negotiationId: element['negotiation_id'],
-                userId: element['user_id'],
-                senderId: element['created_by'],
-                sentAt: element['created_at']),
-          );
+          context.read<NotificationsApi>().addNotification(
+                NotificationModel(
+                    id: element['id'],
+                    mensaje: element['mensaje']
+                        .replaceAll(Constants.htmlTagRegExp, ''),
+                    negotiationId: element['negotiation_id'],
+                    userId: element['user_id'],
+                    senderId: element['created_by'],
+                    sentAt: element['created_at']),
+              );
         }
       } else {
         throw Exception('Ha ocurrido un error al obtener las notificaciones');

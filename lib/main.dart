@@ -516,7 +516,7 @@ class _AfletesAppState extends State<AfletesApp> {
     FirebaseMessaging.instance
         .getInitialMessage()
         .then((RemoteMessage? message) async {
-      if (message != null) {
+      /* if (message != null) {
         RemoteNotification? notification = message.notification;
         AndroidNotification? android = message.notification?.android;
         AppleNotification? apple = message.notification?.apple;
@@ -549,7 +549,7 @@ class _AfletesAppState extends State<AfletesApp> {
             );
           }
         } catch (e) {}
-      }
+      } */
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -560,53 +560,56 @@ class _AfletesAppState extends State<AfletesApp> {
 
       try {
         if (notification != null && (android != null || apple != null)) {
-          if (data.containsKey('alta')) {
-            SharedPreferences shared = await SharedPreferences.getInstance();
-            if (shared.getString('user') != null) {
-              Map user = jsonDecode(shared.getString('user')!);
-              user['habilitado'] = true;
-              shared.setString('user', jsonEncode(user));
+          if (WidgetsBinding.instance.lifecycleState !=
+              AppLifecycleState.resumed) {
+            if (data.containsKey('alta')) {
+              SharedPreferences shared = await SharedPreferences.getInstance();
+              if (shared.getString('user') != null) {
+                Map user = jsonDecode(shared.getString('user')!);
+                user['habilitado'] = true;
+                shared.setString('user', jsonEncode(user));
+              }
             }
-          }
 
-          if (data.containsKey('negotiation_id')) {
-            if (chatProvider.negotiationId !=
-                int.parse(data['negotiation_id'])) {
-              NotificationsApi.showNotification(
-                id: notification.hashCode,
-                title: notification.title,
-                body: notification.body,
-                payload:
-                    '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
-              );
-            }
-          }
-          if (message.from == '/topics/new-loads' ||
-              message.from == 'new-loads') {
-            SharedPreferences shared = await SharedPreferences.getInstance();
-            if (shared.getString('user') != null) {
-              Map user = jsonDecode(shared.getString('user')!);
-              if (user['is_carrier']) {
+            if (data.containsKey('negotiation_id')) {
+              if (chatProvider.negotiationId !=
+                  int.parse(data['negotiation_id'])) {
                 NotificationsApi.showNotification(
                   id: notification.hashCode,
                   title: notification.title,
                   body: notification.body,
+                  payload:
+                      '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
                 );
               }
             }
-          }
+            if (message.from == '/topics/new-loads' ||
+                message.from == 'new-loads') {
+              SharedPreferences shared = await SharedPreferences.getInstance();
+              if (shared.getString('user') != null) {
+                Map user = jsonDecode(shared.getString('user')!);
+                if (user['is_carrier']) {
+                  NotificationsApi.showNotification(
+                    id: notification.hashCode,
+                    title: notification.title,
+                    body: notification.body,
+                  );
+                }
+              }
+            }
 
-          if (message.from == '/topics/new-loads' ||
-              message.from == 'new-loads') {
-            SharedPreferences shared = await SharedPreferences.getInstance();
-            if (shared.getString('user') != null) {
-              Map user = jsonDecode(shared.getString('user')!);
-              if (user['is_carrier']) {
-                NotificationsApi.showNotification(
-                  id: notification.hashCode,
-                  title: notification.title,
-                  body: notification.body,
-                );
+            if (message.from == '/topics/new-loads' ||
+                message.from == 'new-loads') {
+              SharedPreferences shared = await SharedPreferences.getInstance();
+              if (shared.getString('user') != null) {
+                Map user = jsonDecode(shared.getString('user')!);
+                if (user['is_carrier']) {
+                  NotificationsApi.showNotification(
+                    id: notification.hashCode,
+                    title: notification.title,
+                    body: notification.body,
+                  );
+                }
               }
             }
           }

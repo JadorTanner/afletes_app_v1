@@ -132,9 +132,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         hasLoadData = true;
         loadId = arguments!['id'];
         productController.text = arguments['product'];
-        pesoController.text = arguments['peso']
-            .toString()
-            .substring(0, arguments['peso'].toString().indexOf('.'));
+        pesoController.text = arguments['peso'];
         volumenController.text = arguments['volumen'].toString();
         descriptionController.text = arguments['description'];
         categoriaController.text = arguments['categoria'].toString();
@@ -301,7 +299,7 @@ class DatosGenerales extends StatelessWidget {
                             if (pesoController.text == '') {
                               return 'Peso obligatorio';
                             } else {
-                              if (int.parse(pesoController.text) <= 0) {
+                              if (double.parse(pesoController.text) <= 0) {
                                 return 'Ingrese un valor correcto';
                               }
                             }
@@ -787,32 +785,66 @@ class _MeasurementUnitState extends State<MeasurementUnit> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Unidad de medida'),
-        DropdownButton(
-            value: value,
-            icon: const Icon(Icons.arrow_circle_down_outlined),
-            elevation: 16,
-            style: Theme.of(context).textTheme.bodyText2,
-            isExpanded: true,
-            underline: Container(
-              height: 2,
-              color: Theme.of(context)
-                  .inputDecorationTheme
-                  .border!
-                  .borderSide
-                  .color,
-            ),
-            onChanged: (String? newValue) {
-              setState(() {
-                value = newValue!;
-                unidadMedidaController.text = newValue;
-              });
-            },
-            items: const [
-              DropdownMenuItem(
-                child: Text('Kilo'),
-                value: '1',
-              )
-            ])
+        FutureBuilder<List>(future: Future<List>(() async {
+          try {
+            Response response = await Api().getData('get-measurement-units');
+            if (response.statusCode == 200) {
+              Map jsonResponse = jsonDecode(response.body);
+              if (jsonResponse['success']) {
+                return jsonResponse['data'];
+              }
+            } else {
+              return [
+                {'id': value, 'name': 'No hay resultados'}
+              ];
+            }
+          } catch (e) {
+            return [
+              {'id': value, 'name': 'No hay resultados'}
+            ];
+          }
+          return [
+            {'id': value, 'name': 'No hay resultados'}
+          ];
+        }), builder: (context, AsyncSnapshot<List> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return DropdownButton(
+              value: value,
+              icon: const Icon(Icons.arrow_circle_down_outlined),
+              elevation: 16,
+              style: Theme.of(context).textTheme.bodyText2,
+              isExpanded: true,
+              underline: Container(
+                height: 2,
+                color: Theme.of(context)
+                    .inputDecorationTheme
+                    .border!
+                    .borderSide
+                    .color,
+              ),
+              onChanged: (String? newValue) {
+                setState(() {
+                  value = newValue!;
+                  unidadMedidaController.text = newValue;
+                });
+              },
+              items: snapshot.data!
+                  .map((e) => DropdownMenuItem(
+                        child: Text(e['name']),
+                        value: e['id'].toString(),
+                      ))
+                  .toList(),
+            );
+          } else {
+            return const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+        })
       ],
     );
   }

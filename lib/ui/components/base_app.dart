@@ -15,12 +15,14 @@ class BaseApp extends StatefulWidget {
       this.resizeToAvoidBottomInset = false,
       this.isMap = false,
       this.floatingButton,
+      this.onPop,
       Key? key})
       : super(key: key);
   Widget body;
   String title;
   bool resizeToAvoidBottomInset, isMap;
   FloatingActionButton? floatingButton;
+  var onPop;
   @override
   State<BaseApp> createState() => _BaseAppState();
 }
@@ -73,7 +75,12 @@ class _BaseAppState extends State<BaseApp> {
                           color: Colors.white,
                         ),
                         child: IconButton(
-                          onPressed: () => {Navigator.of(context).pop()},
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            if (widget.onPop != null) {
+                              widget.onPop();
+                            }
+                          },
                           icon: const Icon(Icons.chevron_left, size: 20),
                         ),
                       )

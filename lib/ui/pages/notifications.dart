@@ -19,15 +19,40 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: context.read<NotificationsApi>().getNotifications(),
-        builder: (context, AsyncSnapshot snapshot) {
-          return RefreshIndicator(
-            onRefresh: () => Future(() => setState(() {})),
-            child: BaseApp(
+      future: context.read<NotificationsApi>().getNotifications(context),
+      builder: (context, AsyncSnapshot snapshot) {
+        return BaseApp(
+          Stack(
+            children: [
               const NotificationsPanel(),
-            ),
-          );
-        });
+              Positioned(
+                bottom: 60,
+                right: 20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(50),
+                    ),
+                    border: Border.all(
+                      color: Colors.grey,
+                      style: BorderStyle.solid,
+                      width: 1,
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {});
+                    },
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
