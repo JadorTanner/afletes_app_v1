@@ -70,6 +70,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print(message);
 }
 
 void main() async {
@@ -516,7 +517,7 @@ class _AfletesAppState extends State<AfletesApp> {
     FirebaseMessaging.instance
         .getInitialMessage()
         .then((RemoteMessage? message) async {
-      /* if (message != null) {
+      if (message != null) {
         RemoteNotification? notification = message.notification;
         AndroidNotification? android = message.notification?.android;
         AppleNotification? apple = message.notification?.apple;
@@ -530,7 +531,6 @@ class _AfletesAppState extends State<AfletesApp> {
                 Map user = jsonDecode(shared.getString('user')!);
                 user['habilitado'] = true;
                 shared.setString('user', jsonEncode(user));
-                return true;
               }
             }
 
@@ -542,14 +542,14 @@ class _AfletesAppState extends State<AfletesApp> {
                 return true;
               }
             }
-            NotificationsApi.showNotification(
-              id: 50,
-              title: message.notification!.title ?? 'Título',
-              body: message.notification!.body ?? '',
-            );
+            // NotificationsApi.showNotification(
+            //   id: 50,
+            //   title: message.notification!.title ?? 'Título',
+            //   body: message.notification!.body ?? '',
+            // );
           }
         } catch (e) {}
-      } */
+      }
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -583,21 +583,6 @@ class _AfletesAppState extends State<AfletesApp> {
                 );
               }
             }
-            if (message.from == '/topics/new-loads' ||
-                message.from == 'new-loads') {
-              SharedPreferences shared = await SharedPreferences.getInstance();
-              if (shared.getString('user') != null) {
-                Map user = jsonDecode(shared.getString('user')!);
-                if (user['is_carrier']) {
-                  NotificationsApi.showNotification(
-                    id: notification.hashCode,
-                    title: notification.title,
-                    body: notification.body,
-                  );
-                }
-              }
-            }
-
             if (message.from == '/topics/new-loads' ||
                 message.from == 'new-loads') {
               SharedPreferences shared = await SharedPreferences.getInstance();

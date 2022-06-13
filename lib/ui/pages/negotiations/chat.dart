@@ -58,7 +58,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
   Api api = Api();
 
-  context.read<ChatProvider>().clearMessages();
   FocusManager.instance.primaryFocus?.unfocus();
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
@@ -95,6 +94,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
             message['id'],
             message['img_url'] != null));
       });
+      chatProvider.clearMessages();
       chatProvider.setMessages(providerMessages);
     }
     receiverId = jsonResp['data']['negotiation']
@@ -104,6 +104,8 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     votes = jsonResp['data']['votes'];
     starsController.text = votes.toString();
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
+    print('ESTADO NEG');
+    print(chatProvider.negState);
     switch (chatProvider.negState) {
       case 1:
         chatProvider.setCanOffer(true);
@@ -123,9 +125,13 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         chatProvider.setToPay(true);
         break;
       case 6:
+        print(listMessages.last);
+        print(user.id);
         chatProvider.setCanOffer(true);
         if (listMessages.first['sender_id'] == user.id) {
           chatProvider.setCanOffer(false);
+        } else {
+          chatProvider.setCanOffer(true);
         }
         chatProvider.setPaid(false);
         chatProvider.setToPay(false);
@@ -146,13 +152,23 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
     // }
     chatProvider.setLoadState(jsonResp['data']['load_state']['id']);
+    print(chatProvider.loadState);
     chatProvider.setLoadId(jsonResp['data']['load']['id']);
     if (chatProvider.loadState == 13) {
       chatProvider.setToPay(false);
       chatProvider.setCanOffer(false);
       chatProvider.setPaid(true);
       chatProvider.setShowDefaultMessages(false);
-      if (votes <= 0) {
+      if (chatProvider.negState == 6 || chatProvider.negState == 1) {
+        chatProvider.addMessage(
+            id,
+            ChatMessage(
+                'La carga ya ha sido transportada en otra negociación',
+                chatProvider.messages.last.time,
+                chatProvider.messages.last.senderId,
+                id));
+      }
+      if (votes <= 0 && chatProvider.negState != 6) {
         chatProvider.setCanVote(true);
       }
     }
@@ -417,6 +433,8 @@ class NegotiationChat extends StatefulWidget {
 
 class _NegotiationChatState extends State<NegotiationChat> {
   popAction() {
+    context.read<ChatProvider>().clearMessages();
+
     context.read<ChatProvider>().setNegotiationId(0);
     context.read<ChatProvider>().setTransportistId(0);
 
@@ -426,7 +444,6 @@ class _NegotiationChatState extends State<NegotiationChat> {
     context.read<ChatProvider>().setShowDefaultMessages(false);
     context.read<ChatProvider>().setToPay(false);
 
-    print(context.read<ChatProvider>().negotiationId);
     return true;
   }
 

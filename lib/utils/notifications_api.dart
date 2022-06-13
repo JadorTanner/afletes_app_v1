@@ -106,10 +106,10 @@ class NotificationsApi extends ChangeNotifier {
     int id = notification.negotiationId;
     try {
       Api api = Api();
+      context.read<NotificationsApi>().removeNotification(notification);
       await api.postData('read-notification', {
         'negotiation_id': id,
       });
-      context.read<NotificationsApi>().removeNotification(notification);
       Navigator.of(context).pushNamed('/negotiation_id/' + id.toString());
     } catch (e) {
       Navigator.of(context).pushNamed('/my-negotiations');

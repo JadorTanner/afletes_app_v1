@@ -31,6 +31,7 @@ class PusherApi extends ChangeNotifier {
   Channel? transportistsLocationChannel;
 
   disconnect() {
+    pusher.unsubscribe('negotiation-chat');
     pusher.cancelEventChannelStream();
     pusher.disconnect();
   }
@@ -49,6 +50,7 @@ class PusherApi extends ChangeNotifier {
     //EVENTOS DEL CHAT
     bindEvent(pusherChannel!, 'App\\Events\\NegotiationChat',
         (PusherEvent? event) async {
+      print('EVENTO PUSHER');
       try {
         if (event != null) {
           if (event.data != null) {
@@ -263,7 +265,8 @@ class PusherApi extends ChangeNotifier {
     notifyListeners();
   }
 
-  bindEvent(channel, eventName, callback) async {
+  bindEvent(Channel channel, eventName, callback) async {
+    print('BINDING EVENT: ' + eventName + ', ON: ' + channel.name);
     channel.bind(eventName, (PusherEvent? event) async {
       callback(event);
     });
