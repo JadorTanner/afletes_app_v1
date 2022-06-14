@@ -39,6 +39,14 @@ class PusherApi extends ChangeNotifier {
   init(BuildContext context, NotificationsApi notificationsApi,
       TransportistsLocProvider transportistsLocProvider, ChatProvider chat,
       [bool isGenerator = false]) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    _pusher.onConnectionStateChange((state) async {
+      if (state!.currentState == 'DISCONNECTED') {
+        await sharedPreferences.setBool('pusher_connected', false);
+      } else if (state.currentState == 'CONNECTED') {
+        await sharedPreferences.setBool('pusher_connected', true);
+      }
+    });
     _pusher.onConnectionError((error) {
       disconnect();
       init(context, notificationsApi, transportistsLocProvider, chat,

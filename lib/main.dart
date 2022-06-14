@@ -65,20 +65,34 @@ Future _determinePosition() async {
 }
 //PERMISOS DE LOCALIZACION
 
-/// To verify things are working, check out the native platform logs.
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print(message);
-}
-
 void main() async {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  /// To verify things are working, check out the native platform logs.
+  Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
+    // If you're going to use other Firebase services in the background, such as Firestore,
+    // make sure you call `initializeApp` before using other Firebase services.
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    print(message);
+    print(message.data);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (message.data.containsKey('negotiation_id')) {
+        try {
+          navigatorKey.currentState!.pushNamed(
+              '/negotiation_id/' + message.data['negotiation_id'].toString());
+        } catch (e) {
+          print('ERROR AL MANDAR A CHAT');
+          print(e);
+        }
+      }
+    });
+  }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   channel = const AndroidNotificationChannel(
@@ -467,12 +481,17 @@ class _AfletesAppState extends State<AfletesApp> {
 
     if (user != null) {
       Map data = jsonDecode(user);
-      PusherApi().init(
-          context,
-          notificationsApiProvider,
-          context.read<TransportistsLocProvider>(),
-          chatProvider,
-          data['is_load_generator']);
+      try {
+        if (sharedPreferences.getBool('pusher_connected') == null ||
+            !sharedPreferences.getBool('pusher_connected')!) {
+          PusherApi().init(
+              context,
+              notificationsApiProvider,
+              context.read<TransportistsLocProvider>(),
+              chatProvider,
+              data['is_load_generator']);
+        }
+      } catch (e) {}
     }
 
     NotificationsApi.onNotifications.stream.listen((event) async {
@@ -534,19 +553,21 @@ class _AfletesAppState extends State<AfletesApp> {
               }
             }
 
-            if (data.containsKey('negotiation_id')) {
-              if (chatProvider.negotiationId !=
-                  int.parse(data['negotiation_id'])) {
-                Navigator.of(context).pushNamed(
-                    '/negotiation_id/' + data['negotiation_id'].toString());
-                return true;
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+              if (data.containsKey('negotiation_id')) {
+                if (chatProvider.negotiationId !=
+                    int.parse(data['negotiation_id'])) {
+                  // NotificationsApi.showNotification(
+                  //     id: 50,
+                  //     title: message.notification!.title ?? 'Título',
+                  //     body: message.notification!.body ?? '',
+                  //     payload:
+                  //         '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}');
+                  Navigator.of(context).pushNamed(
+                      '/negotiation_id/' + data['negotiation_id'].toString());
+                }
               }
-            }
-            // NotificationsApi.showNotification(
-            //   id: 50,
-            //   title: message.notification!.title ?? 'Título',
-            //   body: message.notification!.body ?? '',
-            // );
+            });
           }
         } catch (e) {}
       }

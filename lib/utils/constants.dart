@@ -7,9 +7,9 @@ class Constants {
 //casa
   // static String baseUrl = 'http://181.120.66.16/';
 //oficina
-  // static String baseUrl = 'http://192.168.1.193:9000/';
+  static String baseUrl = 'http://192.168.1.200:9000/';
 //producción
-  static String baseUrl = 'https://www.afletes.com/';
+  // static String baseUrl = 'https://www.afletes.com/';
 
   static String apiUrl = baseUrl + 'api/';
 
@@ -17,10 +17,10 @@ class Constants {
   static String vehicleImgUrl = baseUrl + 'images/vehicle_images/';
 
 //PRODUCCION
-  static String pusherKey = 'db7228c00ec8ff09b106';
+  // static String pusherKey = 'db7228c00ec8ff09b106';
 
 //DEVELOPMENT
-  // static String pusherKey = '4a54c4ccefa7c6413910';
+  static String pusherKey = '4a54c4ccefa7c6413910';
 
   static String googleMapKey = 'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs';
 
