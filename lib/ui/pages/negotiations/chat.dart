@@ -391,13 +391,13 @@ Future acceptNegotiation(id, context) async {
                         false,
                       ),
                     );
+                Navigator.pop(context);
                 if (user.isLoadGenerator) {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => Payment(id),
                   ));
                   return;
                 }
-                Navigator.pop(context);
               }
             } on SocketException {
               ScaffoldMessenger.of(context).showSnackBar(

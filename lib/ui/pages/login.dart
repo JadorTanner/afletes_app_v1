@@ -78,6 +78,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 accuracy: LocationAccuracy.best,
                 distanceFilter: 5,
               );
+              await sharedPreferences.setBool('pusher_connected', true);
               PusherApi().init(
                   context,
                   context.read<NotificationsApi>(),
@@ -106,6 +107,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 );
               }
             } else {
+              await sharedPreferences.setBool('pusher_connected', true);
               PusherApi().init(
                   context,
                   context.read<NotificationsApi>(),

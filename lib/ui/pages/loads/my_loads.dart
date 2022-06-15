@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/load_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -16,6 +17,7 @@ Future<List<Load>> getMyLoads() async {
   try {
     Response response = await Api().getData('user/my-loads');
     loads.clear();
+    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
@@ -23,6 +25,7 @@ Future<List<Load>> getMyLoads() async {
 
         if (data.isNotEmpty) {
           data.asMap().forEach((key, load) {
+            log(jsonEncode(load));
             loads.add(
               Load(
                 id: load['id'],
@@ -53,7 +56,7 @@ Future<List<Load>> getMyLoads() async {
                 observations: load['observations'] ?? '',
                 isUrgent: load['is_urgent'],
                 categoryId: load['product_category_id'],
-                state: load['load_state']['name'],
+                state: load['load_state'] ?? '',
               ),
             );
           });
@@ -68,6 +71,8 @@ Future<List<Load>> getMyLoads() async {
 
     return loads;
   } catch (e) {
+    print('error');
+    print(e);
     return [];
   }
 }

@@ -581,41 +581,38 @@ class _AfletesAppState extends State<AfletesApp> {
 
       try {
         if (notification != null && (android != null || apple != null)) {
-          if (WidgetsBinding.instance.lifecycleState !=
-              AppLifecycleState.resumed) {
-            if (data.containsKey('alta')) {
-              SharedPreferences shared = await SharedPreferences.getInstance();
-              if (shared.getString('user') != null) {
-                Map user = jsonDecode(shared.getString('user')!);
-                user['habilitado'] = true;
-                shared.setString('user', jsonEncode(user));
-              }
+          if (data.containsKey('alta')) {
+            SharedPreferences shared = await SharedPreferences.getInstance();
+            if (shared.getString('user') != null) {
+              Map user = jsonDecode(shared.getString('user')!);
+              user['habilitado'] = true;
+              shared.setString('user', jsonEncode(user));
             }
+          }
 
-            if (data.containsKey('negotiation_id')) {
-              if (chatProvider.negotiationId !=
-                  int.parse(data['negotiation_id'])) {
+          if (data.containsKey('negotiation_id')) {
+            if (chatProvider.negotiationId !=
+                int.parse(data['negotiation_id'])) {
+              NotificationsApi.showNotification(
+                id: 1,
+                title: notification.title,
+                body: notification.body,
+                payload:
+                    '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
+              );
+            }
+          }
+          if (message.from == '/topics/new-loads' ||
+              message.from == 'new-loads') {
+            SharedPreferences shared = await SharedPreferences.getInstance();
+            if (shared.getString('user') != null) {
+              Map user = jsonDecode(shared.getString('user')!);
+              if (user['is_carrier']) {
                 NotificationsApi.showNotification(
                   id: notification.hashCode,
                   title: notification.title,
                   body: notification.body,
-                  payload:
-                      '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
                 );
-              }
-            }
-            if (message.from == '/topics/new-loads' ||
-                message.from == 'new-loads') {
-              SharedPreferences shared = await SharedPreferences.getInstance();
-              if (shared.getString('user') != null) {
-                Map user = jsonDecode(shared.getString('user')!);
-                if (user['is_carrier']) {
-                  NotificationsApi.showNotification(
-                    id: notification.hashCode,
-                    title: notification.title,
-                    body: notification.body,
-                  );
-                }
               }
             }
           }
@@ -639,16 +636,13 @@ class _AfletesAppState extends State<AfletesApp> {
             shared.setString('user', jsonEncode(user));
           }
         }
-
-        if (chatProvider.negotiationId != data['negotiation_id']) {
-          // Future.delayed(Duration.zero, () {
-          // widget.navigatorKey.currentState!.push(MaterialPageRoute(
-          //   builder: (context) => NegotiationChat(data["negotiation_id"]),
-          // ));
-          widget.navigatorKey.currentState!
-              .pushNamed('/negotiation_id/' + data['negotiation_id']);
-          // });
-        }
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          print('abriendo chat');
+          if (data.containsKey('negotiation_id')) {
+            widget.navigatorKey.currentState!
+                .pushNamed('/negotiation_id/' + data['negotiation_id']);
+          }
+        });
       }
     });
   }

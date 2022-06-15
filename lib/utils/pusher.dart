@@ -205,7 +205,7 @@ class PusherApi extends ChangeNotifier {
                     if (WidgetsBinding.instance.lifecycleState ==
                         AppLifecycleState.resumed) {
                       NotificationsApi.showNotification(
-                        id: 21,
+                        id: 1,
                         title: title,
                         body: jsonData['message'],
                         payload:

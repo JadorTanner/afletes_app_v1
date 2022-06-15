@@ -231,6 +231,7 @@ class User extends ChangeNotifier {
       sharedPreferences.remove('user');
       sharedPreferences.remove('token');
       context.read<PusherApi>().disconnect();
+      await sharedPreferences.setBool('pusher_connected', false);
       Navigator.of(context).pushNamedAndRemoveUntil(
         '/login',
         ModalRoute.withName('/login'),

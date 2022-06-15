@@ -30,7 +30,7 @@ class Api {
       );
     } on SocketException {
       NotificationsApi.showNotification(
-          id: 1,
+          id: 2,
           title: 'Error',
           body: 'Revise su conexión a internet',
           payload: '{}');
@@ -49,7 +49,7 @@ class Api {
       );
     } on SocketException {
       NotificationsApi.showNotification(
-          id: 1,
+          id: 2,
           title: 'Error',
           body: 'Revise su conexión a internet',
           payload: '{}');
