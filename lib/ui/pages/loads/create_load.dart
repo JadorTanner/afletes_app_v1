@@ -132,7 +132,7 @@ class _CreateLoadPageState extends State<CreateLoadPage> {
         hasLoadData = true;
         loadId = arguments!['id'];
         productController.text = arguments['product'];
-        pesoController.text = arguments['peso'];
+        pesoController.text = arguments['peso'].toString();
         volumenController.text = arguments['volumen'].toString();
         descriptionController.text = arguments['description'];
         categoriaController.text = arguments['categoria'].toString();
@@ -1059,7 +1059,7 @@ class _SearchPlaceState extends State<SearchPlace>
       setState(() {
         mapController.animateCamera(
           CameraUpdate.newLatLng(
-            LatLng(coords[0], coords[1]),
+            LatLng(double.parse(coords[0]), double.parse(coords[1])),
           ),
         );
       });

@@ -113,6 +113,10 @@ class User extends ChangeNotifier {
             await localStorage.setInt(
                 'vehicles', responseBody['data']['vehicles']);
             NotificationsApi().getNotifications(context);
+            print('CANALES AFTER LOGIN');
+            print(context.read<PusherApi>().pusher.channels);
+            print('CONN STATE');
+            print(context.read<PusherApi>().pusher.connectionState);
 
             return true;
           } else {
@@ -230,13 +234,14 @@ class User extends ChangeNotifier {
       sharedPreferences.clear();
       sharedPreferences.remove('user');
       sharedPreferences.remove('token');
-      context.read<PusherApi>().disconnect();
+      context.read<PusherApi>().pusher.disconnect();
       await sharedPreferences.setBool('pusher_connected', false);
       Navigator.of(context).pushNamedAndRemoveUntil(
         '/login',
         ModalRoute.withName('/login'),
       );
     } catch (e) {
+      print(e);
       return false;
     }
   }

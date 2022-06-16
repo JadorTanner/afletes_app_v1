@@ -36,6 +36,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 //PERMISOS DE LOCALIZACION
 Future _determinePosition() async {
@@ -63,36 +64,33 @@ Future _determinePosition() async {
     return Future.value(3);
   }
 }
-//PERMISOS DE LOCALIZACION
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print(message);
+  print(message.data);
+  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    if (message.data.containsKey('negotiation_id')) {
+      try {
+        navigatorKey.currentState!.pushNamed(
+            '/negotiation_id/' + message.data['negotiation_id'].toString());
+      } catch (e) {
+        print('ERROR AL MANDAR A CHAT');
+        print(e);
+      }
+    }
+  });
+}
 
 void main() async {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   /// To verify things are working, check out the native platform logs.
-  Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    // If you're going to use other Firebase services in the background, such as Firestore,
-    // make sure you call `initializeApp` before using other Firebase services.
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-    print(message);
-    print(message.data);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (message.data.containsKey('negotiation_id')) {
-        try {
-          navigatorKey.currentState!.pushNamed(
-              '/negotiation_id/' + message.data['negotiation_id'].toString());
-        } catch (e) {
-          print('ERROR AL MANDAR A CHAT');
-          print(e);
-        }
-      }
-    });
-  }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   channel = const AndroidNotificationChannel(
@@ -269,7 +267,8 @@ class AfletesApp extends StatefulWidget {
   State<AfletesApp> createState() => _AfletesAppState();
 }
 
-class _AfletesAppState extends State<AfletesApp> {
+class _AfletesAppState extends State<AfletesApp>
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   late ChatProvider chatProvider;
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
@@ -419,7 +418,7 @@ class _AfletesAppState extends State<AfletesApp> {
         if (jsonDecode(user)['confirmed']) {
           if (jsonDecode(user)['habilitado']) {
             if (jsonDecode(user)['is_carrier']) {
-              await context.read<Load>().getPendingLoad(context);
+              // await context.read<Load>().getPendingLoad(context);
               //ENVIAR UBICACION CUANDO CAMBIE
               LocationSettings locationSettings = const LocationSettings(
                 accuracy: LocationAccuracy.best,
@@ -481,17 +480,6 @@ class _AfletesAppState extends State<AfletesApp> {
 
     if (user != null) {
       Map data = jsonDecode(user);
-      try {
-        if (sharedPreferences.getBool('pusher_connected') == null ||
-            !sharedPreferences.getBool('pusher_connected')!) {
-          PusherApi().init(
-              context,
-              notificationsApiProvider,
-              context.read<TransportistsLocProvider>(),
-              chatProvider,
-              data['is_load_generator']);
-        }
-      } catch (e) {}
     }
 
     NotificationsApi.onNotifications.stream.listen((event) async {
@@ -648,15 +636,33 @@ class _AfletesAppState extends State<AfletesApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('CAMBIO DE ESTADO DE APP: ');
+    print(state.name);
+    if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      context.read<PusherApi>().pusher.disconnect();
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
+  @override
   void initState() {
+    chatProvider = context.read<ChatProvider>();
+    notificationsApiProvider = context.read<NotificationsApi>();
+    PusherApi().init(
+      context,
+      notificationsApiProvider,
+      context.read<TransportistsLocProvider>(),
+      chatProvider,
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     NotificationsApi.init(context: context);
-    chatProvider = context.read<ChatProvider>();
-    notificationsApiProvider = context.read<NotificationsApi>();
     listenNotifications();
 
     changeScreen();
@@ -666,4 +672,8 @@ class _AfletesAppState extends State<AfletesApp> {
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

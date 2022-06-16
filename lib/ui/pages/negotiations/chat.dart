@@ -291,6 +291,7 @@ Future cancelNegotiation(id, context) async {
               Api api = Api();
               Response response = await api.postData('negotiation/reject', {
                 'id': id,
+                'negotiation_id': id,
               });
 
               if (response.statusCode == 200) {
@@ -375,6 +376,7 @@ Future acceptNegotiation(id, context) async {
               Api api = Api();
               Response response = await api.postData('negotiation/accept', {
                 'id': id,
+                'negotiation_id': id,
               });
 
               if (response.statusCode == 200) {
