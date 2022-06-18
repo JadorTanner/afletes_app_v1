@@ -17,19 +17,29 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      case TargetPlatform.windows:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      case TargetPlatform.linux:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for linux - '
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
@@ -39,21 +49,21 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyABR2JQopca2hE586rMJTWycoVs4xhsQ00',
-    appId: '1:895740225858:web:738bc14e46d1822dc6c0db',
-    messagingSenderId: '895740225858',
-    projectId: 'afletes-d4e2c',
-    authDomain: 'afletes-d4e2c.firebaseapp.com',
-    storageBucket: 'afletes-d4e2c.appspot.com',
-    measurementId: 'G-TH988V8ZJB',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCcrHqrQ7cghZf5DAknGqupv53FzlTypXs',
     appId: '1:895740225858:android:9292c0f2e8c2c647c6c0db',
     messagingSenderId: '895740225858',
     projectId: 'afletes-d4e2c',
     storageBucket: 'afletes-d4e2c.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAhgjEkP51zsZUSsL9pjhwin7rhOZJXuOM',
+    appId: '1:895740225858:ios:2703a875838e0e4fc6c0db',
+    messagingSenderId: '895740225858',
+    projectId: 'afletes-d4e2c',
+    storageBucket: 'afletes-d4e2c.appspot.com',
+    iosClientId: '895740225858-oip5edp79d029gfg60nco3pufrum4bl2.apps.googleusercontent.com',
+    iosBundleId: 'com.jt.afletesAppV1',
   );
 }

@@ -9,7 +9,6 @@ import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 TextEditingController razon = TextEditingController();
 TextEditingController ruc = TextEditingController();
@@ -51,9 +50,6 @@ class _PaymentState extends State<Payment> {
   @override
   void initState() {
     super.initState();
-
-    if (Platform.isAndroid) WebView.platform = AndroidWebView();
-    if (Platform.isIOS) WebView.platform = CupertinoWebView();
   }
 
   @override

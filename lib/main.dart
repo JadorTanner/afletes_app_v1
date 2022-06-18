@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
@@ -103,11 +104,17 @@ void main() async {
     playSound: true,
   );
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+if(Platform.isAndroid){
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+}else{
+
+  flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+}
 
   /// Update the iOS foreground notification presentation options to allow
   /// heads up notifications.
@@ -382,6 +389,7 @@ class _AfletesAppState extends State<AfletesApp>
                       changeScreen();
                     });
                   }
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Acepto'),
               ),
