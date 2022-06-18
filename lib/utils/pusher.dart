@@ -18,6 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PusherApi extends ChangeNotifier {
   final PusherChannelsFlutter _pusher = PusherChannelsFlutter.getInstance();
   PusherChannelsFlutter get pusher => _pusher;
+  disconnect() async {
+    await _pusher.disconnect();
+  }
 
   init(BuildContext context, NotificationsApi notificationsApi,
       TransportistsLocProvider transportistsLocProvider, ChatProvider chat,
@@ -276,7 +279,6 @@ class PusherApi extends ChangeNotifier {
       );
     }
     _pusher.connect();
-    print('socket id: ' + _pusher.getSocketId().toString());
 
     notifyListeners();
   }

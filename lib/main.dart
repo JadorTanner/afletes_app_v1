@@ -64,6 +64,7 @@ Future _determinePosition() async {
     // Permissions are denied forever, handle appropriately.
     return Future.value(3);
   }
+  return Future.value(1);
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -183,15 +184,19 @@ if(Platform.isAndroid){
         return MaterialPageRoute(builder: (_) => const WaitHabilitacion());
       } else if (settings.name == '/validate-code') {
         return MaterialPageRoute(builder: (_) => const ValidateCode());
+      } else {
+        return MaterialPageRoute(
+          builder: (_) => const AfletesApp(),
+        );
       }
     } else {
       return MaterialPageRoute(
-        builder: (_) => const LoginPage(),
+        builder: (_) => const AfletesApp(),
       );
     }
 
     return MaterialPageRoute(
-      builder: (_) => const LoginPage(),
+      builder: (_) => const AfletesApp(),
     );
   }
 
@@ -205,9 +210,9 @@ if(Platform.isAndroid){
         ChangeNotifierProvider<ChatProvider>(
           create: (context) => ChatProvider(),
         ),
-        ChangeNotifierProvider<PusherApi>(
-          create: (context) => PusherApi(),
-        ),
+        // ChangeNotifierProvider<PusherApi>(
+        //   create: (context) => PusherApi(),
+        // ),
         ChangeNotifierProvider<NotificationsApi>(
           create: (context) => NotificationsApi(),
         ),
@@ -244,7 +249,19 @@ if(Platform.isAndroid){
             ),
           ),
         ),
-        home: AfletesApp(navigatorKey),
+        home: WillPopScope(
+          onWillPop: () async {
+            return !await navigatorKey.currentState!.maybePop();
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Navigator(
+                key: navigatorKey,
+                onGenerateRoute: routes,
+              );
+            },
+          ),
+        ),
         debugShowCheckedModeBanner: false,
         // routes: {
         //   '/splash_screen': (context) => const SplashScreen(),
@@ -259,16 +276,13 @@ if(Platform.isAndroid){
         //   '/my-negotiations': (context) => const MyNegotiations(),
         //   '/pending-loads': (context) => const PendingLoadsPage(),
         // },
-        onGenerateRoute: routes,
-        navigatorKey: navigatorKey,
       ),
     ),
   );
 }
 
 class AfletesApp extends StatefulWidget {
-  const AfletesApp(this.navigatorKey, {Key? key}) : super(key: key);
-  final GlobalKey<NavigatorState> navigatorKey;
+  const AfletesApp({Key? key}) : super(key: key);
 
   @override
   State<AfletesApp> createState() => _AfletesAppState();
@@ -327,8 +341,8 @@ class _AfletesAppState extends State<AfletesApp>
                               });
                             });
                           }
-                          widget.navigatorKey.currentState!
-                              .pushNamedAndRemoveUntil(
+                          Navigator.of(context).pop();
+                          navigatorKey.currentState!.pushNamedAndRemoveUntil(
                             jsonDecode(user)['is_carrier']
                                 ? '/loads'
                                 : '/vehicles',
@@ -337,7 +351,8 @@ class _AfletesAppState extends State<AfletesApp>
                                 : '/vehicles'),
                           );
                         } else {
-                          widget.navigatorKey.currentState!.pushAndRemoveUntil(
+                          Navigator.of(context).pop();
+                          navigatorKey.currentState!.pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (context) => const WaitHabilitacion(),
                             ),
@@ -345,7 +360,8 @@ class _AfletesAppState extends State<AfletesApp>
                           );
                         }
                       } else {
-                        widget.navigatorKey.currentState!.pushAndRemoveUntil(
+                        Navigator.of(context).pop();
+                        navigatorKey.currentState!.pushAndRemoveUntil(
                           MaterialPageRoute(
                             builder: (context) => const ValidateCode(),
                           ),
@@ -353,7 +369,8 @@ class _AfletesAppState extends State<AfletesApp>
                         );
                       }
                     } else {
-                      widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                      Navigator.of(context).pop();
+                      navigatorKey.currentState!.pushNamedAndRemoveUntil(
                           '/login', ModalRoute.withName('/login'));
                     }
                   } else if (permission == 4) {
@@ -365,11 +382,11 @@ class _AfletesAppState extends State<AfletesApp>
                               actions: [
                                 IconButton(
                                     onPressed: () =>
-                                        widget.navigatorKey.currentState!.pop(),
+                                        navigatorKey.currentState!.pop(),
                                     icon: const Icon(Icons.check))
                               ],
                             )).then((value) {
-                      widget.navigatorKey.currentState!.pop();
+                      navigatorKey.currentState!.pop();
                       changeScreen();
                     });
                   } else {
@@ -381,11 +398,11 @@ class _AfletesAppState extends State<AfletesApp>
                               actions: [
                                 IconButton(
                                     onPressed: () =>
-                                        widget.navigatorKey.currentState!.pop(),
+                                        navigatorKey.currentState!.pop(),
                                     icon: const Icon(Icons.check))
                               ],
                             )).then((value) {
-                      widget.navigatorKey.currentState!.pop();
+                      navigatorKey.currentState!.pop();
                       changeScreen();
                     });
                   }
@@ -442,23 +459,23 @@ class _AfletesAppState extends State<AfletesApp>
               });
 
               if (sharedPreferences.getInt('vehicles')! > 0) {
-                widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                navigatorKey.currentState!.pushNamedAndRemoveUntil(
                   '/loads',
                   ModalRoute.withName('/loads'),
                 );
               } else {
-                widget.navigatorKey.currentState!.pushAndRemoveUntil(
+                navigatorKey.currentState!.pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (context) => const CreateVehicleAfterReg(),
                     ),
                     ModalRoute.withName('/create-vehicle-after-registration'));
               }
             } else {
-              widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+              navigatorKey.currentState!.pushNamedAndRemoveUntil(
                   '/vehicles', ModalRoute.withName('/vehicles'));
             }
           } else {
-            widget.navigatorKey.currentState!.pushAndRemoveUntil(
+            navigatorKey.currentState!.pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => const WaitHabilitacion(),
               ),
@@ -466,7 +483,7 @@ class _AfletesAppState extends State<AfletesApp>
             );
           }
         } else {
-          widget.navigatorKey.currentState!.pushAndRemoveUntil(
+          navigatorKey.currentState!.pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (context) => const ValidateCode(),
             ),
@@ -474,7 +491,7 @@ class _AfletesAppState extends State<AfletesApp>
           );
         }
       } else {
-        widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+        navigatorKey.currentState!.pushNamedAndRemoveUntil(
           '/login',
           ModalRoute.withName('/login'),
         );
@@ -488,6 +505,12 @@ class _AfletesAppState extends State<AfletesApp>
 
     if (user != null) {
       Map data = jsonDecode(user);
+      PusherApi().init(
+        context,
+        context.read<NotificationsApi>(),
+        context.read<TransportistsLocProvider>(),
+        context.read<ChatProvider>(),
+      );
     }
 
     NotificationsApi.onNotifications.stream.listen((event) async {
@@ -500,28 +523,28 @@ class _AfletesAppState extends State<AfletesApp>
       if (data['route'] == 'chat') {
         if (user != null && user != 'null') {
           if (data['id'] != null) {
-            if (widget.navigatorKey.currentState != null) {
+            if (navigatorKey.currentState != null) {
               // Future.delayed(Duration.zero, () {
-              //   widget.navigatorKey.currentState!.push(MaterialPageRoute(
+              //   navigatorKey.currentState!.push(MaterialPageRoute(
               //     builder: (context) => NegotiationChat(data["id"]),
               //   ));
               // });
-              widget.navigatorKey.currentState!
+              navigatorKey.currentState!
                   .pushNamed('/negotiation_id/' + data['id'].toString());
             } else {}
           } else {
-            widget.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+            navigatorKey.currentState!.pushNamedAndRemoveUntil(
               jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles',
               ModalRoute.withName(
                   jsonDecode(user)['is_carrier'] ? '/loads' : '/vehicles'),
             );
           }
         } else {
-          widget.navigatorKey.currentState!.push(MaterialPageRoute(
+          navigatorKey.currentState!.push(MaterialPageRoute(
             builder: (context) => const LoginPage(),
           ));
         }
-        // widget.navigatorKey.currentState!.pushReplacement(
+        // navigatorKey.currentState!.pushReplacement(
         //   MaterialPageRoute(
         //     builder: (context) => NegotiationChat(data['negotiation_id']),
         //   ),
@@ -635,7 +658,7 @@ class _AfletesAppState extends State<AfletesApp>
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
           print('abriendo chat');
           if (data.containsKey('negotiation_id')) {
-            widget.navigatorKey.currentState!
+            navigatorKey.currentState!
                 .pushNamed('/negotiation_id/' + data['negotiation_id']);
           }
         });
@@ -645,12 +668,14 @@ class _AfletesAppState extends State<AfletesApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('CAMBIO DE ESTADO DE APP: ');
-    print(state.name);
-    if (state == AppLifecycleState.detached ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused) {
-      context.read<PusherApi>().pusher.disconnect();
+    print('CAMBIO DE ESTADO APLICACION: ' + state.name);
+    if (state == AppLifecycleState.inactive) {
+      try {
+        PusherApi().disconnect();
+      } catch (e) {
+        print('ERROR AL DESCONECTAR PUSHER');
+        print(e);
+      }
     }
     super.didChangeAppLifecycleState(state);
   }
@@ -659,13 +684,13 @@ class _AfletesAppState extends State<AfletesApp>
   void initState() {
     chatProvider = context.read<ChatProvider>();
     notificationsApiProvider = context.read<NotificationsApi>();
-    PusherApi().init(
-      context,
-      notificationsApiProvider,
-      context.read<TransportistsLocProvider>(),
-      chatProvider,
-    );
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
