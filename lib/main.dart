@@ -71,7 +71,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('FIREBASE BACKGRUOND MESSAGE');
   print(message);
+
   print(message.data);
   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
     if (message.data.containsKey('negotiation_id')) {
@@ -105,17 +107,15 @@ void main() async {
     playSound: true,
   );
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-if(Platform.isAndroid){
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-}else{
-
-  flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
-}
+  if (Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  } else {
+    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>();
+  }
 
   /// Update the iOS foreground notification presentation options to allow
   /// heads up notifications.
@@ -406,7 +406,6 @@ class _AfletesAppState extends State<AfletesApp>
                       changeScreen();
                     });
                   }
-                  Navigator.of(context).pop();
                 },
                 child: const Text('Acepto'),
               ),
@@ -561,6 +560,9 @@ class _AfletesAppState extends State<AfletesApp>
         AppleNotification? apple = message.notification?.apple;
         Map data = message.data;
 
+        print('FIREBASE INITIAL MESSAGE');
+        print(data);
+
         try {
           if (notification != null && (android != null || apple != null)) {
             if (data.containsKey('alta')) {
@@ -598,6 +600,8 @@ class _AfletesAppState extends State<AfletesApp>
       AppleNotification? apple = message.notification?.apple;
       Map data = message.data;
 
+      print('FIREBASE ON MESSAGE');
+      print(data);
       try {
         if (notification != null && (android != null || apple != null)) {
           if (data.containsKey('alta')) {
@@ -641,6 +645,9 @@ class _AfletesAppState extends State<AfletesApp>
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       Map data = message.data;
+
+      print('FIREBASE ON MESSAGE OPENED');
+      print(data);
 
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;

@@ -56,7 +56,9 @@ Future<List<Load>> getMyLoads() async {
                 observations: load['observations'] ?? '',
                 isUrgent: load['is_urgent'],
                 categoryId: load['product_category_id'],
-                state: load['load_state']['name'] ?? '',
+                state: load['load_state'] != null
+                    ? load['load_state']['name']
+                    : '',
               ),
             );
           });

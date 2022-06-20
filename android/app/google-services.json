@@ -31,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "895740225858-v19fbu354ulk7ja5rovcahnoqch5mvu5.apps.googleusercontent.com",
+              "client_id": "895740225858-oip5edp79d029gfg60nco3pufrum4bl2.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.jt.afletesapp"
+                "bundle_id": "com.jt.afletesAppV1"
               }
             }
           ]
