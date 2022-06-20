@@ -21,6 +21,7 @@ List<Load> loads = [];
 List<Load> closedLoads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
+GlobalKey<_LoadsMapState> loadsMapKey = GlobalKey<_LoadsMapState>();
 late PageController pageController;
 
 Future<List<Load>> getLoads([callback]) async {
@@ -276,7 +277,7 @@ class _LoadsState extends State<Loads> {
         future: getLoads(),
         builder: (context, snapshot) =>
             snapshot.connectionState == ConnectionState.done
-                ? const LoadsMap()
+                ? LoadsMap(key: loadsMapKey)
                 : const Center(child: CircularProgressIndicator()),
       ),
       isMap: true,

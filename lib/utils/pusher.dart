@@ -6,8 +6,10 @@ import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
+import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -274,6 +276,47 @@ class PusherApi extends ChangeNotifier {
                 );
               }
             }
+          }
+        },
+      );
+    } else {
+      await _pusher.subscribe(
+        channelName: 'loads',
+        onEvent: (event) {
+          if (event.eventName == 'App\\Events\\LoadsEvent') {
+            Map data = jsonDecode(event.data.toString());
+            print(data);
+            print('CARGAS LENGTH' + loads.length.toString());
+            if (data['action'] == 'remove') {
+              loads.removeWhere((element) => element.id == data['id']);
+            } else if (data['action'] == 'add') {
+              print('agregando carga');
+              Map load = data['load'];
+              loads.add(
+                Load(
+                  id: load['id'],
+                  addressFrom: load['address'],
+                  cityFromId: load['city_id'],
+                  stateFromId: load['state_id'],
+                  initialOffer: int.parse(
+                      load['initial_offer'].toString().replaceAll('.00', '')),
+                  longitudeFrom: load['longitude'],
+                  latitudeFrom: load['latitude'],
+                  destinLongitude: load['destination_longitude'],
+                  destinLatitude: load['destination_latitude'],
+                  destinAddress: load['destination_address'],
+                  destinCityId: load['destination_city_id'],
+                  destinStateId: load['destination_state_id'],
+                  weight: double.parse(load['weight']),
+                  product: load['product'] ?? '',
+                  pickUpDate: load['pickup_at'],
+                  pickUpTime: load['pickup_time'],
+                  attachments: load['attachments'] ?? [],
+                ),
+              );
+            }
+            loadsMapKey.currentState!.setState(() {});
+            print('CARGAS LENGTH' + loads.length.toString());
           }
         },
       );

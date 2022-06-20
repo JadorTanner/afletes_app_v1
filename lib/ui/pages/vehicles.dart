@@ -291,8 +291,8 @@ class _VehiclesListState extends State<VehiclesList> {
                             height: 20,
                           ),
                           TextButton.icon(
-                            onPressed: () => {
-                              showDialog(
+                            onPressed: () async {
+                              await showDialog(
                                 context: context,
                                 builder: (context) => Dialog(
                                   child: FutureBuilder<Map>(
@@ -336,7 +336,8 @@ class _VehiclesListState extends State<VehiclesList> {
                                     },
                                   ),
                                 ),
-                              )
+                              );
+                              Navigator.of(context).pop();
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
@@ -745,9 +746,6 @@ class MyLoadsState extends State<MyLoads> {
                                     isLoading = false;
                                   });
                                   if (response.statusCode == 200) {
-                                    Navigator.pop(context);
-
-                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                     Map jsonResponse =
                                         jsonDecode(response.body);

@@ -223,6 +223,7 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
         ),
       );
     } else {
+      offer = offer.replaceAll(RegExp(r'^0+(?=.)'), '');
       chat.addMessage(
         id,
         ChatMessage(
