@@ -294,14 +294,79 @@ class _AfletesAppState extends State<AfletesApp>
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission != LocationPermission.always &&
-        permission != LocationPermission.whileInUse) {
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      FlutterNativeSplash.remove();
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      String? user = sharedPreferences.getString('user');
+
+      if (user != null) {
+        context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+        if (jsonDecode(user)['confirmed']) {
+          if (jsonDecode(user)['habilitado']) {
+            if (jsonDecode(user)['is_carrier']) {
+              // await context.read<Load>().getPendingLoad(context);
+              //ENVIAR UBICACION CUANDO CAMBIE
+              LocationSettings locationSettings = const LocationSettings(
+                accuracy: LocationAccuracy.best,
+                distanceFilter: 20,
+              );
+              Geolocator.getPositionStream(locationSettings: locationSettings)
+                  .listen((Position? position) {
+                Api api = Api();
+                api.postData('update-location', {
+                  'latitude': position!.latitude,
+                  'longitude': position.longitude,
+                });
+              });
+
+              if (sharedPreferences.getInt('vehicles')! > 0) {
+                navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                  '/loads',
+                  ModalRoute.withName('/loads'),
+                );
+              } else {
+                navigatorKey.currentState!.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const CreateVehicleAfterReg(),
+                    ),
+                    ModalRoute.withName('/create-vehicle-after-registration'));
+              }
+            } else {
+              navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                  '/vehicles', ModalRoute.withName('/vehicles'));
+            }
+          } else {
+            navigatorKey.currentState!.pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const WaitHabilitacion(),
+              ),
+              ModalRoute.withName('/wait-habilitacion'),
+            );
+          }
+        } else {
+          navigatorKey.currentState!.pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const ValidateCode(),
+            ),
+            ModalRoute.withName('/validate-code'),
+          );
+        }
+      } else {
+        navigatorKey.currentState!.pushNamedAndRemoveUntil(
+          '/login',
+          ModalRoute.withName('/login'),
+        );
+      }
+    } else {
       FlutterNativeSplash.remove();
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Esta aplicación necesita acceder a su ubicación',
@@ -431,70 +496,6 @@ class _AfletesAppState extends State<AfletesApp>
         },
         barrierDismissible: false,
       );
-    } else {
-      FlutterNativeSplash.remove();
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      String? user = sharedPreferences.getString('user');
-
-      if (user != null) {
-        context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
-        if (jsonDecode(user)['confirmed']) {
-          if (jsonDecode(user)['habilitado']) {
-            if (jsonDecode(user)['is_carrier']) {
-              // await context.read<Load>().getPendingLoad(context);
-              //ENVIAR UBICACION CUANDO CAMBIE
-              LocationSettings locationSettings = const LocationSettings(
-                accuracy: LocationAccuracy.best,
-                distanceFilter: 20,
-              );
-              Geolocator.getPositionStream(locationSettings: locationSettings)
-                  .listen((Position? position) {
-                Api api = Api();
-                api.postData('update-location', {
-                  'latitude': position!.latitude,
-                  'longitude': position.longitude,
-                });
-              });
-
-              if (sharedPreferences.getInt('vehicles')! > 0) {
-                navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/loads',
-                  ModalRoute.withName('/loads'),
-                );
-              } else {
-                navigatorKey.currentState!.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVehicleAfterReg(),
-                    ),
-                    ModalRoute.withName('/create-vehicle-after-registration'));
-              }
-            } else {
-              navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/vehicles', ModalRoute.withName('/vehicles'));
-            }
-          } else {
-            navigatorKey.currentState!.pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => const WaitHabilitacion(),
-              ),
-              ModalRoute.withName('/wait-habilitacion'),
-            );
-          }
-        } else {
-          navigatorKey.currentState!.pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => const ValidateCode(),
-            ),
-            ModalRoute.withName('/validate-code'),
-          );
-        }
-      } else {
-        navigatorKey.currentState!.pushNamedAndRemoveUntil(
-          '/login',
-          ModalRoute.withName('/login'),
-        );
-      }
     }
   }
 
@@ -676,7 +677,7 @@ class _AfletesAppState extends State<AfletesApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('CAMBIO DE ESTADO APLICACION: ' + state.name);
-    if (state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused) {
       try {
         PusherApi().disconnect();
       } catch (e) {

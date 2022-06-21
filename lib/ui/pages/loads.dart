@@ -21,7 +21,7 @@ List<Load> loads = [];
 List<Load> closedLoads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
-GlobalKey<_LoadsMapState> loadsMapKey = GlobalKey<_LoadsMapState>();
+late GlobalKey<_LoadsMapState> loadsMapKey;
 late PageController pageController;
 
 Future<List<Load>> getLoads([callback]) async {
@@ -272,6 +272,7 @@ class _LoadsState extends State<Loads> {
   Widget build(BuildContext context) {
     // return WillPopScope(
     //   child:
+    loadsMapKey = GlobalKey<_LoadsMapState>();
     return BaseApp(
       FutureBuilder<List<Load>>(
         future: getLoads(),
