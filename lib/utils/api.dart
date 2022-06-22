@@ -10,7 +10,6 @@ import 'constants.dart';
 
 class Api {
   final String _url = Constants.apiUrl;
-  // 192.168.1.2 is my IP, change with your IP address
   var token;
 
   getToken() async {

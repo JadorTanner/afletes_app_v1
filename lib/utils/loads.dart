@@ -115,7 +115,7 @@ class Load extends ChangeNotifier {
   }
 
   Future createLoad(Map body, List<XFile> imagenes,
-      {context, update = false, loadId = 0}) async {
+      {context, update = false, loadId = 0, bool fromHome = false}) async {
     try {
       Api api = Api();
       if (update) {
@@ -156,14 +156,19 @@ class Load extends ChangeNotifier {
               ),
             );
             if (body['is_urgent']) {
-              Future.delayed(
-                  const Duration(seconds: 1),
-                  () => {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/vehicles',
-                          ModalRoute.withName('/vehicles'),
-                        )
-                      });
+              if (fromHome) {
+                Future.delayed(const Duration(seconds: 1),
+                    () => {Navigator.of(context).pop()});
+              } else {
+                Future.delayed(
+                    const Duration(seconds: 1),
+                    () => {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/vehicles',
+                            ModalRoute.withName('/vehicles'),
+                          )
+                        });
+              }
             } else {
               Future.delayed(const Duration(seconds: 1),
                   () => {Navigator.of(context).pop()});

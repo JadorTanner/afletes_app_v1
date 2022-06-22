@@ -296,55 +296,7 @@ class _VehiclesListState extends State<VehiclesList> {
                               await showDialog(
                                 context: context,
                                 builder: (context) => Dialog(
-                                  child: FutureBuilder<Map>(
-                                    initialData: const {},
-                                    future: Future(() async {
-                                      try {
-                                        Api api = Api();
-                                        Response response = await api.getData(
-                                            'user/my-loads?open=' +
-                                                true.toString());
-                                        if (response.statusCode == 200) {
-                                          return jsonDecode(response.body);
-                                        } else {
-                                          return {};
-                                        }
-                                      } on SocketException {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Compruebe su conexión a internet'),
-                                          ),
-                                        );
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content:
-                                                Text('Ha ocurrido un error'),
-                                          ),
-                                        );
-                                      }
-                                      return Future(() => {});
-                                    }),
-                                    builder: (context, snapshot) {
-                                      Map? data = snapshot.connectionState ==
-                                              ConnectionState.done
-                                          ? snapshot.data
-                                          : {};
-                                      return MyLoads(
-                                        snapshot,
-                                        data!,
-                                        id,
-                                        afterCreateLoad: () {
-                                          print(
-                                              'AFTER CREATE LOAD FUNCTION SET STATE');
-                                          setState(() {});
-                                        },
-                                      );
-                                    },
-                                  ),
+                                  child: MyLoads(id),
                                 ),
                               );
                             },
@@ -680,13 +632,8 @@ class _ImageViewerState extends State<ImageViewer> {
 }
 
 class MyLoads extends StatefulWidget {
-  MyLoads(this.snapshot, this.data, this.id, {this.afterCreateLoad, Key? key})
-      : super(key: key);
-
-  AsyncSnapshot<Map> snapshot;
-  Map data;
+  MyLoads(this.id, {Key? key}) : super(key: key);
   int id;
-  var afterCreateLoad;
 
   @override
   State<MyLoads> createState() => MyLoadsState();
@@ -696,286 +643,226 @@ class MyLoadsState extends State<MyLoads> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const Center(
-            child: SizedBox(
-              height: 30,
-              width: 30,
-              child: CircularProgressIndicator(),
+    return FutureBuilder<Map>(
+      initialData: const {},
+      future: Future(() async {
+        try {
+          Api api = Api();
+          Response response =
+              await api.getData('user/my-loads?open=' + true.toString());
+          if (response.statusCode == 200) {
+            return jsonDecode(response.body);
+          } else {
+            return {};
+          }
+        } on SocketException {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Compruebe su conexión a internet'),
             ),
-          )
-        : ListView(
-            padding: const EdgeInsets.all(20),
-            children: widget.snapshot.connectionState == ConnectionState.done
-                ? [
-                    const Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Mis cargas',
-                        style: TextStyle(fontSize: 24),
-                      ),
-                    ),
-                    widget.snapshot.data!['data'].length > 0
-                        ? const Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Pulse sobre la carga para negociar',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    (widget.snapshot.data!['data'].length > 0
-                        ? const SizedBox.shrink()
-                        : TextButton.icon(
-                            onPressed: () => Navigator.of(context)
-                                .push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CreateLoadPage()))
-                                .then((value) {
-                              print('AFTER CREATE LOAD');
-                              print(value);
-                              if (widget.afterCreateLoad != null) {
-                                widget.afterCreateLoad();
-                              }
-                            }),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Agregar carga'),
-                          )),
-                    ...List.generate(widget.snapshot.data!['data'].length,
-                        (index) {
-                      return GestureDetector(
-                        onTap: isLoading
-                            ? () {}
-                            : () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                try {
-                                  Api api = Api();
-
-                                  Response response = await api.postData(
-                                      'negotiation/start-negotiation', {
-                                    'load_id': widget.data['data'][index]['id'],
-                                    'vehicle_id': widget.id
-                                  });
-
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  if (response.statusCode == 200) {
-                                    Navigator.pop(context);
-                                    Map jsonResponse =
-                                        jsonDecode(response.body);
-
-                                    if (jsonResponse['success']) {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                        builder: (context) => NegotiationChat(
-                                            jsonResponse['data']
-                                                ['negotiation_id']),
-                                      ));
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              content: Text(
-                                                  jsonResponse['message'])));
-                                    }
-                                  }
-                                } on SocketException {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Compruebe su conexión a internet'),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Ha ocurrido un error'),
-                                    ),
-                                  );
-                                }
-                              },
-                        child: Card(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.data['data'][index]['product'],
-                                      textScaleFactor: 1.1,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text('Oferta inicial: ' +
-                                        widget.data['data'][index]
-                                                ['initial_offer']
-                                            .toString()),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text('Carga: ' +
-                                        widget.data['data'][index]['pickup_at']
-                                            .toString() +
-                                        ' ' +
-                                        widget.data['data'][index]
-                                                ['pickup_time']
-                                            .toString()),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    SizedBox(
-                                      width: 200,
-                                      child: Text('Desde: ' +
-                                          widget.data['data'][index]
-                                              ['address']),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    SizedBox(
-                                      width: 200,
-                                      child: Text(
-                                        'Hasta: ' +
-                                            widget.data['data'][index]
-                                                    ['destination_address']
-                                                .toString(),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    (widget.data['data'][index]['is_urgent']
-                                        ? const Text(
-                                            'Urgente',
-                                            style: TextStyle(color: Colors.red),
-                                          )
-                                        : const SizedBox.shrink()),
-                                  ],
-                                ),
-                                //COMENZAR LA NEGOCIACION
-                                /*  IconButton(
-                                                            onPressed: () async {
-                                                              try {
-                                                                Api api = Api();
-                                                
-                                                                Response response =
-                                                                    await api.postData(
-                                                                        'negotiation/start-negotiation',
-                                                                        {
-                                                                      'load_id': data[
-                                                                              'data'][
-                                                                          index]['id'],
-                                                                      'vehicle_id': id
-                                                                    });
-                                                                // showDialog(
-                                                                //     context:
-                                                                //         context,
-                                                                //     barrierColor: Colors
-                                                                //         .transparent,
-                                                                //     builder:
-                                                                //         (context) =>
-                                                                //             const Dialog(
-                                                                //               backgroundColor:
-                                                                //                   Colors.transparent,
-                                                                //               child:
-                                                                //                   Center(
-                                                                //                 child:
-                                                                //                     CircularProgressIndicator(),
-                                                                //               ),
-                                                                //             ));
-                                                
-                                                                if (response
-                                                                        .statusCode ==
-                                                                    200) {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                  Map jsonResponse =
-                                                                      jsonDecode(
-                                                                          response
-                                                                              .body);
-                                                                  if (jsonResponse[
-                                                                      'success']) {
-                                                                    Navigator.of(
-                                                                            context)
-                                                                        .push(
-                                                                            MaterialPageRoute(
-                                                                      builder: (context) =>
-                                                                          NegotiationChat(
-                                                                              jsonResponse['data']
-                                                                                  [
-                                                                                  'negotiation_id']),
-                                                                    ));
-                                                                  } else {
-                                                                    ScaffoldMessenger
-                                                                            .of(
-                                                                                context)
-                                                                        .showSnackBar(
-                                                                            SnackBar(
-                                                                                content:
-                                                                                    Text(jsonResponse['message'])));
-                                                                  }
-                                                                }
-                                                              } on SocketException {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                    content: Text(
-                                                                        'Compruebe su conexión a internet'),
-                                                                  ),
-                                                                );
-                                                              } catch (e) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                    content: Text(
-                                                                        'Ha ocurrido un error'),
-                                                                  ),
-                                                                );
-                                                              }
-                                                            },
-                                                            icon: const Icon(
-                                                                Icons.chevron_right),
-                                                            // label: const Text(
-                                                            //     'Negociar'),
-                                                          ) */
-                              ],
-                            ),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ha ocurrido un error'),
+            ),
+          );
+        }
+        return Future(() => {});
+      }),
+      builder: (context, snapshot) {
+        Map? data = snapshot.connectionState == ConnectionState.done
+            ? snapshot.data
+            : {};
+        return isLoading
+            ? const Center(
+                child: SizedBox(
+                  height: 30,
+                  width: 30,
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(20),
+                children: snapshot.connectionState == ConnectionState.done
+                    ? [
+                        const Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Mis cargas',
+                            style: TextStyle(fontSize: 24),
                           ),
                         ),
-                      );
-                    })
-                  ]
-                : [
-                    const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  ],
-          );
+                        snapshot.data!['data'].length > 0
+                            ? const Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Pulse sobre la carga para negociar',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        (snapshot.data!['data'].length > 0
+                            ? const SizedBox.shrink()
+                            : TextButton.icon(
+                                onPressed: () => Navigator.of(context)
+                                    .push(MaterialPageRoute(
+                                        builder: (context) => CreateLoadPage(
+                                              fromHome: true,
+                                            )))
+                                    .then((value) {
+                                  setState(() {});
+                                }),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Agregar carga'),
+                              )),
+                        ...List.generate(snapshot.data!['data'].length,
+                            (index) {
+                          return GestureDetector(
+                            onTap: isLoading
+                                ? () {}
+                                : () async {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    try {
+                                      Api api = Api();
+
+                                      Response response = await api.postData(
+                                          'negotiation/start-negotiation', {
+                                        'load_id': data!['data'][index]['id'],
+                                        'vehicle_id': widget.id
+                                      });
+
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      if (response.statusCode == 200) {
+                                        Navigator.pop(context);
+                                        Map jsonResponse =
+                                            jsonDecode(response.body);
+
+                                        if (jsonResponse['success']) {
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                NegotiationChat(
+                                                    jsonResponse['data']
+                                                        ['negotiation_id']),
+                                          ));
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(jsonResponse[
+                                                      'message'])));
+                                        }
+                                      }
+                                    } on SocketException {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Compruebe su conexión a internet'),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Ha ocurrido un error'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                            child: Card(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          data!['data'][index]['product'],
+                                          textScaleFactor: 1.1,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text('Oferta inicial: ' +
+                                            data['data'][index]['initial_offer']
+                                                .toString()),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text('Carga: ' +
+                                            data['data'][index]['pickup_at']
+                                                .toString() +
+                                            ' ' +
+                                            data['data'][index]['pickup_time']
+                                                .toString()),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width: 200,
+                                          child: Text('Desde: ' +
+                                              data['data'][index]['address']),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width: 200,
+                                          child: Text(
+                                            'Hasta: ' +
+                                                data['data'][index]
+                                                        ['destination_address']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        (data['data'][index]['is_urgent']
+                                            ? const Text(
+                                                'Urgente',
+                                                style: TextStyle(
+                                                    color: Colors.red),
+                                              )
+                                            : const SizedBox.shrink()),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        })
+                      ]
+                    : [
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      ],
+              );
+      },
+    );
   }
 }

@@ -155,7 +155,7 @@ void main() async {
         return MaterialPageRoute(builder: (_) => const NotificationsPage());
       } else if (settings.name == '/create-load') {
         return MaterialPageRoute(
-            builder: (_) => const CreateLoadPage(), settings: settings);
+            builder: (_) => CreateLoadPage(), settings: settings);
       } else if (settings.name == '/create-vehicle') {
         return MaterialPageRoute(
             builder: (_) => const CreateVehicle(), settings: settings);
@@ -294,6 +294,8 @@ class _AfletesAppState extends State<AfletesApp>
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
     LocationPermission permission = await Geolocator.checkPermission();
+    FlutterNativeSplash.remove();
+
     if (permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse) {
       FlutterNativeSplash.remove();
@@ -557,7 +559,6 @@ class _AfletesAppState extends State<AfletesApp>
     notificationsApiProvider = context.read<NotificationsApi>();
     WidgetsBinding.instance.addObserver(this);
     NotificationsApi.init(context: context);
-    FlutterNativeSplash.remove();
     listenNotifications();
     changeScreen();
     super.initState();
