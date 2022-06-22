@@ -25,7 +25,6 @@ TextEditingController oferta = TextEditingController();
 int receiverId = 0;
 int voteStars = 0;
 User user = User();
-List<ChatMessage> messages = [];
 
 late bool canOffer;
 late bool showDefaultMessages = false;
@@ -435,19 +434,24 @@ class NegotiationChat extends StatefulWidget {
 }
 
 class _NegotiationChatState extends State<NegotiationChat> {
+  GlobalKey<ScaffoldState> scaffKey = GlobalKey<ScaffoldState>();
   popAction() {
-    context.read<ChatProvider>().clearMessages();
+    if (scaffKey.currentState!.isDrawerOpen) {
+      scaffKey.currentState!.closeDrawer();
+      return false;
+    } else {
+      context.read<ChatProvider>().clearMessages();
 
-    context.read<ChatProvider>().setNegotiationId(0);
-    context.read<ChatProvider>().setTransportistId(0);
+      context.read<ChatProvider>().setNegotiationId(0);
+      context.read<ChatProvider>().setTransportistId(0);
 
-    context.read<ChatProvider>().setCanOffer(false);
-    context.read<ChatProvider>().setPaid(false);
-    context.read<ChatProvider>().setCanVote(false);
-    context.read<ChatProvider>().setShowDefaultMessages(false);
-    context.read<ChatProvider>().setToPay(false);
-
-    return true;
+      context.read<ChatProvider>().setCanOffer(false);
+      context.read<ChatProvider>().setPaid(false);
+      context.read<ChatProvider>().setCanVote(false);
+      context.read<ChatProvider>().setShowDefaultMessages(false);
+      context.read<ChatProvider>().setToPay(false);
+      return true;
+    }
   }
 
   @override
@@ -608,6 +612,7 @@ class _NegotiationChatState extends State<NegotiationChat> {
           ),
           resizeToAvoidBottomInset: true,
           onPop: popAction,
+          scaffKey: scaffKey,
         ),
       ),
       onWillPop: () async {

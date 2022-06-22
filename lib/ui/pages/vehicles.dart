@@ -6,6 +6,7 @@ import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/car_card.dart';
+import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/chat.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
@@ -332,12 +333,20 @@ class _VehiclesListState extends State<VehiclesList> {
                                               ConnectionState.done
                                           ? snapshot.data
                                           : {};
-                                      return MyLoads(snapshot, data!, id);
+                                      return MyLoads(
+                                        snapshot,
+                                        data!,
+                                        id,
+                                        afterCreateLoad: () {
+                                          print(
+                                              'AFTER CREATE LOAD FUNCTION SET STATE');
+                                          setState(() {});
+                                        },
+                                      );
                                     },
                                   ),
                                 ),
                               );
-                              Navigator.of(context).pop();
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
@@ -671,11 +680,13 @@ class _ImageViewerState extends State<ImageViewer> {
 }
 
 class MyLoads extends StatefulWidget {
-  MyLoads(this.snapshot, this.data, this.id, {Key? key}) : super(key: key);
+  MyLoads(this.snapshot, this.data, this.id, {this.afterCreateLoad, Key? key})
+      : super(key: key);
 
   AsyncSnapshot<Map> snapshot;
   Map data;
   int id;
+  var afterCreateLoad;
 
   @override
   State<MyLoads> createState() => MyLoadsState();
@@ -719,8 +730,17 @@ class MyLoadsState extends State<MyLoads> {
                     (widget.snapshot.data!['data'].length > 0
                         ? const SizedBox.shrink()
                         : TextButton.icon(
-                            onPressed: () =>
-                                Navigator.of(context).pushNamed('/create-load'),
+                            onPressed: () => Navigator.of(context)
+                                .push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CreateLoadPage()))
+                                .then((value) {
+                              print('AFTER CREATE LOAD');
+                              print(value);
+                              if (widget.afterCreateLoad != null) {
+                                widget.afterCreateLoad();
+                              }
+                            }),
                             icon: const Icon(Icons.add),
                             label: const Text('Agregar carga'),
                           )),

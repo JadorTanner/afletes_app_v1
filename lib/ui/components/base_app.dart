@@ -16,12 +16,14 @@ class BaseApp extends StatefulWidget {
       this.isMap = false,
       this.floatingButton,
       this.onPop,
+      this.scaffKey,
       Key? key})
       : super(key: key);
   Widget body;
   String title;
   bool resizeToAvoidBottomInset, isMap;
   FloatingActionButton? floatingButton;
+  GlobalKey<ScaffoldState>? scaffKey;
   var onPop;
   @override
   State<BaseApp> createState() => _BaseAppState();
@@ -32,10 +34,10 @@ class _BaseAppState extends State<BaseApp> {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _key = GlobalKey();
+    widget.scaffKey = widget.scaffKey ?? GlobalKey<ScaffoldState>();
     theme = Theme.of(context);
     return Scaffold(
-      key: _key,
+      key: widget.scaffKey,
       backgroundColor: const Color(0xFFEBE3CD),
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
@@ -61,7 +63,8 @@ class _BaseAppState extends State<BaseApp> {
                     color: Colors.white,
                   ),
                   child: IconButton(
-                    onPressed: () => {_key.currentState!.openDrawer()},
+                    onPressed: () =>
+                        {widget.scaffKey!.currentState!.openDrawer()},
                     icon: const Icon(Icons.menu, size: 20),
                   ),
                 ),

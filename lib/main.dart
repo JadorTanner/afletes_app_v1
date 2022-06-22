@@ -359,143 +359,6 @@ class _AfletesAppState extends State<AfletesApp>
           ModalRoute.withName('/login'),
         );
       }
-    } else {
-      FlutterNativeSplash.remove();
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Esta aplicación necesita acceder a su ubicación',
-                  style: Theme.of(context).textTheme.headline4,
-                ),
-                const Text(
-                    'Afletes recopila datos de ubicación para habilitar la búsqueda de vehículos disponibles en tiempo real, ubicación de las cargas disponibles e información de ubicación de la carga incluso cuando la aplicación está cerrada o no está en uso".')
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  int permission = await _determinePosition();
-                  if (permission == 1) {
-                    SharedPreferences sharedPreferences =
-                        await SharedPreferences.getInstance();
-                    var user = sharedPreferences.getString('user');
-
-                    if (user != null && user != 'null') {
-                      if (jsonDecode(user)['confirmed']) {
-                        if (jsonDecode(user)['habilitado']) {
-                          if (jsonDecode(user)['is_carrier']) {
-                            //ENVIAR UBICACION CUANDO CAMBIE
-                            LocationSettings locationSettings =
-                                const LocationSettings(
-                              accuracy: LocationAccuracy.best,
-                              distanceFilter: 20,
-                            );
-                            Geolocator.getPositionStream(
-                                    locationSettings: locationSettings)
-                                .listen((Position? position) {
-                              Api api = Api();
-                              api.postData('update-location', {
-                                'latitude': position!.latitude,
-                                'longitude': position.longitude,
-                                'heading': position.heading,
-                              });
-                            });
-                          }
-                          Navigator.of(context).pop();
-                          navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                            jsonDecode(user)['is_carrier']
-                                ? '/loads'
-                                : '/vehicles',
-                            ModalRoute.withName(jsonDecode(user)['is_carrier']
-                                ? '/loads'
-                                : '/vehicles'),
-                          );
-                        } else {
-                          Navigator.of(context).pop();
-                          navigatorKey.currentState!.pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (context) => const WaitHabilitacion(),
-                            ),
-                            ModalRoute.withName('/wait-habilitacion'),
-                          );
-                        }
-                      } else {
-                        Navigator.of(context).pop();
-                        navigatorKey.currentState!.pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const ValidateCode(),
-                          ),
-                          ModalRoute.withName('/wait-habilitacion'),
-                        );
-                      }
-                    } else {
-                      Navigator.of(context).pop();
-                      navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                          '/login', ModalRoute.withName('/login'));
-                    }
-                  } else if (permission == 4) {
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              content: const Text(
-                                  'Por favor habilite los servicios de ubicación'),
-                              actions: [
-                                IconButton(
-                                    onPressed: () =>
-                                        navigatorKey.currentState!.pop(),
-                                    icon: const Icon(Icons.check))
-                              ],
-                            )).then((value) {
-                      navigatorKey.currentState!.pop();
-                      changeScreen();
-                    });
-                  } else {
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              content: const Text(
-                                  'Esta aplicación require permisos de ubicación'),
-                              actions: [
-                                IconButton(
-                                    onPressed: () =>
-                                        navigatorKey.currentState!.pop(),
-                                    icon: const Icon(Icons.check))
-                              ],
-                            )).then((value) {
-                      navigatorKey.currentState!.pop();
-                      changeScreen();
-                    });
-                  }
-                },
-                child: const Text('Acepto'),
-              ),
-              TextButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) => Dialog(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(children: const [
-                                  Text(
-                                      'Para hacer uso de esta aplicación, es necesario que nos brinde permisos a su ubicación.'),
-                                  Text(
-                                      'Si no puede ver la solicitud, vaya a configuración > aplicaciones > afletes y borre todos los datos de la aplicación o bien, desinstale la aplicación y vuelva a instalarla.'),
-                                ]),
-                              ),
-                            ));
-                  },
-                  child: const Text('No acepto'))
-            ],
-          );
-        },
-        barrierDismissible: false,
-      );
     }
   }
 
@@ -693,6 +556,10 @@ class _AfletesAppState extends State<AfletesApp>
     chatProvider = context.read<ChatProvider>();
     notificationsApiProvider = context.read<NotificationsApi>();
     WidgetsBinding.instance.addObserver(this);
+    NotificationsApi.init(context: context);
+    FlutterNativeSplash.remove();
+    listenNotifications();
+    changeScreen();
     super.initState();
   }
 
@@ -703,13 +570,176 @@ class _AfletesAppState extends State<AfletesApp>
 
   @override
   Widget build(BuildContext context) {
-    NotificationsApi.init(context: context);
-    listenNotifications();
-
-    changeScreen();
+    // changeScreen();
     return Scaffold(
-      body: Column(
-        children: const [],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Esta aplicación necesita acceder a su ubicación',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Afletes recopila datos de ubicación para habilitar la búsqueda de vehículos disponibles en tiempo real, ubicación de las cargas disponibles e información de ubicación de la carga incluso cuando la aplicación está cerrada o no está en uso".',
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () async {
+                      int permission = await _determinePosition();
+                      if (permission == 1) {
+                        SharedPreferences sharedPreferences =
+                            await SharedPreferences.getInstance();
+                        var user = sharedPreferences.getString('user');
+
+                        if (user != null && user != 'null') {
+                          if (jsonDecode(user)['confirmed']) {
+                            if (jsonDecode(user)['habilitado']) {
+                              if (jsonDecode(user)['is_carrier']) {
+                                //ENVIAR UBICACION CUANDO CAMBIE
+                                LocationSettings locationSettings =
+                                    const LocationSettings(
+                                  accuracy: LocationAccuracy.best,
+                                  distanceFilter: 20,
+                                );
+                                Geolocator.getPositionStream(
+                                        locationSettings: locationSettings)
+                                    .listen((Position? position) {
+                                  Api api = Api();
+                                  api.postData('update-location', {
+                                    'latitude': position!.latitude,
+                                    'longitude': position.longitude,
+                                    'heading': position.heading,
+                                  });
+                                });
+                              }
+                              Navigator.of(context).pop();
+                              navigatorKey.currentState!
+                                  .pushNamedAndRemoveUntil(
+                                jsonDecode(user)['is_carrier']
+                                    ? '/loads'
+                                    : '/vehicles',
+                                ModalRoute.withName(
+                                    jsonDecode(user)['is_carrier']
+                                        ? '/loads'
+                                        : '/vehicles'),
+                              );
+                            } else {
+                              Navigator.of(context).pop();
+                              navigatorKey.currentState!.pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const WaitHabilitacion(),
+                                ),
+                                ModalRoute.withName('/wait-habilitacion'),
+                              );
+                            }
+                          } else {
+                            Navigator.of(context).pop();
+                            navigatorKey.currentState!.pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const ValidateCode(),
+                              ),
+                              ModalRoute.withName('/wait-habilitacion'),
+                            );
+                          }
+                        } else {
+                          Navigator.of(context).pop();
+                          navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                              '/login', ModalRoute.withName('/login'));
+                        }
+                      } else if (permission == 4) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: const Text(
+                                'Por favor habilite los servicios de ubicación'),
+                            actions: [
+                              TextButton.icon(
+                                onPressed: () => Navigator.of(context).pop(),
+                                icon: const Icon(Icons.check),
+                                label: const Text('Entendido'),
+                              )
+                            ],
+                          ),
+                        );
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: const Text(
+                                'Esta aplicación require permisos de ubicación'),
+                            actions: [
+                              TextButton.icon(
+                                onPressed: () async {
+                                  int permission = await _determinePosition();
+                                  if (permission != 1) {
+                                    Geolocator.openLocationSettings();
+                                  } else {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
+                                icon: const Icon(Icons.check),
+                                label: const Text('Entendido'),
+                              )
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Acepto'),
+                  ),
+                  const VerticalDivider(
+                    color: Colors.black,
+                    thickness: 4,
+                    width: 10,
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                      'Para hacer uso de esta aplicación, es necesario que nos brinde permisos a su ubicación.'),
+                                  Text(
+                                      'Si no puede ver la solicitud, vaya a configuración > aplicaciones > afletes y borre todos los datos de la aplicación o bien, desinstale la aplicación y vuelva a instalarla.'),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                icon: const Icon(Icons.check),
+                                label: const Text('Entendido'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text('No acepto'))
+                ],
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
