@@ -79,11 +79,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 distanceFilter: 5,
               );
               await sharedPreferences.setBool('pusher_connected', true);
-              PusherApi().init(
-                  context,
-                  context.read<NotificationsApi>(),
-                  context.read<TransportistsLocProvider>(),
-                  context.read<ChatProvider>());
+
+              try {
+                if (PusherApi().pusher.connectionState != '') {
+                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                    PusherApi().disconnect();
+                  } else if (PusherApi().pusher.connectionState ==
+                      'DISCONNECTED') {
+                    PusherApi().init(
+                        context,
+                        context.read<NotificationsApi>(),
+                        context.read<TransportistsLocProvider>(),
+                        context.read<ChatProvider>());
+                  }
+                }
+              } catch (e) {
+                print('ERROR AL DESCONECTARSE EN LOGIN');
+                print(e);
+              }
               Geolocator.getPositionStream(locationSettings: locationSettings)
                   .listen((Position? position) {
                 if (position != null) {
@@ -108,12 +121,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               }
             } else {
               await sharedPreferences.setBool('pusher_connected', true);
-              PusherApi().init(
-                  context,
-                  context.read<NotificationsApi>(),
-                  context.read<TransportistsLocProvider>(),
-                  context.read<ChatProvider>(),
-                  true);
+              try {
+                if (PusherApi().pusher.connectionState != '') {
+                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                    PusherApi().disconnect();
+                  } else if (PusherApi().pusher.connectionState ==
+                      'DISCONNECTED') {
+                    PusherApi().init(
+                        context,
+                        context.read<NotificationsApi>(),
+                        context.read<TransportistsLocProvider>(),
+                        context.read<ChatProvider>(),
+                        true);
+                  }
+                }
+              } catch (e) {
+                print('ERROR AL DESCONECTARSE EN LOGIN');
+                print(e);
+              }
               Navigator.of(context).pushNamedAndRemoveUntil(
                   '/vehicles', ModalRoute.withName('/vehicles'));
             }

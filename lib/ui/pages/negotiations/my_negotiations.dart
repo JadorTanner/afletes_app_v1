@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -31,7 +30,6 @@ Future<List<Negotiation>> getNegotiations(BuildContext context) async {
         List data = jsonResponse['data'];
         print(data);
         data.asMap().forEach((key, negotiation) {
-          log(jsonEncode(negotiation));
           negotiations.add(
             Negotiation(
               id: negotiation['id'],

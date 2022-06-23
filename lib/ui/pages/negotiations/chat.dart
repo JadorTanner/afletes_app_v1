@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:afletes_app_v1/models/chat.dart';
@@ -51,6 +52,7 @@ ButtonStyle pillStyle = ButtonStyle(
 
 Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
   starsController.text = '0';
+  voteStars = 0;
   // try {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   user = User.userFromArray(jsonDecode(sharedPreferences.getString('user')!));
@@ -61,7 +63,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
   Response response = await api.getData('negotiation/?id=' + id.toString());
   ChatProvider chatProvider = context.read<ChatProvider>();
-
   sharedPreferences.setString('negotiation_id', id.toString());
   Provider.of<ChatProvider>(context, listen: false).setNegotiationId(id);
 
@@ -78,8 +79,11 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
       yearOfProd: jsonResp['data']['vehicle']['year_of_production'],
       model: jsonResp['data']['vehicle']['model'],
       maxCapacity: double.parse(jsonResp['data']['vehicle']['max_capacity']),
-      score: jsonResp['data']['vehicle']['stars'],
+      score: jsonResp['data']['vehicle']['stars'] != null
+          ? double.parse(jsonResp['data']['vehicle']['stars'].toString())
+          : 5,
     );
+    log(response.body);
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
     chatProvider.setTransportistId(jsonResp['data']['vehicle']['owner_id']);
@@ -101,7 +105,7 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
 
     chatProvider.setNegState(jsonResp['data']['negotiation_state']['id']);
     votes = jsonResp['data']['votes'];
-    starsController.text = votes.toString();
+    // starsController.text = votes.toString();
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
     print('ESTADO NEG');
     print(chatProvider.negState);
@@ -343,7 +347,9 @@ Future setLoadState(int negotiationId, int loadId, int state,
           ChatMessage(jsonResp['data']['message'],
               jsonResp['data']['created_at'], user.id, negotiationId));
       chat.setLoadState(state);
-      chat.setShowDefaultMessages(false);
+      if (state == 13) {
+        chat.setShowDefaultMessages(false);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(jsonResp['message']),
@@ -859,6 +865,8 @@ class ButtonsSection extends StatelessWidget {
                                     context
                                         .read<ChatProvider>()
                                         .setCanVote(false);
+                                    commentController.text = '';
+                                    starsController.text = '';
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Gracias por votar!'),

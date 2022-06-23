@@ -251,6 +251,9 @@ void main() async {
         ),
         onGenerateRoute: routes,
         navigatorKey: navigatorKey,
+        builder: (context, child) {
+          return child!;
+        },
         // home: WillPopScope(
         //   onWillPop: () async {
         //     return !await navigatorKey.currentState!.maybePop();
@@ -544,14 +547,14 @@ class _AfletesAppState extends State<AfletesApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('CAMBIO DE ESTADO APLICACION: ' + state.name);
-    if (state == AppLifecycleState.paused) {
+    if (state == AppLifecycleState.detached) {
       try {
         PusherApi().disconnect();
       } catch (e) {
         print('ERROR AL DESCONECTAR PUSHER');
         print(e);
       }
-    }
+    } else if (state == AppLifecycleState.resumed) {}
     super.didChangeAppLifecycleState(state);
   }
 

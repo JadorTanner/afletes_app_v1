@@ -11,8 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Vehicle {
-  int id, ownerId, yearOfProd, brand, measurementUnitId, score;
-  double maxCapacity;
+  int id, ownerId, yearOfProd, brand, measurementUnitId;
+  double maxCapacity, score;
   String observation,
       licensePlate,
       model,

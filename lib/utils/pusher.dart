@@ -39,17 +39,19 @@ class PusherApi extends ChangeNotifier {
       }
     }
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    _pusher.init(
-      apiKey: Constants.pusherKey,
-      cluster: 'us2',
-      onConnectionStateChange: (currentState, previousState) async {
-        if (currentState == 'DISCONNECTED') {
-          await sharedPreferences.setBool('pusher_connected', false);
-        } else if (currentState == 'CONNECTED') {
-          await sharedPreferences.setBool('pusher_connected', true);
-        }
-      },
-    );
+    if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
+      _pusher.init(
+        apiKey: Constants.pusherKey,
+        cluster: 'us2',
+        onConnectionStateChange: (currentState, previousState) async {
+          if (currentState == 'DISCONNECTED') {
+            await sharedPreferences.setBool('pusher_connected', false);
+          } else if (currentState == 'CONNECTED') {
+            await sharedPreferences.setBool('pusher_connected', true);
+          }
+        },
+      );
+    }
     String? userString = sharedPreferences.getString('user');
     Map? dataUser;
     if (userString != null) {
@@ -142,13 +144,22 @@ class PusherApi extends ChangeNotifier {
                         'negotiation_id': jsonData['negotiation_id'],
                       });
 
+                      if (jsonData['paid']) {
+                        chat.setCanOffer(false);
+                        chat.setToPay(false);
+                        chat.setPaid(true);
+                        chat.setNegState(8);
+                        chat.setLoadState(8);
+                      }
                       if (jsonData['normal_message'] && chat.negState == 6) {
                         chat.setCanOffer(true);
                       }
                       print('PASA NORMAL MESSAGE');
                       if (jsonData['negotiation_state'] != null) {
                         chat.setLoadState(jsonData['negotiation_state']);
+                        chat.setShowDefaultMessages(true);
                         if (jsonData['negotiation_state'] == 13) {
+                          chat.setShowDefaultMessages(false);
                           chat.setCanVote(true);
                         }
                       }
@@ -166,19 +177,12 @@ class PusherApi extends ChangeNotifier {
                         chat.setPaid(false);
                       }
                       print('PASA ACCEPTED');
-                      if (jsonData['paid']) {
-                        chat.setCanOffer(false);
-                        chat.setToPay(false);
-                        chat.setPaid(true);
-                        chat.setShowDefaultMessages(true);
-                        chat.setLoadState(9);
-                      }
-                      print('PASA REJECTED');
                       if (jsonData['rejected'] != null) {
                         chat.setCanOffer(false);
                         chat.setToPay(false);
                         chat.setPaid(false);
                       }
+                      print('PASA REJECTED');
                     } else {
                       print('NEGOTIATION ID DIFERENTE A CONTEXT');
                       String title = 'Tiene una nueva notificación';

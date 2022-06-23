@@ -26,6 +26,7 @@ Future<List<Vehicle>> getMyVehicles() async {
             vehicles.add(
               Vehicle(
                 id: vehicle['id'],
+                score: double.parse(vehicle['score'].toString()),
                 licensePlate: vehicle['license_plate'],
                 yearOfProd: vehicle['year_of_production'] ?? 0,
                 model: vehicle['model'],

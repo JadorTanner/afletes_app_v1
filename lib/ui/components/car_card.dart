@@ -88,14 +88,14 @@ class _CarCard2State extends State<CarCard2> {
                     Row(
                       children: [
                         ...List.generate(
-                          widget.vehicle.score,
+                          widget.vehicle.score.toInt(),
                           (index) => const Icon(
                             Icons.star,
                             color: Colors.yellow,
                           ),
                         ),
                         ...List.generate(
-                          5 - widget.vehicle.score,
+                          5 - widget.vehicle.score.toInt(),
                           (index) => const Icon(
                             Icons.star_border,
                             color: Colors.yellow,
