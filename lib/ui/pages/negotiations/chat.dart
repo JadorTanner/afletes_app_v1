@@ -343,6 +343,7 @@ Future setLoadState(int negotiationId, int loadId, int state,
           ChatMessage(jsonResp['data']['message'],
               jsonResp['data']['created_at'], user.id, negotiationId));
       chat.setLoadState(state);
+      chat.setShowDefaultMessages(false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(jsonResp['message']),
@@ -855,14 +856,14 @@ class ButtonsSection extends StatelessWidget {
                                     },
                                   );
                                   if (response.statusCode == 200) {
+                                    context
+                                        .read<ChatProvider>()
+                                        .setCanVote(false);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Gracias por votar!'),
                                       ),
                                     );
-                                    context
-                                        .read<ChatProvider>()
-                                        .setCanVote(false);
                                     Navigator.pop(context);
                                   } else {
                                     throw Exception(

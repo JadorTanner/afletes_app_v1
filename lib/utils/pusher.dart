@@ -142,8 +142,7 @@ class PusherApi extends ChangeNotifier {
                         'negotiation_id': jsonData['negotiation_id'],
                       });
 
-                      if (jsonData['normal_message'] &&
-                          (chat.negState == 6 || chat.negState == 1)) {
+                      if (jsonData['normal_message'] && chat.negState == 6) {
                         chat.setCanOffer(true);
                       }
                       print('PASA NORMAL MESSAGE');

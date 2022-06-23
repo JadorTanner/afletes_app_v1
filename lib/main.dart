@@ -249,19 +249,21 @@ void main() async {
             ),
           ),
         ),
-        home: WillPopScope(
-          onWillPop: () async {
-            return !await navigatorKey.currentState!.maybePop();
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Navigator(
-                key: navigatorKey,
-                onGenerateRoute: routes,
-              );
-            },
-          ),
-        ),
+        onGenerateRoute: routes,
+        navigatorKey: navigatorKey,
+        // home: WillPopScope(
+        //   onWillPop: () async {
+        //     return !await navigatorKey.currentState!.maybePop();
+        //   },
+        //   child: LayoutBuilder(
+        //     builder: (context, constraints) {
+        //       return Navigator(
+        //         key: navigatorKey,
+        //         onGenerateRoute: routes,
+        //       );
+        //     },
+        //   ),
+        // ),
         debugShowCheckedModeBanner: false,
         // routes: {
         //   '/splash_screen': (context) => const SplashScreen(),
@@ -684,12 +686,7 @@ class _AfletesAppState extends State<AfletesApp>
                             actions: [
                               TextButton.icon(
                                 onPressed: () async {
-                                  int permission = await _determinePosition();
-                                  if (permission != 1) {
-                                    Geolocator.openLocationSettings();
-                                  } else {
-                                    Navigator.of(context).pop();
-                                  }
+                                  Navigator.of(context).pop();
                                 },
                                 icon: const Icon(Icons.check),
                                 label: const Text('Entendido'),

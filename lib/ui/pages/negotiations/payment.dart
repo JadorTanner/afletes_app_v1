@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:afletes_app_v1/ui/components/base_app.dart';
+import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -181,6 +182,24 @@ class _PaymentState extends State<Payment> {
 
                                   try {
                                     if (await canLaunch(url)) {
+                                      try {
+                                        Future.delayed(
+                                            const Duration(seconds: 1), () {
+                                          Navigator.of(context)
+                                              .pushReplacementNamed(
+                                                  '/my-negotiations');
+                                        });
+                                      } catch (e) {
+                                        Future.delayed(
+                                            const Duration(seconds: 1), () {
+                                          Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  MyNegotiations(),
+                                            ),
+                                          );
+                                        });
+                                      }
                                       await launch(url);
                                     } else {
                                       throw "Could not launch $url";
@@ -222,10 +241,26 @@ class _PaymentState extends State<Payment> {
                                     content: Text('Aguardamos su pago.'),
                                   ),
                                 );
-                                Navigator.of(context).pushNamedAndRemoveUntil(
-                                  '/my-negotiations',
-                                  ModalRoute.withName('/my-negotiations'),
-                                );
+                                // Navigator.of(context).pushNamedAndRemoveUntil(
+                                //   '/my-negotiations',
+                                //   ModalRoute.withName('/my-negotiations'),
+                                // );
+                                try {
+                                  Future.delayed(const Duration(seconds: 1),
+                                      () {
+                                    Navigator.of(context).pushReplacementNamed(
+                                        '/my-negotiations');
+                                  });
+                                } catch (e) {
+                                  Future.delayed(const Duration(seconds: 1),
+                                      () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (context) => MyNegotiations(),
+                                      ),
+                                    );
+                                  });
+                                }
                               }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
