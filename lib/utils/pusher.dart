@@ -150,6 +150,7 @@ class PusherApi extends ChangeNotifier {
                         chat.setPaid(true);
                         chat.setNegState(8);
                         chat.setLoadState(8);
+                        chat.setShowDefaultMessages(true);
                       }
                       if (jsonData['normal_message'] && chat.negState == 6) {
                         chat.setCanOffer(true);
