@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
@@ -102,160 +103,166 @@ class Vehicle {
     String senacsaBack = '',
     String insurance = '',
   }) async {
-    // try {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    Map user = jsonDecode(sharedPreferences.getString('user')!);
+    try {
+      SharedPreferences sha = await SharedPreferences.getInstance();
+      print(sha.getString('user'));
+      Map user = jsonDecode(sha.getString('user')!);
 
-    Api api = Api();
-    if (update) {
-      body.addEntries([MapEntry('id', vehicleId)]);
-    }
+      Api api = Api();
+      if (update) {
+        body.addEntries([MapEntry('id', vehicleId)]);
+      }
 
-    var fullUrl = Constants.apiUrl +
-        (update ? 'vehicles/edit-vehicle' : 'vehicles/create-vehicle');
+      var fullUrl =
+          Constants.apiUrl + "vehicles/${update ? 'edit' : 'create'}-vehicle";
 
-    MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
+      MultipartRequest request = MultipartRequest('POST', Uri.parse(fullUrl));
 
-    SharedPreferences sha = await SharedPreferences.getInstance();
-    String token = sha.getString('token')!;
-    Map headers = api.setHeaders(token);
-    headers.forEach((key, value) {
-      request.headers[key] = value;
-    });
-    body.forEach((key, value) {
-      request.fields[key] = value.toString();
-    });
+      String token = sha.getString('token')!;
+      Map headers = api.setHeaders(token);
+      headers.forEach((key, value) {
+        request.headers[key] = value;
+      });
+      request.headers['Authorization'] = 'Bearer ' + token;
+      print(request.headers['Authorization']);
+      body.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
 
-    //DOCUMENTOS
-    if (greenCard != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_green_card_attachment', greenCard));
-      } catch (e) {}
-    }
-    if (greenCardBack != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_green_card_back_attachment', greenCardBack));
-      } catch (e) {}
-    }
-    if (municipal != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_authorization_attachment', municipal));
-      } catch (e) {}
-    }
-    if (municipalBack != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'vehicle_authorization_back_attachment', municipalBack));
-      } catch (e) {}
-    }
-    if (dinatran != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'dinatran_authorization_attachment', dinatran));
-      } catch (e) {}
-    }
-    if (dinatranBack != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'dinatran_authorization_back_attachment', dinatranBack));
-      } catch (e) {}
-    }
-    if (senacsa != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'senacsa_authorization_attachment', senacsa));
-      } catch (e) {}
-    }
-    if (senacsaBack != '') {
-      try {
-        request.files.add(await MultipartFile.fromPath(
-            'senacsa_authorization_back_attachment', senacsaBack));
-      } catch (e) {}
-    }
-    if (insurance != '') {
-      try {
-        request.files.add(
-            await MultipartFile.fromPath('insurance_attachment', insurance));
-      } catch (e) {}
-    }
+      //DOCUMENTOS
+      if (greenCard != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'vehicle_green_card_attachment', greenCard));
+        } catch (e) {}
+      }
+      if (greenCardBack != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'vehicle_green_card_back_attachment', greenCardBack));
+        } catch (e) {}
+      }
+      if (municipal != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'vehicle_authorization_attachment', municipal));
+        } catch (e) {}
+      }
+      if (municipalBack != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'vehicle_authorization_back_attachment', municipalBack));
+        } catch (e) {}
+      }
+      if (dinatran != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'dinatran_authorization_attachment', dinatran));
+        } catch (e) {}
+      }
+      if (dinatranBack != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'dinatran_authorization_back_attachment', dinatranBack));
+        } catch (e) {}
+      }
+      if (senacsa != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'senacsa_authorization_attachment', senacsa));
+        } catch (e) {}
+      }
+      if (senacsaBack != '') {
+        try {
+          request.files.add(await MultipartFile.fromPath(
+              'senacsa_authorization_back_attachment', senacsaBack));
+        } catch (e) {}
+      }
+      if (insurance != '') {
+        try {
+          request.files.add(
+              await MultipartFile.fromPath('insurance_attachment', insurance));
+        } catch (e) {}
+      }
 
-    for (var file in imagenes) {
-      request.files.add(await MultipartFile.fromPath('imagenes[]', file.path));
-    }
+      for (var file in imagenes) {
+        request.files
+            .add(await MultipartFile.fromPath('imagenes[]', file.path));
+      }
 
-    // showDialog(
-    //   context: context,
-    //   barrierDismissible: false,
-    //   builder: (context) => const Dialog(
-    //     backgroundColor: Colors.transparent,
-    //     child: Center(
-    //       child: CircularProgressIndicator(),
-    //     ),
-    //   ),
-    // );
-    StreamedResponse response = await request.send();
-    String stringResponse = await response.stream.bytesToString();
+      // showDialog(
+      //   context: context,
+      //   barrierDismissible: false,
+      //   builder: (context) => const Dialog(
+      //     backgroundColor: Colors.transparent,
+      //     child: Center(
+      //       child: CircularProgressIndicator(),
+      //     ),
+      //   ),
+      // );
+      StreamedResponse response = await request.send();
+      String stringResponse = await response.stream.bytesToString();
 
-    Map responseBody = jsonDecode(stringResponse);
-    if (response.statusCode == 200) {
-      // Navigator.pop(context);
-      if (responseBody['success']) {
-        sharedPreferences.setInt(
-            'vehicles', ((sharedPreferences.getInt('vehicles') ?? 0) + 1));
-        if (context != null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-          if (user['confirmed']) {
-            if (user['habilitado']) {
-              Future.delayed(
-                  const Duration(seconds: 1),
-                  () => {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/my-vehicles',
-                          ModalRoute.withName('/my-vehicles'),
-                        )
-                      });
+      Map responseBody = jsonDecode(stringResponse);
+      if (response.statusCode == 200) {
+        // Navigator.pop(context);
+        if (responseBody['success']) {
+          sha.setInt('vehicles', ((sha.getInt('vehicles') ?? 0) + 1));
+          if (context != null) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+            if (user['confirmed']) {
+              if (user['habilitado']) {
+                Future.delayed(
+                    const Duration(seconds: 1),
+                    () => {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/my-vehicles',
+                            ModalRoute.withName('/my-vehicles'),
+                          )
+                        });
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const WaitHabilitacion(),
+                  ),
+                );
+              }
             } else {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const WaitHabilitacion(),
+                  builder: (context) => const ValidateCode(),
                 ),
               );
             }
-          } else {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const ValidateCode(),
-              ),
-            );
           }
+          return true;
+        } else {
+          if (context != null) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          }
+          return false;
         }
-        return true;
       } else {
+        // Navigator.pop(context);
         if (context != null) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-          Future.delayed(
-              const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+          // Future.delayed(
+          //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
+          return false;
         }
-        return false;
       }
-    } else {
-      // Navigator.pop(context);
-      if (context != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(responseBody['message'])));
-        // Future.delayed(
-        //     const Duration(seconds: 1), () => {Navigator.of(context).pop()});
-      }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Compruebe su conexión a internet')));
+      return false;
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Ha ocurrido un error')));
+      return false;
     }
-    // } catch (e) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('Compruebe su conexión a internet')));
-    //   return false;
-    // }
   }
 }
