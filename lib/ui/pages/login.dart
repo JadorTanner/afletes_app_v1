@@ -84,8 +84,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 if (PusherApi().pusher.connectionState != '') {
                   if (PusherApi().pusher.connectionState == 'CONNECTED') {
                     PusherApi().disconnect();
-                  } else if (PusherApi().pusher.connectionState ==
-                      'DISCONNECTED') {
+                  }
+                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
                     PusherApi().init(
                         context,
                         context.read<NotificationsApi>(),
@@ -125,8 +125,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 if (PusherApi().pusher.connectionState != '') {
                   if (PusherApi().pusher.connectionState == 'CONNECTED') {
                     PusherApi().disconnect();
-                  } else if (PusherApi().pusher.connectionState ==
-                      'DISCONNECTED') {
+                  }
+                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
                     PusherApi().init(
                         context,
                         context.read<NotificationsApi>(),
@@ -134,6 +134,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         context.read<ChatProvider>(),
                         true);
                   }
+                } else {
+                  PusherApi().init(
+                      context,
+                      context.read<NotificationsApi>(),
+                      context.read<TransportistsLocProvider>(),
+                      context.read<ChatProvider>(),
+                      true);
                 }
               } catch (e) {
                 print('ERROR AL DESCONECTARSE EN LOGIN');

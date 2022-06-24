@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/date_picker.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
@@ -10,11 +12,14 @@ import 'package:afletes_app_v1/ui/components/images_picker.dart';
 import 'package:afletes_app_v1/ui/components/nextprev_buttons.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
+import 'package:afletes_app_v1/utils/notifications_api.dart';
+import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:afletes_app_v1/utils/vehicles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
@@ -217,6 +222,23 @@ class _CreateVehicleState extends State<CreateVehicle> {
   }
 }
 
+resetData() {
+  chapaController.text = '';
+  marcaController.text = '';
+  fabricacionController.text = '';
+  pesoController.text = '';
+  unidadMedidaController.text = '';
+  modeloController.text = '';
+
+  vtoMunicipalController.text = '';
+  vtoDinatranController.text = '';
+  vtoSenacsaController.text = '';
+
+  vtoSeguroController.text = '';
+  vehicleId = 0;
+  imagenes.clear();
+}
+
 class RegisterVehicleForm extends StatefulWidget {
   const RegisterVehicleForm({Key? key}) : super(key: key);
 
@@ -235,23 +257,29 @@ class _RegisterVehicleFormState extends State<RegisterVehicleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getB,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return PageView(
-            controller: pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const [
-              DatosGenerales(),
-              Documentos(),
-              Documentos2(),
-            ],
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
+    return WillPopScope(
+      onWillPop: () async {
+        resetData();
+        return true;
       },
+      child: FutureBuilder(
+        future: getB,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return PageView(
+              controller: pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: const [
+                DatosGenerales(),
+                Documentos(),
+                Documentos2(),
+              ],
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        },
+      ),
     );
   }
 }
@@ -724,7 +752,7 @@ class _SendButtonState extends State<SendButton> {
               // });
               widget.changeState();
               Vehicle vehicle = Vehicle();
-              await vehicle.createVehicle(
+              if (await vehicle.createVehicle(
                 {
                   'license_plate': chapaController.text,
                   'vehicle_brand_id': marcaController.text,
@@ -762,7 +790,27 @@ class _SendButtonState extends State<SendButton> {
                 dinatran: dinatran,
                 dinatranBack: dinatranBack,
                 insurance: seguro,
-              );
+              )) {
+                resetData();
+
+                try {
+                  if (PusherApi().pusher.connectionState != '') {
+                    if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                      PusherApi().disconnect();
+                    } else if (PusherApi().pusher.connectionState ==
+                        'DISCONNECTED') {
+                      PusherApi().init(
+                          context,
+                          context.read<NotificationsApi>(),
+                          context.read<TransportistsLocProvider>(),
+                          context.read<ChatProvider>());
+                    }
+                  }
+                } catch (e) {
+                  print('ERROR AL DESCONECTARSE EN LOGIN');
+                  print(e);
+                }
+              }
               widget.changeState();
             },
       child: Row(

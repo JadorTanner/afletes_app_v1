@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:afletes_app_v1/ui/pages/login.dart';
+import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,24 +10,39 @@ class WaitHabilitacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFED8232),
-      ),
-      // resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-                'Tu cuenta está siendo verificada, te enviaremos un correo cuando tu cuenta haya sido habilitada'),
-            ReturnBack(
-              text: 'Volver a inicio',
-            ),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        try {
+          if (PusherApi().pusher.connectionState != '') {
+            if (PusherApi().pusher.connectionState == 'CONNECTED') {
+              PusherApi().disconnect();
+            }
+          }
+        } catch (e) {
+          print('ERROR AL DESCONECTARSE EN LOGIN');
+          print(e);
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: const Color(0xFFED8232),
+        ),
+        // resizeToAvoidBottomInset: false,
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                  'Tu cuenta está siendo verificada, te enviaremos un correo cuando tu cuenta haya sido habilitada'),
+              ReturnBack(
+                text: 'Volver a inicio',
+              ),
+            ],
+          ),
         ),
       ),
     );

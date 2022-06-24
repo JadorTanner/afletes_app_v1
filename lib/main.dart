@@ -124,6 +124,17 @@ void main() async {
     badge: true,
     sound: true,
   );
+  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? userString = sharedPreferences.getString('user');
+    if (userString != null) {
+      Map user = jsonDecode(userString);
+      Api().postData('user/set-device-token', {
+        'id': user['id'],
+        'device_token': FirebaseMessaging.instance.getToken()
+      });
+    }
+  });
 
   Route routes(RouteSettings settings) {
     if (settings.name != null) {

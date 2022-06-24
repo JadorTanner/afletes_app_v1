@@ -2,13 +2,19 @@
 
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/chat.dart';
+import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/notifications_api.dart';
+import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+bool validated = false;
 TextEditingController codeController = TextEditingController();
 
 class ValidateCode extends StatelessWidget {
@@ -17,50 +23,68 @@ class ValidateCode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     codeController.text = 'ABCD';
-    return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: const Color(0xFFED8232),
-        ),
-        // resizeToAvoidBottomInset: false,
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Ingresa el código que hemos enviado a tu correo',
-                style: Theme.of(context).textTheme.headline6,
-                textAlign: TextAlign.center,
-              ),
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: CodeInput(),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: ReturnBack(
-                      text: 'Volver a inicio',
-                    ),
-                  ),
-                  Flexible(child: ValidateButton())
-                ],
-              ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              //     const Text('No lo has recibido?'),
-              //     TextButton(
-              //         onPressed: () => {},
-              //         child: const Text('Reenviar código')),
-              //   ],
-              // ),
-            ],
+    return WillPopScope(
+      onWillPop: () async {
+        if (!validated) {
+          try {
+            if (PusherApi().pusher.connectionState != '') {
+              if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                PusherApi().disconnect();
+              }
+            }
+          } catch (e) {
+            print('ERROR AL DESCONECTARSE EN LOGIN');
+            print(e);
+          }
+        }
+        validated = false;
+        return true;
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: const Color(0xFFED8232),
           ),
-        ));
+          // resizeToAvoidBottomInset: false,
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Ingresa el código que hemos enviado a tu correo',
+                  style: Theme.of(context).textTheme.headline6,
+                  textAlign: TextAlign.center,
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CodeInput(),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: ReturnBack(
+                        text: 'Volver a inicio',
+                      ),
+                    ),
+                    Flexible(child: ValidateButton())
+                  ],
+                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: [
+                //     const Text('No lo has recibido?'),
+                //     TextButton(
+                //         onPressed: () => {},
+                //         child: const Text('Reenviar código')),
+                //   ],
+                // ),
+              ],
+            ),
+          )),
+    );
   }
 }
 
@@ -170,6 +194,17 @@ class ReturnBackState extends State<ReturnBack> {
         sharedPreferences.remove('user');
         sharedPreferences.remove('token');
         sharedPreferences.clear();
+
+        try {
+          if (PusherApi().pusher.connectionState != '') {
+            if (PusherApi().pusher.connectionState == 'CONNECTED') {
+              PusherApi().disconnect();
+            }
+          }
+        } catch (e) {
+          print('ERROR AL DESCONECTARSE EN LOGIN');
+          print(e);
+        }
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/login',
@@ -247,6 +282,7 @@ class ValidateButtonState extends State<ValidateButton> {
 
                 shared.setString(
                     'user', jsonEncode(responseBody['data']['user']));
+                validated = true;
                 if (responseBody['data']['user']['habilitado']) {
                   if (responseBody['data']['user']['is_carrier']) {
                     if (responseBody['data']['cant_vehicles'] <= 0) {
@@ -258,12 +294,47 @@ class ValidateButtonState extends State<ValidateButton> {
                             '/create-vehicle-after-registration'),
                       );
                     } else {
+                      try {
+                        if (PusherApi().pusher.connectionState != '') {
+                          if (PusherApi().pusher.connectionState ==
+                              'CONNECTED') {
+                            PusherApi().disconnect();
+                          } else if (PusherApi().pusher.connectionState ==
+                              'DISCONNECTED') {
+                            PusherApi().init(
+                                context,
+                                context.read<NotificationsApi>(),
+                                context.read<TransportistsLocProvider>(),
+                                context.read<ChatProvider>());
+                          }
+                        }
+                      } catch (e) {
+                        print('ERROR AL DESCONECTARSE EN LOGIN');
+                        print(e);
+                      }
                       Navigator.of(context).pushNamedAndRemoveUntil(
                         '/loads',
                         ModalRoute.withName('/loads'),
                       );
                     }
                   } else {
+                    try {
+                      if (PusherApi().pusher.connectionState != '') {
+                        if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                          PusherApi().disconnect();
+                        } else if (PusherApi().pusher.connectionState ==
+                            'DISCONNECTED') {
+                          PusherApi().init(
+                              context,
+                              context.read<NotificationsApi>(),
+                              context.read<TransportistsLocProvider>(),
+                              context.read<ChatProvider>());
+                        }
+                      }
+                    } catch (e) {
+                      print('ERROR AL DESCONECTARSE EN LOGIN');
+                      print(e);
+                    }
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       '/vehicles',
                       ModalRoute.withName('/vehicles'),

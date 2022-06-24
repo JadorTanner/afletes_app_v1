@@ -762,8 +762,7 @@ class RegisterButtonState extends State<RegisterButton> {
                   try {
                     String? token = await FirebaseMessaging.instance.getToken();
                     if (token != null) {
-                      Response response = await Api().postData(
-                          'user/set-device-token', {
+                      Api().postData('user/set-device-token', {
                         'id': responseBody['data']['user']['id'],
                         'device_token': token
                       });
@@ -772,20 +771,27 @@ class RegisterButtonState extends State<RegisterButton> {
                   print(responseBody['data']);
 
                   await User().login(context, email.text, password.text);
-                  PusherApi().init(
-                    context,
-                    context.read<NotificationsApi>(),
-                    context.read<TransportistsLocProvider>(),
-                    context.read<ChatProvider>(),
-                  );
 
                   if (responseBody['data']['user']['is_carrier']) {
+                    PusherApi().init(
+                      context,
+                      context.read<NotificationsApi>(),
+                      context.read<TransportistsLocProvider>(),
+                      context.read<ChatProvider>(),
+                    );
                     await FirebaseMessaging.instance
                         .subscribeToTopic("new-loads");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const CreateVehicleAfterReg()));
                   } else {
+                    PusherApi().init(
+                      context,
+                      context.read<NotificationsApi>(),
+                      context.read<TransportistsLocProvider>(),
+                      context.read<ChatProvider>(),
+                      true,
+                    );
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const ValidateCode()));
                   }
