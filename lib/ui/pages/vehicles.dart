@@ -35,8 +35,10 @@ class Vehicles extends StatefulWidget {
 Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
   try {
     Response response = await Api().getData('user/find-vehicles');
+    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
+      print(response.body);
       if (jsonResponse['success']) {
         if (jsonResponse['data'].length > 0) {
           vehicles.clear();
