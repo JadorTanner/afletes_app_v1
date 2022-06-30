@@ -21,7 +21,32 @@ import 'package:provider/provider.dart';
 
 int page = 1;
 List<Vehicle> vehicles = [];
+
+List states = [
+  {
+    'id': 0,
+    'name': 'Cualquiera',
+  },
+];
+List cities = [
+  {
+    'id': 0,
+    'name': 'Cualquiera',
+    'state_id': 0,
+  },
+];
+
 late Position position;
+TextEditingController stateIdController = TextEditingController();
+TextEditingController cityId = TextEditingController();
+TextEditingController unidadMedidaPickerController = TextEditingController();
+double start = 1970;
+double end = DateTime.now().year.toDouble();
+int stars = 5;
+bool habMunicipal = false,
+    habDinatran = false,
+    habSenacsa = false,
+    seguro = false;
 
 class Vehicles extends StatefulWidget {
   Vehicles({this.id, Key? key}) : super(key: key);
@@ -34,42 +59,88 @@ class Vehicles extends StatefulWidget {
 
 Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
   try {
-    Response response = await Api().getData('user/find-vehicles');
-    print(response.body);
+    Response response = await Api().getData(url);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
-      print(response.body);
       if (jsonResponse['success']) {
-        if (jsonResponse['data'].length > 0) {
-          vehicles.clear();
-          for (var vehicle in jsonResponse['data']) {
-            print(vehicle);
-            vehicles.add(Vehicle(
-                id: vehicle['id'],
-                licensePlate: vehicle['license_plate'],
-                senacsa: vehicle['senacsa_authorization_attachment_id'] != null,
-                dinatran:
-                    vehicle['dinatran_authorization_attachment_id'] != null,
-                model: vehicle['model'],
-                score: double.parse(vehicle['score'].toString()),
-                owner: vehicle['created_by'] != null
-                    ? User(fullName: vehicle['created_by']['full_name'])
-                    : null,
-                seguro: vehicle['insurance_attachment_id'] != null,
-                imgs: vehicle['vehicleattachments'] ?? ''));
-          }
+        vehicles.clear();
+        for (var vehicle in jsonResponse['data']) {
+          vehicles.add(
+            Vehicle(
+              id: vehicle['id'],
+              licensePlate: vehicle['license_plate'],
+              senacsa: vehicle['senacsa_authorization_attachment_id'] != null,
+              dinatran: vehicle['dinatran_authorization_attachment_id'] != null,
+              model: vehicle['model'],
+              score: double.parse(vehicle['score'].toString()),
+              owner: vehicle['created_by'] != null
+                  ? User(fullName: vehicle['created_by']['full_name'])
+                  : null,
+              seguro: vehicle['insurance_attachment_id'] != null,
+              imgs: vehicle['vehicleattachments'] ?? '',
+              cityName: vehicle['created_by'] != null
+                  ? vehicle['created_by']['city_name']
+                  : '',
+              brandName: vehicle['vehicle_brand'] != null
+                  ? vehicle['vehicle_brand']['name']
+                  : '',
+            ),
+          );
         }
       }
     }
 
     return vehicles;
   } catch (e) {
-    print(e);
     return [];
   }
 }
 
 class _VehiclesState extends State<Vehicles> {
+  initVehicles() async {
+    await getStates();
+    await getCities();
+  }
+
+  Future<List> getStates() async {
+    try {
+      Api api = Api();
+
+      Response response = await api.getData('get-states');
+      if (response.statusCode == 200) {
+        Map jsonResponse = jsonDecode(response.body);
+        states.addAll(jsonResponse['data']);
+        return states;
+      }
+      return states;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List> getCities([String stateId = '']) async {
+    try {
+      Api api = Api();
+
+      Response response = await api.getData(
+          'get-cities' + (stateId != '' ? '?state_id=' + stateId : ''));
+      if (response.statusCode == 200) {
+        Map jsonResponse = jsonDecode(response.body);
+        cities.addAll(jsonResponse['data']);
+        return cities;
+      }
+      return cities;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  void initState() {
+    initVehicles();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseApp(
@@ -488,7 +559,6 @@ class _VehiclesListState extends State<VehiclesList> {
             child: IconButton(
               color: Constants.kBlack,
               onPressed: () async {
-                print('REFRESCANDO VEHICULOS');
                 await getVehicles('user/find-vehicles');
                 setState(() {});
               },
@@ -512,51 +582,75 @@ class _VehiclesListState extends State<VehiclesList> {
                   topRight: Radius.circular(20),
                 ),
               ),
-              child: ListView(
+              clipBehavior: Clip.hardEdge,
+              child: SingleChildScrollView(
                 controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Constants.kBlack,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Transportistas disponibles',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6!
+                                .copyWith(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return BottomSheet(
+                                    onClosing: () {},
+                                    enableDrag: false,
+                                    builder: (context) {
+                                      return const Filters();
+                                    },
+                                  );
+                                },
+                              );
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.filter_alt),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    'Transportistas disponibles',
-                    style: Theme.of(context).textTheme.headline6,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ...List.generate(
-                    vehicles.length,
-                    (index) => CarCard2(
-                      vehicles[index],
-                      onTap: () async {
-                        onVehicleTap(vehicles[index].id, context);
-                        // setLoadMarkerInfo(loads[index], position, context);
-                      },
                     ),
-                  ),
-                  vehicles.isEmpty
-                      ? const Text(
-                          'No hay vehiculos disponibles',
-                          textAlign: TextAlign.center,
-                        )
-                      : const SizedBox.shrink()
-                ],
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20)
+                            .copyWith(bottom: 20),
+                        shrinkWrap: true,
+                        children: [
+                          ...List.generate(
+                            vehicles.length,
+                            (index) => CarCard2(
+                              vehicles[index],
+                              onTap: () async {
+                                onVehicleTap(vehicles[index].id, context);
+                                // setLoadMarkerInfo(loads[index], position, context);
+                              },
+                            ),
+                          ),
+                          vehicles.isEmpty
+                              ? const Text(
+                                  'No hay vehiculos disponibles',
+                                  textAlign: TextAlign.center,
+                                )
+                              : const SizedBox.shrink(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -712,10 +806,13 @@ class MyLoadsState extends State<MyLoads> {
                             ? const SizedBox.shrink()
                             : TextButton.icon(
                                 onPressed: () => Navigator.of(context)
-                                    .push(MaterialPageRoute(
-                                        builder: (context) => CreateLoadPage(
-                                              fromHome: true,
-                                            )))
+                                    .push(
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateLoadPage(
+                                      fromHome: true,
+                                    ),
+                                  ),
+                                )
                                     .then((value) {
                                   setState(() {});
                                 }),
@@ -866,6 +963,426 @@ class MyLoadsState extends State<MyLoads> {
                       ],
               );
       },
+    );
+  }
+}
+
+class Filters extends StatefulWidget {
+  const Filters({Key? key}) : super(key: key);
+
+  @override
+  State<Filters> createState() => _FiltersState();
+}
+
+class _FiltersState extends State<Filters> {
+  String stateId = '';
+  int currentYear = DateTime.now().year;
+  @override
+  void initState() {
+    super.initState();
+    stateId = states[0]['id'].toString();
+    List firstCity = cities
+        .where((element) => element['state_id'].toString() == stateId)
+        .toList();
+    stateIdController.text = stateId;
+    cityId.text = firstCity[0]['id'].toString();
+    unidadMedidaPickerController.text = '0';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        ListView(
+          padding: const EdgeInsets.all(20),
+          // mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Departamento'),
+                          StatePicker(
+                            (newVal) => setState(
+                              () {
+                                stateId = newVal;
+                                List firstCity = cities
+                                    .where((element) =>
+                                        element['state_id'].toString() ==
+                                        stateId)
+                                    .toList();
+                                cityId.text = firstCity[0]['id'].toString();
+                                stateIdController.text = newVal;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Ciudad'),
+                          CitiesPicker(stateId),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Text('Año: ' +
+                    start.toInt().toString() +
+                    '-' +
+                    end.toInt().toString()),
+                RangeSlider(
+                  values: RangeValues(
+                    start,
+                    end,
+                  ),
+                  // labels: RangeLabels(
+                  //   start.toInt().toString(),
+                  //   end.toInt().toString(),
+                  // ),
+                  min: 1970,
+                  max: DateTime.now().year.toDouble(),
+                  // divisions: currentYear - 1970,
+                  onChanged: (RangeValues values) {
+                    setState(() {
+                      start = values.start;
+                      end = values.end;
+                    });
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    const Text('Calificación: '),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    ...List.generate(
+                      5,
+                      (index) => IconButton(
+                        icon: Icon(index + 1 <= stars
+                            ? Icons.star
+                            : Icons.star_border),
+                        onPressed: () {
+                          setState(() {
+                            stars = index + 1;
+                          });
+                        },
+                        color: Constants.primaryOrange,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text('Habilitación'),
+                CheckboxListTile(
+                  value: habMunicipal,
+                  onChanged: (newVal) {
+                    habMunicipal = newVal!;
+                    setState(() {});
+                  },
+                  title: const Text('Municipal'),
+                ),
+                CheckboxListTile(
+                  value: habDinatran,
+                  onChanged: (newVal) {
+                    habDinatran = newVal!;
+                    setState(() {});
+                  },
+                  title: const Text('DINATRAN'),
+                ),
+                CheckboxListTile(
+                  value: habSenacsa,
+                  onChanged: (newVal) {
+                    habSenacsa = newVal!;
+                    setState(() {});
+                  },
+                  title: const Text('SENACSA'),
+                ),
+                Row(
+                  children: [
+                    const Text('Seguro'),
+                    Switch(
+                      value: seguro,
+                      onChanged: (newVal) {
+                        seguro = newVal;
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    const Flexible(
+                      child: MeasurementUnit(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 60,
+            ),
+          ],
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: TextButton(
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<OutlinedBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              backgroundColor: MaterialStateProperty.all<Color>(
+                Constants.primaryOrange,
+              ),
+              padding: MaterialStateProperty.all<EdgeInsets>(
+                const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+              ),
+            ),
+            onPressed: () async {
+              String url = 'user/find-vehicles?';
+              url += stateIdController.text == '0'
+                  ? ''
+                  : 'state_id=' + stateIdController.text + '&';
+              url += cityId.text == '0' ? '' : 'city=' + cityId.text + '&';
+              url += "year_range=${start.toInt()} - ${end.toInt()}&";
+              url += "stars=$stars&";
+              url += habMunicipal ? "municipal=$habMunicipal&" : '';
+              url += habDinatran ? "dinatran=$habDinatran&" : '';
+              url += habSenacsa ? "senacsa=$habSenacsa&" : '';
+              url += seguro ? "insurance=$seguro&" : '';
+              url += unidadMedidaPickerController.text == '0'
+                  ? ''
+                  : "measurement_unit_id=${unidadMedidaPickerController.text}";
+              await getVehicles(url);
+              Navigator.of(context).pop();
+            },
+            child: const Text(
+              'Confirmar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+//Selector de estado y ciudad
+class StatePicker extends StatefulWidget {
+  const StatePicker(this.callBack, {Key? key}) : super(key: key);
+  final callBack;
+  @override
+  State<StatePicker> createState() => _StatePickerState();
+}
+
+class _StatePickerState extends State<StatePicker> {
+  String value = '1';
+
+  @override
+  void initState() {
+    super.initState();
+    if (states.isNotEmpty) {
+      value = states[0]['id'].toString();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton(
+      value: value,
+      icon: const Icon(Icons.arrow_circle_down_outlined),
+      elevation: 16,
+      style: Theme.of(context).textTheme.bodyText2,
+      isExpanded: true,
+      underline: Container(
+        height: 2,
+        color: Theme.of(context).inputDecorationTheme.border!.borderSide.color,
+      ),
+      onChanged: (String? newValue) {
+        setState(() {
+          value = newValue!;
+        });
+        widget.callBack(newValue!);
+      },
+      items: List.generate(
+        states.length,
+        (index) => DropdownMenuItem(
+          value: states[index]['id'].toString(),
+          child: Text(states[index]['name']),
+        ),
+      ),
+    );
+  }
+}
+
+//Selector de estado y ciudad
+class CitiesPicker extends StatefulWidget {
+  CitiesPicker(this.stateId, {Key? key}) : super(key: key);
+  String stateId;
+  @override
+  State<CitiesPicker> createState() => _CitiesPickerState();
+}
+
+class _CitiesPickerState extends State<CitiesPicker> {
+  String value = '0';
+
+  List newCities = cities;
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    setState(() {
+      newCities = cities.where((city) {
+        return city['state_id'].toString() == widget.stateId;
+      }).toList();
+      // value = newCities[0]['id'].toString();
+    });
+    return DropdownButton(
+        value: cityId.text,
+        icon: const Icon(Icons.arrow_circle_down_outlined),
+        elevation: 16,
+        style: Theme.of(context).textTheme.bodyText2,
+        isExpanded: true,
+        underline: Container(
+          height: 2,
+          color:
+              Theme.of(context).inputDecorationTheme.border!.borderSide.color,
+        ),
+        onChanged: (String? newValue) {
+          setState(() {
+            value = newValue!;
+          });
+          cityId.text = newValue!;
+        },
+        items: List.generate(
+          newCities.length,
+          (index) => DropdownMenuItem(
+            value: newCities[index]['id'].toString(),
+            child: Text(newCities[index]['name']),
+          ),
+        ));
+  }
+}
+
+class MeasurementUnit extends StatefulWidget {
+  const MeasurementUnit({Key? key}) : super(key: key);
+
+  @override
+  State<MeasurementUnit> createState() => _MeasurementUnitState();
+}
+
+class _MeasurementUnitState extends State<MeasurementUnit> {
+  String value = '0';
+
+  @override
+  void initState() {
+    unidadMedidaPickerController.text = value;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    unidadMedidaPickerController.text = unidadMedidaPickerController.text == ''
+        ? unidadMedidaPickerController.text = value
+        : unidadMedidaPickerController.text;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Unidad de medida'),
+        FutureBuilder<List>(future: Future<List>(() async {
+          try {
+            Response response = await Api().getData('get-measurement-units');
+            if (response.statusCode == 200) {
+              Map jsonResponse = jsonDecode(response.body);
+              if (jsonResponse['success']) {
+                return [
+                  {
+                    'id': 0,
+                    'name': 'Todos',
+                  },
+                  ...jsonResponse['data'],
+                ];
+              }
+            } else {
+              return [
+                {'id': value, 'name': 'No hay resultados'}
+              ];
+            }
+          } catch (e) {
+            return [
+              {'id': value, 'name': 'No hay resultados'}
+            ];
+          }
+          return [
+            {'id': value, 'name': 'No hay resultados'}
+          ];
+        }), builder: (context, AsyncSnapshot<List> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return DropdownButton(
+              value: value,
+              icon: const Icon(Icons.arrow_circle_down_outlined),
+              elevation: 16,
+              style: Theme.of(context).textTheme.bodyText2,
+              isExpanded: true,
+              underline: Container(
+                height: 2,
+                color: Theme.of(context)
+                    .inputDecorationTheme
+                    .border!
+                    .borderSide
+                    .color,
+              ),
+              onChanged: (String? newValue) {
+                setState(() {
+                  value = newValue!;
+                  unidadMedidaPickerController.text = newValue;
+                });
+              },
+              items: snapshot.data!
+                  .map((e) => DropdownMenuItem(
+                        child: Text(e['name']),
+                        value: e['id'].toString(),
+                      ))
+                  .toList(),
+            );
+          } else {
+            return const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+        })
+      ],
     );
   }
 }

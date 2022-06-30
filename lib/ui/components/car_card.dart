@@ -64,6 +64,7 @@ class _CarCard2State extends State<CarCard2> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(widget.vehicle.brandName),
                 Row(
                   children: [
                     RichText(
@@ -135,9 +136,11 @@ class _CarCard2State extends State<CarCard2> {
                     // ) : const SizedBox.shrink()),
                   ],
                 ),
-                Text(widget.vehicle.owner != null
-                    ? widget.vehicle.owner!.fullName
-                    : '')
+                Text((widget.vehicle.owner != null
+                        ? widget.vehicle.owner!.fullName
+                        : '') +
+                    ' - ' +
+                    widget.vehicle.cityName)
               ],
             )
           ],

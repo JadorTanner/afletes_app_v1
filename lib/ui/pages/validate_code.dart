@@ -32,10 +32,7 @@ class ValidateCode extends StatelessWidget {
                 PusherApi().disconnect();
               }
             }
-          } catch (e) {
-            print('ERROR AL DESCONECTARSE EN LOGIN');
-            print(e);
-          }
+          } catch (e) {}
         }
         validated = false;
         return true;
@@ -201,10 +198,7 @@ class ReturnBackState extends State<ReturnBack> {
               PusherApi().disconnect();
             }
           }
-        } catch (e) {
-          print('ERROR AL DESCONECTARSE EN LOGIN');
-          print(e);
-        }
+        } catch (e) {}
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/login',
@@ -308,10 +302,7 @@ class ValidateButtonState extends State<ValidateButton> {
                                 context.read<ChatProvider>());
                           }
                         }
-                      } catch (e) {
-                        print('ERROR AL DESCONECTARSE EN LOGIN');
-                        print(e);
-                      }
+                      } catch (e) {}
                       Navigator.of(context).pushNamedAndRemoveUntil(
                         '/loads',
                         ModalRoute.withName('/loads'),
@@ -331,10 +322,7 @@ class ValidateButtonState extends State<ValidateButton> {
                               context.read<ChatProvider>());
                         }
                       }
-                    } catch (e) {
-                      print('ERROR AL DESCONECTARSE EN LOGIN');
-                      print(e);
-                    }
+                    } catch (e) {}
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       '/vehicles',
                       ModalRoute.withName('/vehicles'),

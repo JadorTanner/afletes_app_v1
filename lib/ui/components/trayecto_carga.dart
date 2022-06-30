@@ -32,7 +32,6 @@ class _VerTrayectoState extends State<VerTrayecto> {
 
   @override
   void initState() {
-    // TODO: implement initState
     load = widget.load;
     super.initState();
   }

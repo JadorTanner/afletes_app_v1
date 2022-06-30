@@ -93,10 +93,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         context.read<ChatProvider>());
                   }
                 }
-              } catch (e) {
-                print('ERROR AL DESCONECTARSE EN LOGIN');
-                print(e);
-              }
+              } catch (e) {}
               Geolocator.getPositionStream(locationSettings: locationSettings)
                   .listen((Position? position) {
                 if (position != null) {
@@ -142,10 +139,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       context.read<ChatProvider>(),
                       true);
                 }
-              } catch (e) {
-                print('ERROR AL DESCONECTARSE EN LOGIN');
-                print(e);
-              }
+              } catch (e) {}
               Navigator.of(context).pushNamedAndRemoveUntil(
                   '/vehicles', ModalRoute.withName('/vehicles'));
             }

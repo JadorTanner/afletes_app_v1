@@ -30,6 +30,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -71,19 +72,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('FIREBASE BACKGRUOND MESSAGE');
-  print(message);
-
-  print(message.data);
   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
     if (message.data.containsKey('negotiation_id')) {
       try {
         navigatorKey.currentState!.pushNamed(
             '/negotiation_id/' + message.data['negotiation_id'].toString());
-      } catch (e) {
-        print('ERROR AL MANDAR A CHAT');
-        print(e);
-      }
+      } catch (e) {}
     }
   });
 }
@@ -205,10 +199,6 @@ void main() async {
         builder: (_) => const AfletesApp(),
       );
     }
-
-    return MaterialPageRoute(
-      builder: (_) => const AfletesApp(),
-    );
   }
 
   runApp(
@@ -385,7 +375,6 @@ class _AfletesAppState extends State<AfletesApp>
     String? user = sharedPreferences.getString('user');
 
     if (user != null) {
-      Map data = jsonDecode(user);
       PusherApi().init(
         context,
         context.read<NotificationsApi>(),
@@ -442,9 +431,6 @@ class _AfletesAppState extends State<AfletesApp>
         AppleNotification? apple = message.notification?.apple;
         Map data = message.data;
 
-        print('FIREBASE INITIAL MESSAGE');
-        print(data);
-
         try {
           if (notification != null && (android != null || apple != null)) {
             if (data.containsKey('alta')) {
@@ -482,8 +468,6 @@ class _AfletesAppState extends State<AfletesApp>
       AppleNotification? apple = message.notification?.apple;
       Map data = message.data;
 
-      print('FIREBASE ON MESSAGE');
-      print(data);
       try {
         if (notification != null && (android != null || apple != null)) {
           if (data.containsKey('alta')) {
@@ -528,9 +512,6 @@ class _AfletesAppState extends State<AfletesApp>
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       Map data = message.data;
 
-      print('FIREBASE ON MESSAGE OPENED');
-      print(data);
-
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       AppleNotification? apple = message.notification?.apple;
@@ -545,7 +526,6 @@ class _AfletesAppState extends State<AfletesApp>
           }
         }
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-          print('abriendo chat');
           if (data.containsKey('negotiation_id')) {
             navigatorKey.currentState!
                 .pushNamed('/negotiation_id/' + data['negotiation_id']);
@@ -555,17 +535,28 @@ class _AfletesAppState extends State<AfletesApp>
     });
   }
 
+  setOnline(bool newState) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if (pref.getString('user') != null) {
+      Response resp = await Api().postData('set-online', {
+        'online': newState.toString(),
+      });
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('CAMBIO DE ESTADO APLICACION: ' + state.name);
     if (state == AppLifecycleState.detached) {
       try {
         PusherApi().disconnect();
-      } catch (e) {
-        print('ERROR AL DESCONECTAR PUSHER');
-        print(e);
-      }
-    } else if (state == AppLifecycleState.resumed) {}
+      } catch (e) {}
+    } else if (state == AppLifecycleState.resumed) {
+      setOnline(true);
+    }
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      setOnline(false);
+    }
     super.didChangeAppLifecycleState(state);
   }
 
@@ -757,6 +748,5 @@ class _AfletesAppState extends State<AfletesApp>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }

@@ -17,7 +17,6 @@ Future<List<Load>> getMyLoads() async {
   try {
     Response response = await Api().getData('user/my-loads');
     loads.clear();
-    print(response.body);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
@@ -73,8 +72,6 @@ Future<List<Load>> getMyLoads() async {
 
     return loads;
   } catch (e) {
-    print('error');
-    print(e);
     return [];
   }
 }

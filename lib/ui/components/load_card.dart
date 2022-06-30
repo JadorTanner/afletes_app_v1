@@ -23,7 +23,6 @@ onLoadTap(
   try {
     Map data = {};
     List<Image> attachments = [];
-    Size size = MediaQuery.of(context).size;
     TextStyle textoInformacion = const TextStyle(fontSize: 12);
     TextEditingController intialOfferController = TextEditingController();
     List images = [];

@@ -103,6 +103,9 @@ class User extends ChangeNotifier {
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
+            api.postData('set-online', {
+              'online': true.toString(),
+            });
             Map userJson = responseBody['data']['user'];
             context.read<User>().setUser(User.userFromArray(userJson));
 
@@ -125,7 +128,6 @@ class User extends ChangeNotifier {
         }
         return false;
       } catch (e) {
-        print(e);
         return false;
       }
     }
@@ -242,7 +244,6 @@ class User extends ChangeNotifier {
         ModalRoute.withName('/login'),
       );
     } catch (e) {
-      print(e);
       return false;
     }
   }

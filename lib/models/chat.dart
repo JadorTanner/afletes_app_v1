@@ -58,7 +58,6 @@ class ChatProvider extends ChangeNotifier {
     // if (id == negotiationId) {
     message.message = message.message.replaceAll(Constants.htmlTagRegExp, '');
     _messages.insert(0, message);
-    print(_messages.length);
     notifyListeners();
     // }
   }

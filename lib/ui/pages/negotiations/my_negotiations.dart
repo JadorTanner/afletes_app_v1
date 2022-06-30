@@ -28,7 +28,6 @@ Future<List<Negotiation>> getNegotiations(BuildContext context) async {
       Map jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success']) {
         List data = jsonResponse['data'];
-        print(data);
         data.asMap().forEach((key, negotiation) {
           negotiations.add(
             Negotiation(
@@ -68,12 +67,8 @@ Future<List<Negotiation>> getNegotiations(BuildContext context) async {
         });
       }
     }
-    print('NEGOCIACIONES');
-    print(negotiations);
     return negotiations;
   } catch (e) {
-    print('ERROR');
-    print(e);
     return [];
   }
 }
@@ -130,8 +125,6 @@ class _MyNegotiationsState extends State<MyNegotiations> {
           FutureBuilder<List<Negotiation>>(
             future: getNegotiations(context),
             builder: (context, snapshot) {
-              print('CONTAINER NEGOCIACIOINES');
-              print(negotiations);
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,

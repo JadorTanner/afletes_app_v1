@@ -755,9 +755,6 @@ class RegisterButtonState extends State<RegisterButton> {
 
                   context.read<User>().setUser(
                       User.userFromArray(responseBody['data']['user']));
-                  SharedPreferences sharedPreferences =
-                      await SharedPreferences.getInstance();
-
                   //TOKEN PARA MENSAJES PUSH
                   try {
                     String? token = await FirebaseMessaging.instance.getToken();
@@ -768,7 +765,6 @@ class RegisterButtonState extends State<RegisterButton> {
                       });
                     }
                   } catch (e) {}
-                  print(responseBody['data']);
 
                   await User().login(context, email.text, password.text);
 

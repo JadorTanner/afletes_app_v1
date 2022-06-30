@@ -588,7 +588,6 @@ class _DocumentosState extends State<Documentos>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }
 
@@ -806,10 +805,7 @@ class _SendButtonState extends State<SendButton> {
                           context.read<ChatProvider>());
                     }
                   }
-                } catch (e) {
-                  print('ERROR AL DESCONECTARSE EN LOGIN');
-                  print(e);
-                }
+                } catch (e) {}
               }
               widget.changeState();
             },

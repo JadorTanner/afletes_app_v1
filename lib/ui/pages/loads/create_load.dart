@@ -524,7 +524,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                               onPressed: () async {
                                 Api api = Api();
 
-                                Response response = await api.postData(
+                                await api.postData(
                                   'load/load-image-delete',
                                   {
                                     'id': imagenesNetwork[index]['id'],

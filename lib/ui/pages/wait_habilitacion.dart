@@ -18,10 +18,7 @@ class WaitHabilitacion extends StatelessWidget {
               PusherApi().disconnect();
             }
           }
-        } catch (e) {
-          print('ERROR AL DESCONECTARSE EN LOGIN');
-          print(e);
-        }
+        } catch (e) {}
         return true;
       },
       child: Scaffold(

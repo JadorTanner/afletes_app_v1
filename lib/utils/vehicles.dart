@@ -15,6 +15,7 @@ class Vehicle {
   int id, ownerId, yearOfProd, brand, measurementUnitId;
   double maxCapacity, score;
   String observation,
+      cityName,
       licensePlate,
       model,
       measurementUnit,
@@ -49,6 +50,7 @@ class Vehicle {
     this.licensePlate = '0',
     this.model = '0',
     this.measurementUnit = '',
+    this.cityName = '',
     this.vtoMunicipal = '',
     this.vtoDinatran = '',
     this.vtoSenacsa = '',
@@ -105,7 +107,6 @@ class Vehicle {
   }) async {
     try {
       SharedPreferences sha = await SharedPreferences.getInstance();
-      print(sha.getString('user'));
       Map user = jsonDecode(sha.getString('user')!);
 
       Api api = Api();
@@ -124,7 +125,6 @@ class Vehicle {
         request.headers[key] = value;
       });
       request.headers['Authorization'] = 'Bearer ' + token;
-      print(request.headers['Authorization']);
       body.forEach((key, value) {
         request.fields[key] = value.toString();
       });
@@ -259,7 +259,6 @@ class Vehicle {
           const SnackBar(content: Text('Compruebe su conexión a internet')));
       return false;
     } catch (e) {
-      print(e);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Ha ocurrido un error')));
       return false;

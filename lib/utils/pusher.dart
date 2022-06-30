@@ -27,8 +27,6 @@ class PusherApi extends ChangeNotifier {
   init(BuildContext context, NotificationsApi notificationsApi,
       TransportistsLocProvider transportistsLocProvider, ChatProvider chat,
       [bool isGenerator = false]) async {
-    print('CANALES');
-    print(_pusher.channels);
     if (_pusher.channels.isNotEmpty) {
       List channelNames = [];
       _pusher.channels.forEach((key, value) {
@@ -62,7 +60,6 @@ class PusherApi extends ChangeNotifier {
     await _pusher.subscribe(
       channelName: "negotiation-chat",
       onEvent: (event) async {
-        print("onEvent: $event");
         if (event.eventName == 'App\\Events\\NegotiationChat') {
           try {
             if (event.data != null) {
@@ -76,7 +73,6 @@ class PusherApi extends ChangeNotifier {
                     jsonDecode(sharedPreferences.getString('user')!));
                 if (user.id != jsonData['sender_id']) {
                   if (user.id == jsonData['user_id']) {
-                    print('ENTRANDO');
                     if (jsonData['ask_location']) {
                       if (jsonData['ask_location']) {
                         Position position =
@@ -122,9 +118,7 @@ class PusherApi extends ChangeNotifier {
                         }
                       }
                     }
-                    print('PASA ASK LOCATION');
                     if ((chat.negotiationId == jsonData['negotiation_id'])) {
-                      print('NEGOTIATION ID IGUAL A CONTEXT');
                       DateTime now = DateTime.now();
                       String formattedDate =
                           DateFormat('y-dd-MM kk:mm:ss').format(now);
@@ -155,7 +149,6 @@ class PusherApi extends ChangeNotifier {
                       if (jsonData['normal_message'] && chat.negState == 6) {
                         chat.setCanOffer(true);
                       }
-                      print('PASA NORMAL MESSAGE');
                       if (jsonData['negotiation_state'] != null) {
                         chat.setLoadState(jsonData['negotiation_state']);
                         chat.setShowDefaultMessages(true);
@@ -164,28 +157,23 @@ class PusherApi extends ChangeNotifier {
                           chat.setCanVote(true);
                         }
                       }
-                      print('PASA NEG STATE');
                       if (jsonData['is_final_offer']) {
                         chat.setPaid(false);
                         chat.setCanOffer(false);
                         chat.setToPay(false);
                       }
-                      print('PASA FINAL OFFER');
 
                       if (jsonData['accepted'] != null) {
                         chat.setCanOffer(false);
                         chat.setToPay(true);
                         chat.setPaid(false);
                       }
-                      print('PASA ACCEPTED');
                       if (jsonData['rejected'] != null) {
                         chat.setCanOffer(false);
                         chat.setToPay(false);
                         chat.setPaid(false);
                       }
-                      print('PASA REJECTED');
                     } else {
-                      print('NEGOTIATION ID DIFERENTE A CONTEXT');
                       String title = 'Tiene una nueva notificación';
                       if (jsonData['is_final_offer'] != null) {
                         if (jsonData['is_final_offer'].runtimeType == bool) {
@@ -235,8 +223,6 @@ class PusherApi extends ChangeNotifier {
               }
             }
           } catch (e) {
-            print('ERROR AL RECIBIR MENSAJE');
-            print(e);
             // if (!Platform.isAndroid) {
             if (WidgetsBinding.instance.lifecycleState ==
                 AppLifecycleState.resumed) {
@@ -289,12 +275,9 @@ class PusherApi extends ChangeNotifier {
         onEvent: (event) {
           if (event.eventName == 'App\\Events\\LoadsEvent') {
             Map data = jsonDecode(event.data.toString());
-            print(data);
-            print('CARGAS LENGTH' + loads.length.toString());
             if (data['action'] == 'remove') {
               loads.removeWhere((element) => element.id == data['id']);
             } else if (data['action'] == 'add') {
-              print('agregando carga');
               Map load = data['load'];
               loads.add(
                 Load(
@@ -320,7 +303,6 @@ class PusherApi extends ChangeNotifier {
               );
             }
             loadsMapKey.currentState!.setState(() {});
-            print('CARGAS LENGTH' + loads.length.toString());
           }
         },
       );

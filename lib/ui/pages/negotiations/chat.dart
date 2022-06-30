@@ -107,8 +107,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     votes = jsonResp['data']['votes'];
     // starsController.text = votes.toString();
     //MANEJA LOS ELEMENTOS QUE APARECERAN EN PANTALLA
-    print('ESTADO NEG');
-    print(chatProvider.negState);
     switch (chatProvider.negState) {
       case 1:
         chatProvider.setCanOffer(true);
@@ -128,8 +126,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
         chatProvider.setToPay(true);
         break;
       case 6:
-        print(listMessages.last);
-        print(user.id);
         chatProvider.setCanOffer(true);
         if (listMessages.first['sender_id'] == user.id) {
           chatProvider.setCanOffer(false);
@@ -155,7 +151,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
     //   oferta.text = jsonResp['data']['load']['final_offer'] ?? '0';
     // }
     chatProvider.setLoadState(jsonResp['data']['load_state']['id']);
-    print(chatProvider.loadState);
     chatProvider.setLoadId(jsonResp['data']['load']['id']);
     if (chatProvider.loadState == 13) {
       chatProvider.setToPay(false);
