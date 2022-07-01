@@ -30,7 +30,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -535,27 +534,12 @@ class _AfletesAppState extends State<AfletesApp>
     });
   }
 
-  setOnline(bool newState) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if (pref.getString('user') != null) {
-      Response resp = await Api().postData('set-online', {
-        'online': newState.toString(),
-      });
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.detached) {
       try {
         PusherApi().disconnect();
       } catch (e) {}
-    } else if (state == AppLifecycleState.resumed) {
-      setOnline(true);
-    }
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.detached) {
-      setOnline(false);
     }
     super.didChangeAppLifecycleState(state);
   }
@@ -621,6 +605,9 @@ class _AfletesAppState extends State<AfletesApp>
                                   accuracy: LocationAccuracy.best,
                                   distanceFilter: 20,
                                 );
+                                context
+                                    .read<User>()
+                                    .setOnline(jsonDecode(user)['online']);
                                 Geolocator.getPositionStream(
                                         locationSettings: locationSettings)
                                     .listen((Position? position) {

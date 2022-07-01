@@ -14,7 +14,7 @@ class User extends ChangeNotifier {
   User get user => _user!;
 
   Map userData = {};
-  bool isCarrier = false, isLoadGenerator = false;
+  bool isCarrier = false, isLoadGenerator = false, online = true;
   int cityId = 0, id = 0;
   String latitude = '',
       longitude = '',
@@ -49,6 +49,7 @@ class User extends ChangeNotifier {
         isLoadGenerator: data['is_load_generator'],
         cellphone: data['cellphone'] ?? '',
         phone: data['phone'] ?? '',
+        online: data['online'] ?? false,
       );
     }
   }
@@ -64,6 +65,7 @@ class User extends ChangeNotifier {
     this.legalName = '',
     this.isCarrier = false,
     this.isLoadGenerator = false,
+    this.online = false,
     this.cityId = 0,
     this.latitude = '',
     this.longitude = '',
@@ -76,6 +78,11 @@ class User extends ChangeNotifier {
 
   setUser(User newUser) {
     _user = newUser;
+    notifyListeners();
+  }
+
+  setOnline(bool newState) {
+    online = newState;
     notifyListeners();
   }
 

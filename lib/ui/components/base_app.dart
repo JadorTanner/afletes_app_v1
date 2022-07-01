@@ -1,13 +1,18 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:convert';
+
 import 'package:afletes_app_v1/models/notifications.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/pages/my_profile.dart';
+import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseApp extends StatefulWidget {
   BaseApp(this.body,
@@ -113,6 +118,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
   late Load loadProvider;
   late ThemeData theme;
   late List<NotificationModel> notifications;
+  setOnline(bool newState) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    context.read<User>().setOnline(newState);
+    if (pref.getString('user') != null) {
+      Map user = jsonDecode(pref.getString('user')!);
+      user['online'] = newState;
+      pref.setString('user', jsonEncode(user));
+      Response resp = await Api().postData(
+        'set-online',
+        {
+          'online': newState.toString(),
+        },
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -251,7 +272,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
             const SizedBox(
               height: 80,
             ),
-            LogOutButton(user),
+            LoadingButton(
+              clickEvent: () async {
+                await setOnline(!context.read<User>().online);
+              },
+              title:
+                  context.watch<User>().online ? 'Desconectarme' : 'Conectarme',
+            ),
+            LoadingButton(
+              clickEvent: () async {
+                await user.logout(context);
+              },
+              title: 'Cerrar sesión',
+            ),
             const SizedBox(
               height: 20,
             ),
@@ -262,14 +295,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 }
 
-class LogOutButton extends StatefulWidget {
-  LogOutButton(this.user, {Key? key}) : super(key: key);
-  User user;
+class LoadingButton extends StatefulWidget {
+  LoadingButton({required this.clickEvent, required this.title, Key? key})
+      : super(key: key);
+  Function clickEvent;
+  String title;
   @override
-  State<LogOutButton> createState() => _LogOutButtonState();
+  State<LoadingButton> createState() => _LoadingButtonState();
 }
 
-class _LogOutButtonState extends State<LogOutButton> {
+class _LoadingButtonState extends State<LoadingButton> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
@@ -280,7 +315,7 @@ class _LogOutButtonState extends State<LogOutButton> {
               setState(() {
                 isLoading = !isLoading;
               });
-              await widget.user.logout(context);
+              await widget.clickEvent();
               setState(() {
                 isLoading = !isLoading;
               });
@@ -291,9 +326,9 @@ class _LogOutButtonState extends State<LogOutButton> {
               width: 20,
               child: CircularProgressIndicator(),
             )
-          : const Text(
-              'Cerrar sesión',
-              style: TextStyle(
+          : Text(
+              widget.title,
+              style: const TextStyle(
                 decoration: TextDecoration.underline,
               ),
             ),
