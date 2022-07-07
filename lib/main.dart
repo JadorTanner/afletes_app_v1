@@ -310,6 +310,7 @@ class _AfletesAppState extends State<AfletesApp>
 
       if (user != null) {
         context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+        context.read<User>().setOnline(context.read<User>().online);
         if (jsonDecode(user)['confirmed']) {
           if (jsonDecode(user)['habilitado']) {
             if (jsonDecode(user)['is_carrier']) {
