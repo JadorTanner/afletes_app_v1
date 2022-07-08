@@ -310,7 +310,7 @@ class _AfletesAppState extends State<AfletesApp>
 
       if (user != null) {
         context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
-        context.read<User>().setOnline(context.read<User>().online);
+        context.read<User>().setOnline(jsonDecode(user)['online']);
         if (jsonDecode(user)['confirmed']) {
           if (jsonDecode(user)['habilitado']) {
             if (jsonDecode(user)['is_carrier']) {
@@ -597,6 +597,9 @@ class _AfletesAppState extends State<AfletesApp>
                         var user = sharedPreferences.getString('user');
 
                         if (user != null && user != 'null') {
+                          context
+                              .read<User>()
+                              .setOnline(jsonDecode(user)['online']);
                           if (jsonDecode(user)['confirmed']) {
                             if (jsonDecode(user)['habilitado']) {
                               if (jsonDecode(user)['is_carrier']) {
@@ -606,9 +609,6 @@ class _AfletesAppState extends State<AfletesApp>
                                   accuracy: LocationAccuracy.best,
                                   distanceFilter: 20,
                                 );
-                                context
-                                    .read<User>()
-                                    .setOnline(jsonDecode(user)['online']);
                                 Geolocator.getPositionStream(
                                         locationSettings: locationSettings)
                                     .listen((Position? position) {

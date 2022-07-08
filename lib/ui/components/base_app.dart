@@ -10,7 +10,6 @@ import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/loads.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -125,7 +124,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       Map user = jsonDecode(pref.getString('user')!);
       user['online'] = newState;
       pref.setString('user', jsonEncode(user));
-      Response resp = await Api().postData(
+      Api().postData(
         'set-online',
         {
           'online': newState.toString(),

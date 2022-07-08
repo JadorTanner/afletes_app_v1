@@ -615,7 +615,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   if (img != null) {
                                     imagenes.add(img);
                                     if (imagenes.isNotEmpty) {
-                                      Navigator.of(context).pop();
+                                      Navigator.pop(context);
                                       setState(() {
                                         // imagePageController.jumpToPage(0);
                                       });
@@ -634,7 +634,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                   if (imgs != null) {
                                     imagenes.addAll((imgs));
                                     if (imagenes.isNotEmpty) {
-                                      Navigator.of(context).pop();
+                                      Navigator.pop(context);
                                       setState(() {
                                         // imagePageController.jumpToPage(0);
                                       });

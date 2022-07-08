@@ -115,6 +115,7 @@ class User extends ChangeNotifier {
             });
             Map userJson = responseBody['data']['user'];
             context.read<User>().setUser(User.userFromArray(userJson));
+            context.read<User>().setOnline(userJson['online']);
 
             await localStorage.setString(
                 'user', jsonEncode(responseBody['data']['user']));

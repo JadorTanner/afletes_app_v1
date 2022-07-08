@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:afletes_app_v1/models/transportists_location.dart';
@@ -62,9 +63,11 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
     Response response = await Api().getData(url);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
+      log(response.body);
       if (jsonResponse['success']) {
         vehicles.clear();
         for (var vehicle in jsonResponse['data']) {
+          print(vehicle);
           vehicles.add(
             Vehicle(
               id: vehicle['id'],
@@ -77,9 +80,9 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
                   ? User(fullName: vehicle['created_by']['full_name'])
                   : null,
               seguro: vehicle['insurance_attachment_id'] != null,
-              imgs: vehicle['vehicleattachments'] ?? '',
+              imgs: vehicle['vehicleattachments'] ?? [],
               cityName: vehicle['created_by'] != null
-                  ? vehicle['created_by']['city_name']
+                  ? (vehicle['created_by']['city_name'] ?? '')
                   : '',
               brandName: vehicle['vehicle_brand'] != null
                   ? vehicle['vehicle_brand']['name']
@@ -92,6 +95,7 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
 
     return vehicles;
   } catch (e) {
+    print(e);
     return [];
   }
 }
@@ -221,6 +225,12 @@ class _VehiclesListState extends State<VehiclesList> {
                         attachments.add(Image.network(
                           Constants.vehicleImgUrl + element['path'],
                           fit: BoxFit.cover,
+                          errorBuilder: (context, ob, stack) {
+                            return const Center(
+                              child:
+                                  Text('No hemos podido encontrar la imagen'),
+                            );
+                          },
                         ));
                       }
                     }
@@ -805,17 +815,17 @@ class MyLoadsState extends State<MyLoads> {
                         (snapshot.data!['data'].length > 0
                             ? const SizedBox.shrink()
                             : TextButton.icon(
-                                onPressed: () => Navigator.of(context)
-                                    .push(
-                                  MaterialPageRoute(
-                                    builder: (context) => CreateLoadPage(
-                                      fromHome: true,
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreateLoadPage(
+                                        fromHome: true,
+                                      ),
                                     ),
-                                  ),
-                                )
-                                    .then((value) {
+                                  );
                                   setState(() {});
-                                }),
+                                },
                                 icon: const Icon(Icons.add),
                                 label: const Text('Agregar carga'),
                               )),
