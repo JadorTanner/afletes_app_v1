@@ -240,6 +240,11 @@ class _VehiclesListState extends State<VehiclesList> {
                 builder: (context, AsyncSnapshot<Map> firstSnapshot) {
                   if (firstSnapshot.connectionState == ConnectionState.done) {
                     if (firstSnapshot.data!['success']) {
+                      print(
+                        double.parse(firstSnapshot.data!['data']['votes_score']
+                                .toString())
+                            .toInt(),
+                      );
                       return ListView(
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -289,9 +294,10 @@ class _VehiclesListState extends State<VehiclesList> {
                                 Row(
                                   children: [
                                     ...List.generate(
-                                      int.parse(firstSnapshot.data!['data']
-                                              ['votes_score']
-                                          .toString()),
+                                      double.parse(firstSnapshot.data!['data']
+                                                  ['votes_score']
+                                              .toString())
+                                          .toInt(),
                                       (index) => const Icon(
                                         Icons.star,
                                         color: Colors.yellow,
@@ -299,9 +305,10 @@ class _VehiclesListState extends State<VehiclesList> {
                                     ),
                                     ...List.generate(
                                       (5 -
-                                          int.parse(firstSnapshot.data!['data']
-                                                  ['votes_score']
-                                              .toString())),
+                                          double.parse(firstSnapshot
+                                                  .data!['data']['votes_score']
+                                                  .toString())
+                                              .toInt()),
                                       (index) => const Icon(
                                         Icons.star_border,
                                         color: Colors.yellow,
