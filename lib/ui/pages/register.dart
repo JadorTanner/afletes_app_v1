@@ -767,6 +767,20 @@ class RegisterButtonState extends State<RegisterButton> {
                   } catch (e) {}
 
                   await User().login(context, email.text, password.text);
+                  SharedPreferences pref =
+                      await SharedPreferences.getInstance();
+                  if (pref.getString('user') != null) {
+                    context.read<User>().setOnline(true);
+                    Map user = jsonDecode(pref.getString('user')!);
+                    user['online'] = true;
+                    pref.setString('user', jsonEncode(user));
+                    Api().postData(
+                      'set-online',
+                      {
+                        'online': true.toString(),
+                      },
+                    );
+                  }
 
                   if (responseBody['data']['user']['is_carrier']) {
                     PusherApi().init(

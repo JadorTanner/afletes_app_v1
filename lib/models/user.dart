@@ -110,9 +110,9 @@ class User extends ChangeNotifier {
         if (response.statusCode == 200) {
           Map responseBody = jsonDecode(response.body);
           if (responseBody['success']) {
-            api.postData('set-online', {
-              'online': true.toString(),
-            });
+            // api.postData('set-online', {
+            //   'online': true.toString(),
+            // });
             Map userJson = responseBody['data']['user'];
             context.read<User>().setUser(User.userFromArray(userJson));
             context.read<User>().setOnline(userJson['online']);
