@@ -179,6 +179,7 @@ class Load extends ChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(responseBody['message']),
+              duration: const Duration(seconds: 5),
             ),
           );
           return false;
@@ -187,6 +188,7 @@ class Load extends ChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(stringResponse),
+            duration: const Duration(seconds: 5),
           ),
         );
         return false;

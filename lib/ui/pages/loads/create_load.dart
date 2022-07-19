@@ -1090,8 +1090,6 @@ class _SearchPlaceState extends State<SearchPlace>
   }
 
   setMarker(LatLng argument) {
-    widget.coordsController.text =
-        argument.latitude.toString() + ',' + argument.longitude.toString();
     setState(() {
       markers = [
         Marker(
@@ -1107,6 +1105,11 @@ class _SearchPlaceState extends State<SearchPlace>
                     newPosition.longitude.toString()),
       ];
     });
+    mapController.animateCamera(
+      CameraUpdate.newLatLng(argument),
+    );
+    widget.coordsController.text =
+        argument.latitude.toString() + ',' + argument.longitude.toString();
   }
 
   void _onMapCreated(GoogleMapController controller) {
