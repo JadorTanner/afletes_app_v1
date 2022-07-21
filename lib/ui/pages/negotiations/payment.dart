@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/ui/pages/negotiations/my_negotiations.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -68,228 +69,282 @@ class _PaymentState extends State<Payment> {
             ruc.text = data['data']['generator']['document_number'];
             method.text = '0';
             return ListView(
-                padding: const EdgeInsets.only(
-                  top: 60,
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
+              padding: const EdgeInsets.only(
+                top: 60,
+                bottom: 20,
+                left: 20,
+                right: 20,
+              ),
+              children: [
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'Tu pedido',
+                      textScaleFactor: 1.3,
+                    ),
+                  ),
                 ),
-                children: [
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                        'Tu pedido',
-                        textScaleFactor: 1.3,
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          TextField(
-                            controller: razon,
-                            decoration: const InputDecoration(
-                                label: Text('Razón social *'),
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 5, horizontal: 20)),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          TextField(
-                            controller: ruc,
-                            decoration: const InputDecoration(
-                                label: Text('RUC / C.I. *'),
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 5, horizontal: 20)),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          newRow(
-                              'Vehículo',
-                              data['data']['vehicle']['brand'] +
-                                  ' - ' +
-                                  data['data']['vehicle']['model']),
-                          newRow('Producto', data['data']['load']['product']),
-                          newRow('Descripción',
-                              data['data']['load']['description']),
-                          newRow(
-                              'Cantidad de vehículos',
-                              data['data']['load']['vehicles_quantity']
-                                  .toString()),
-                          newRow(
-                              'Cantidad de ayudantes',
-                              data['data']['load']['helpers_quantity']
-                                  .toString()),
-                          newRow('Peso',
-                              data['data']['load']['weight'].toString()),
-                          (data['data']['load']['volume'] != null
-                              ? newRow('Volumen',
-                                  data['data']['load']['volume'].toString())
-                              : const SizedBox.shrink()),
-                          newRow(
-                              'Precio',
-                              data['data']['load']['final_offer']
-                                  .toString()
-                                  .replaceAll('.00', '')),
-                          newRow('Dirección de partida',
-                              data['data']['load']['address']),
-                          newRow('Dirección de destino',
-                              data['data']['load']['destination_address']),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                      child: Padding(
+                Card(
+                  child: Padding(
                     padding: const EdgeInsets.all(20),
-                    child: PaymentMethods(
-                        data['data']['saldo_transportista'],
-                        data['data']['load']['final_offer']
-                            .toString()
-                            .replaceAll('.00', '')),
-                  )),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton.icon(
-                        onPressed: () async {
-                          try {
-                            Api api = Api();
-                            Response response = await api.postData(
-                              'negotiation/pay-negotiation',
-                              {
-                                'amount': data['data']['load']['final_offer']
-                                    .toString()
-                                    .replaceAll('.00', ''),
-                                'negotiation_id': widget.id,
-                                'metodo': method.text,
-                              },
-                            );
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        TextField(
+                          controller: razon,
+                          decoration: const InputDecoration(
+                              label: Text('Razón social *'),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 20)),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        TextField(
+                          controller: ruc,
+                          decoration: const InputDecoration(
+                              label: Text('RUC / C.I. *'),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 20)),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        newRow(
+                            'Vehículo',
+                            data['data']['vehicle']['brand'] +
+                                ' - ' +
+                                data['data']['vehicle']['model']),
+                        newRow('Producto', data['data']['load']['product']),
+                        newRow(
+                            'Descripción', data['data']['load']['description']),
+                        newRow(
+                            'Cantidad de vehículos',
+                            data['data']['load']['vehicles_quantity']
+                                .toString()),
+                        newRow(
+                            'Cantidad de ayudantes',
+                            data['data']['load']['helpers_quantity']
+                                .toString()),
+                        newRow(
+                            'Peso', data['data']['load']['weight'].toString()),
+                        (data['data']['load']['volume'] != null
+                            ? newRow('Volumen',
+                                data['data']['load']['volume'].toString())
+                            : const SizedBox.shrink()),
+                        newRow(
+                            'Precio',
+                            data['data']['load']['final_offer']
+                                .toString()
+                                .replaceAll('.00', '')),
+                        newRow('Dirección de partida',
+                            data['data']['load']['address']),
+                        newRow('Dirección de destino',
+                            data['data']['load']['destination_address']),
+                      ],
+                    ),
+                  ),
+                ),
+                Card(
+                    child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: PaymentMethods(
+                      data['data']['saldo_transportista'],
+                      data['data']['load']['final_offer']
+                          .toString()
+                          .replaceAll('.00', '')),
+                )),
+                ButtonBar(
+                  alignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        try {
+                          Api api = Api();
+                          Response response = await api.postData(
+                            'negotiation/pay-negotiation',
+                            {
+                              'amount': data['data']['load']['final_offer']
+                                  .toString()
+                                  .replaceAll('.00', ''),
+                              'negotiation_id': widget.id,
+                              'metodo': method.text,
+                            },
+                          );
 
-                            Map jsonResponse = jsonDecode(response.body);
-                            if (response.statusCode == 200) {
-                              if (method.text == '2') {
-                                if (jsonResponse['process_id'] != '') {
-                                  String url = Constants.apiUrl +
-                                      'bancard-view?app=true&process_id=' +
-                                      jsonResponse['data']['process_id'];
+                          Map jsonResponse = jsonDecode(response.body);
+                          if (response.statusCode == 200) {
+                            if (method.text == '2') {
+                              if (jsonResponse['process_id'] != '') {
+                                String url = Constants.apiUrl +
+                                    'bancard-view?app=true&process_id=' +
+                                    jsonResponse['data']['process_id'];
 
-                                  try {
-                                    if (await canLaunch(url)) {
-                                      try {
-                                        Future.delayed(
-                                            const Duration(seconds: 1), () {
-                                          Navigator.of(context)
-                                              .pushReplacementNamed(
-                                                  '/my-negotiations');
-                                        });
-                                      } catch (e) {
-                                        Future.delayed(
-                                            const Duration(seconds: 1), () {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  MyNegotiations(),
-                                            ),
-                                          );
-                                        });
-                                      }
-                                      await launch(url);
-                                    } else {
-                                      throw "Could not launch $url";
-                                    }
-                                  } catch (e) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        content: const Text(
-                                          'No hemos podido abrir el formulario. Por favor, ingrese desde la web para realizar el pago.',
-                                        ),
-                                        actions: [
-                                          IconButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            icon: const Icon(Icons.check),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  // showDialog(
-                                  //   context: context,
-                                  //   builder: (context) => Dialog(
-                                  //     child: WebView(
-                                  //       initialUrl: Constants.apiUrl +
-                                  //           'bancard-view?process_id=' +
-                                  //           jsonResponse['data']['process_id'],
-                                  //       javascriptMode:
-                                  //           JavascriptMode.unrestricted,
-                                  //     ),
-                                  //   ),
-                                  //   barrierDismissible: false,
-                                  // );
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Aguardamos su pago.'),
-                                  ),
-                                );
-                                // Navigator.of(context).pushNamedAndRemoveUntil(
-                                //   '/my-negotiations',
-                                //   ModalRoute.withName('/my-negotiations'),
-                                // );
                                 try {
-                                  Future.delayed(const Duration(seconds: 1),
-                                      () {
-                                    Navigator.of(context).pushReplacementNamed(
-                                        '/my-negotiations');
-                                  });
+                                  if (await canLaunch(url)) {
+                                    try {
+                                      Future.delayed(const Duration(seconds: 1),
+                                          () {
+                                        Navigator.of(context)
+                                            .pushReplacementNamed(
+                                                '/my-negotiations');
+                                      });
+                                    } catch (e) {
+                                      Future.delayed(const Duration(seconds: 1),
+                                          () {
+                                        Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MyNegotiations(),
+                                          ),
+                                        );
+                                      });
+                                    }
+                                    await launch(url);
+                                  } else {
+                                    throw "Could not launch $url";
+                                  }
                                 } catch (e) {
-                                  Future.delayed(const Duration(seconds: 1),
-                                      () {
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(
-                                        builder: (context) => MyNegotiations(),
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      content: const Text(
+                                        'No hemos podido abrir el formulario. Por favor, ingrese desde la web para realizar el pago.',
                                       ),
-                                    );
-                                  });
+                                      actions: [
+                                        IconButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          icon: const Icon(Icons.check),
+                                        ),
+                                      ],
+                                    ),
+                                  );
                                 }
+                                // showDialog(
+                                //   context: context,
+                                //   builder: (context) => Dialog(
+                                //     child: WebView(
+                                //       initialUrl: Constants.apiUrl +
+                                //           'bancard-view?process_id=' +
+                                //           jsonResponse['data']['process_id'],
+                                //       javascriptMode:
+                                //           JavascriptMode.unrestricted,
+                                //     ),
+                                //   ),
+                                //   barrierDismissible: false,
+                                // );
                               }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Ha ocurrido un error'),
+                                  content: Text('Aguardamos su pago.'),
                                 ),
                               );
+                              // Navigator.of(context).pushNamedAndRemoveUntil(
+                              //   '/my-negotiations',
+                              //   ModalRoute.withName('/my-negotiations'),
+                              // );
+                              try {
+                                Future.delayed(const Duration(seconds: 1), () {
+                                  Navigator.of(context)
+                                      .pushReplacementNamed('/my-negotiations');
+                                });
+                              } catch (e) {
+                                Future.delayed(const Duration(seconds: 1), () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (context) => MyNegotiations(),
+                                    ),
+                                  );
+                                });
+                              }
                             }
-                          } on SocketException {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Compruebe su conexión a internet'),
-                              ),
-                            );
-                          } catch (e) {
+                          } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Ha ocurrido un error'),
                               ),
                             );
                           }
-                        },
-                        icon: const Icon(Icons.attach_money),
-                        label: const Text('Realizar el pago'),
-                      )
-                    ],
-                  )
-                ]);
+                        } on SocketException {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Compruebe su conexión a internet'),
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Ha ocurrido un error'),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.attach_money),
+                      label: const Text('Realizar el pago'),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextButton.icon(
+                  onPressed: () async {
+                    String text = '';
+                    try {
+                      Response textResponse = await get(
+                          Uri.parse(Constants.apiUrl + 'datos-transferencia'));
+                      if (textResponse.statusCode == 200) {
+                        text = textResponse.body;
+                      } else {
+                        throw Exception();
+                      }
+                    } catch (e) {
+                      text = """Razon Social: Arroba Paraguay SRL
+                      Ruc N°: 80110965-5
+                      Cta.Cte. Banco Itau N°: 0212014""";
+                    }
+                    try {
+                      String url = Uri.parse(
+                              "whatsapp://send?phone=595983473816&text=$text")
+                          .toString();
+                      print(url);
+                      if (await canLaunch(url)) {
+                        await launch(url);
+                      } else {
+                        throw Exception('No se puede abrir whatsapp');
+                      }
+                    } catch (e) {
+                      print('NO SE PUEDE ABRIR WHATSAPP');
+                      print(e);
+                      Clipboard.setData(ClipboardData(text: text));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Lo sentimos, no podemos abrir whatsapp. Los datos han sido copiados.',
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.whatsapp,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                  label: const Text('Whatsapp',
+                      style: TextStyle(color: Colors.white)),
+                  style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(const Color(0xFFED8232))),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            );
           } else {
             return const Center(
               child: CircularProgressIndicator(),

@@ -12,11 +12,9 @@ import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 final FocusNode _emailFocus = FocusNode();
 final FocusNode _passwordFocus = FocusNode();
@@ -297,64 +295,6 @@ class FormContainer extends StatelessWidget {
                     : MaterialStateProperty.all(const Color(0xFFED8232))),
           ),
 
-          const SizedBox(
-            width: 100,
-            height: 20,
-          ),
-
-          TextButton.icon(
-            onPressed: () async {
-              String text = """Estos son los Datos de Mi Cuenta Eko:
-Titular
-LEZCANO GIMENEZ LUIS ANGEL
-
-Banco
-Familiar
-
-Nº de Teléfono
-+595982494617
-
-Nº de Cédula
-6235280
-
-N° de cuenta para transferencias desde Banco Familiar
-81-276598
-
-N° de cuenta para transferencias desde otros bancos
-81276598""";
-              try {
-                String url =
-                    Uri.parse("whatsapp://send?phone=595982494617&text=$text")
-                        .toString();
-                print(url);
-                if (await canLaunch(url)) {
-                  await launch(url);
-                } else {
-                  throw Exception('No se puede abrir whatsapp');
-                }
-              } catch (e) {
-                print('NO SE PUEDE ABRIR WHATSAPP');
-                print(e);
-                Clipboard.setData(ClipboardData(text: text));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Lo sentimos, no podemos abrir whatsapp. Los datos han sido copiados.'),
-                  ),
-                );
-              }
-            },
-            icon: const Icon(
-              Icons.whatsapp,
-              color: Colors.white,
-              size: 30,
-            ),
-            label:
-                const Text('Whatsapp', style: TextStyle(color: Colors.white)),
-            style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFFED8232))),
-          ),
           const SizedBox(
             width: 100,
             height: 20,
