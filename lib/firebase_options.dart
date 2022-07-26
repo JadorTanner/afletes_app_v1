@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCcrHqrQ7cghZf5DAknGqupv53FzlTypXs',
-    appId: '1:895740225858:android:9292c0f2e8c2c647c6c0db',
+    appId: '1:895740225858:android:309b0d39c48056f7c6c0db',
     messagingSenderId: '895740225858',
     projectId: 'afletes-d4e2c',
     storageBucket: 'afletes-d4e2c.appspot.com',
@@ -59,11 +59,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAhgjEkP51zsZUSsL9pjhwin7rhOZJXuOM',
-    appId: '1:895740225858:ios:2703a875838e0e4fc6c0db',
+    appId: '1:895740225858:ios:53cca65e43bdcaddc6c0db',
     messagingSenderId: '895740225858',
     projectId: 'afletes-d4e2c',
     storageBucket: 'afletes-d4e2c.appspot.com',
-    iosClientId: '895740225858-oip5edp79d029gfg60nco3pufrum4bl2.apps.googleusercontent.com',
-    iosBundleId: 'com.jt.afletesAppV1',
+    androidClientId: '895740225858-nr83r84nibk6556kt0r7oh4r1ti0ah4c.apps.googleusercontent.com',
+    iosClientId: '895740225858-q1r07em4af6ugbf2sbrjke8pophd689k.apps.googleusercontent.com',
+    iosBundleId: 'com.afletes.app',
   );
 }

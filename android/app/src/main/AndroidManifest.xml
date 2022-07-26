@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.jt.afletes_app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.afletes.app">
   <application android:label="Afletes" android:icon="@mipmap/launcher_icon">
     <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs" />
     <activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">

@@ -1,39 +1,31 @@
 {
-  "project_info": {
-    "project_number": "895740225858",
-    "project_id": "afletes-d4e2c",
-    "storage_bucket": "afletes-d4e2c.appspot.com"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:895740225858:android:9292c0f2e8c2c647c6c0db",
-        "android_client_info": {
-          "package_name": "com.jt.afletes_app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "895740225858-ej2nnh24iiivkqfe8lgicnhvn4qmneud.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCcrHqrQ7cghZf5DAknGqupv53FzlTypXs"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "895740225858-ej2nnh24iiivkqfe8lgicnhvn4qmneud.apps.googleusercontent.com",
-              "client_type": 3
+    "project_info": {
+        "project_number": "895740225858",
+        "project_id": "afletes-d4e2c",
+        "storage_bucket": "afletes-d4e2c.appspot.com"
+    },
+    "client": [{
+        "client_info": {
+            "mobilesdk_app_id": "1:895740225858:android:9292c0f2e8c2c647c6c0db",
+            "android_client_info": {
+                "package_name": "com.afletes.app"
             }
-          ]
+        },
+        "oauth_client": [{
+            "client_id": "895740225858-ej2nnh24iiivkqfe8lgicnhvn4qmneud.apps.googleusercontent.com",
+            "client_type": 3
+        }],
+        "api_key": [{
+            "current_key": "AIzaSyCcrHqrQ7cghZf5DAknGqupv53FzlTypXs"
+        }],
+        "services": {
+            "appinvite_service": {
+                "other_platform_oauth_client": [{
+                    "client_id": "895740225858-ej2nnh24iiivkqfe8lgicnhvn4qmneud.apps.googleusercontent.com",
+                    "client_type": 3
+                }]
+            }
         }
-      }
-    }
-  ],
-  "configuration_version": "1"
+    }],
+    "configuration_version": "1"
 }

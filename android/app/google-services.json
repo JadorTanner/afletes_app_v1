@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:895740225858:android:9292c0f2e8c2c647c6c0db",
+        "mobilesdk_app_id": "1:895740225858:android:309b0d39c48056f7c6c0db",
         "android_client_info": {
-          "package_name": "com.jt.afletes_app"
+          "package_name": "com.afletes.app"
         }
       },
       "oauth_client": [
