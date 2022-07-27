@@ -124,11 +124,6 @@ class User extends ChangeNotifier {
             await localStorage.setInt(
                 'vehicles', responseBody['data']['vehicles']);
             NotificationsApi().getNotifications(context);
-            // print('CANALES AFTER LOGIN');
-            // print(context.read<PusherApi>().pusher.channels);
-            // print('CONN STATE');
-            // print(context.read<PusherApi>().pusher.connectionState);
-
             return true;
           } else {
             return false;

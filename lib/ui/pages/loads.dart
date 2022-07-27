@@ -29,7 +29,6 @@ Future<List<Load>> getLoads([callback]) async {
     Response response = await Api().getData('user/find-loads');
     Position position = await Geolocator.getCurrentPosition();
 
-    print(response.body);
 
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);

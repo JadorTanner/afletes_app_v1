@@ -24,7 +24,6 @@ Future<List<Load>> getMyLoads() async {
 
         if (data.isNotEmpty) {
           data.asMap().forEach((key, load) {
-            log(jsonEncode(load));
             loads.add(
               Load(
                 id: load['id'],

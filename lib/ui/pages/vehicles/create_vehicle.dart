@@ -994,16 +994,25 @@ class _ImagesPickerState extends State<ImagesPicker> {
                           actions: [
                             TextButton.icon(
                               onPressed: () async {
-                                XFile? img = await _picker.pickImage(
-                                    source: ImageSource.camera);
-                                if (img != null) {
-                                  imagenes.add(img);
-                                  if (imagenes.isNotEmpty) {
-                                    Navigator.of(context).pop();
-                                    setState(() {
-                                      // imagePageController.jumpToPage(0);
-                                    });
+                                try {
+                                  XFile? img = await _picker.pickImage(
+                                      source: ImageSource.camera);
+                                  if (img != null) {
+                                    imagenes.add(img);
+                                    if (imagenes.isNotEmpty) {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        // imagePageController.jumpToPage(0);
+                                      });
+                                    }
                                   }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Ha ocurrido un error, intentelo de nuevo mas tarde.'),
+                                    ),
+                                  );
                                 }
                               },
                               icon: const Icon(Icons.camera_alt,
@@ -1013,16 +1022,25 @@ class _ImagesPickerState extends State<ImagesPicker> {
                             ),
                             TextButton.icon(
                               onPressed: () async {
-                                List<XFile>? imgs =
-                                    await _picker.pickMultiImage();
-                                if (imgs != null) {
-                                  imagenes.addAll((imgs));
-                                  if (imagenes.isNotEmpty) {
-                                    Navigator.of(context).pop();
-                                    setState(() {
-                                      // imagePageController.jumpToPage(0);
-                                    });
+                                try {
+                                  List<XFile>? imgs =
+                                      await _picker.pickMultiImage();
+                                  if (imgs != null) {
+                                    imagenes.addAll((imgs));
+                                    if (imagenes.isNotEmpty) {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        // imagePageController.jumpToPage(0);
+                                      });
+                                    }
                                   }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Ha ocurrido un error, intentelo de nuevo mas tarde.'),
+                                    ),
+                                  );
                                 }
                               },
                               icon: const Icon(Icons.image_search_sharp,

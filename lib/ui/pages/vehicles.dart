@@ -63,11 +63,9 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
     Response response = await Api().getData(url);
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
-      log(response.body);
       if (jsonResponse['success']) {
         vehicles.clear();
         for (var vehicle in jsonResponse['data']) {
-          print(vehicle);
           vehicles.add(
             Vehicle(
               id: vehicle['id'],
@@ -95,7 +93,6 @@ Future<List<Vehicle>> getVehicles(String url, [int? id]) async {
 
     return vehicles;
   } catch (e) {
-    print(e);
     return [];
   }
 }
@@ -240,11 +237,6 @@ class _VehiclesListState extends State<VehiclesList> {
                 builder: (context, AsyncSnapshot<Map> firstSnapshot) {
                   if (firstSnapshot.connectionState == ConnectionState.done) {
                     if (firstSnapshot.data!['success']) {
-                      print(
-                        double.parse(firstSnapshot.data!['data']['votes_score']
-                                .toString())
-                            .toInt(),
-                      );
                       return ListView(
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

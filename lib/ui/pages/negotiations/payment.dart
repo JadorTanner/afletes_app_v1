@@ -310,15 +310,12 @@ class _PaymentState extends State<Payment> {
                       String url = Uri.parse(
                               "whatsapp://send?phone=595983473816&text=$text")
                           .toString();
-                      print(url);
                       if (await canLaunch(url)) {
                         await launch(url);
                       } else {
                         throw Exception('No se puede abrir whatsapp');
                       }
                     } catch (e) {
-                      print('NO SE PUEDE ABRIR WHATSAPP');
-                      print(e);
                       Clipboard.setData(ClipboardData(text: text));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

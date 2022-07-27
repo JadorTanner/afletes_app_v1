@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -60,70 +61,71 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         setState(() {
           isLoading = !isLoading;
         });
-        SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
-        Map user = jsonDecode(sharedPreferences.getString('user')!);
-        //TOKEN PARA MENSAJES PUSH
-        try {
-          String? token = await FirebaseMessaging.instance.getToken();
-          await Api().postData('user/set-device-token',
-              {'id': user['id'], 'device_token': token ?? ''});
-        } catch (e) {}
-        if (user['confirmed']) {
-          if (user['habilitado']) {
-            if (user['is_carrier']) {
-              await FirebaseMessaging.instance.subscribeToTopic("new-loads");
-              //ENVIAR UBICACION CUANDO CAMBIE
-              LocationSettings locationSettings = const LocationSettings(
-                accuracy: LocationAccuracy.best,
-                distanceFilter: 5,
-              );
-              await sharedPreferences.setBool('pusher_connected', true);
 
-              try {
-                if (PusherApi().pusher.connectionState != '') {
-                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
-                    PusherApi().disconnect();
-                  }
-                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
-                    PusherApi().init(
-                        context,
-                        context.read<NotificationsApi>(),
-                        context.read<TransportistsLocProvider>(),
-                        context.read<ChatProvider>());
-                  }
-                }
-              } catch (e) {}
-              Geolocator.getPositionStream(locationSettings: locationSettings)
-                  .listen((Position? position) {
-                if (position != null) {
-                  Api api = Api();
-                  api.postData('update-location', {
-                    'latitude': position.latitude,
-                    'longitude': position.longitude,
-                    'heading': position.heading,
-                  });
-                }
-              });
-              if (sharedPreferences.getInt('vehicles')! > 0) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/loads', ModalRoute.withName('/loads'));
-              } else {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => const CreateVehicleAfterReg(),
-                  ),
-                  ModalRoute.withName('/create-vehicle-after-registration'),
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.always ||
+            permission == LocationPermission.whileInUse) {
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
+          Map user = jsonDecode(sharedPreferences.getString('user')!);
+          //TOKEN PARA MENSAJES PUSH
+          try {
+            String? token = await FirebaseMessaging.instance.getToken();
+            await Api().postData('user/set-device-token',
+                {'id': user['id'], 'device_token': token ?? ''});
+          } catch (e) {}
+          if (user['confirmed']) {
+            if (user['habilitado']) {
+              if (user['is_carrier']) {
+                await FirebaseMessaging.instance.subscribeToTopic("new-loads");
+                //ENVIAR UBICACION CUANDO CAMBIE
+                LocationSettings locationSettings = const LocationSettings(
+                  accuracy: LocationAccuracy.best,
+                  distanceFilter: 5,
                 );
-              }
-            } else {
-              await sharedPreferences.setBool('pusher_connected', true);
-              try {
-                if (PusherApi().pusher.connectionState != '') {
-                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
-                    PusherApi().disconnect();
+                await sharedPreferences.setBool('pusher_connected', true);
+
+                try {
+                  if (PusherApi().pusher.connectionState != '') {
+                    if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                      PusherApi().disconnect();
+                    }
+                    if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
+                      PusherApi().init(
+                          context,
+                          context.read<NotificationsApi>(),
+                          context.read<TransportistsLocProvider>(),
+                          context.read<ChatProvider>());
+                    }
                   }
-                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
+                } catch (e) {}
+                if (sharedPreferences.getInt('vehicles')! > 0) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/loads', ModalRoute.withName('/loads'));
+                } else {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const CreateVehicleAfterReg(),
+                    ),
+                    ModalRoute.withName('/create-vehicle-after-registration'),
+                  );
+                }
+              } else {
+                await sharedPreferences.setBool('pusher_connected', true);
+                try {
+                  if (PusherApi().pusher.connectionState != '') {
+                    if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                      PusherApi().disconnect();
+                    }
+                    if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
+                      PusherApi().init(
+                          context,
+                          context.read<NotificationsApi>(),
+                          context.read<TransportistsLocProvider>(),
+                          context.read<ChatProvider>(),
+                          true);
+                    }
+                  } else {
                     PusherApi().init(
                         context,
                         context.read<NotificationsApi>(),
@@ -131,32 +133,33 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         context.read<ChatProvider>(),
                         true);
                   }
-                } else {
-                  PusherApi().init(
-                      context,
-                      context.read<NotificationsApi>(),
-                      context.read<TransportistsLocProvider>(),
-                      context.read<ChatProvider>(),
-                      true);
-                }
-              } catch (e) {}
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/vehicles', ModalRoute.withName('/vehicles'));
+                } catch (e) {}
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/vehicles', ModalRoute.withName('/vehicles'));
+              }
+            } else {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const WaitHabilitacion(),
+                ),
+                ModalRoute.withName('/wait-habilitacion'),
+              );
             }
           } else {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => const WaitHabilitacion(),
+                builder: (context) => const ValidateCode(),
               ),
-              ModalRoute.withName('/wait-habilitacion'),
+              ModalRoute.withName('/validate-code'),
             );
           }
         } else {
-          Navigator.of(context).pushAndRemoveUntil(
+          Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const ValidateCode(),
+              builder: (context) {
+                return LocationPermissions(route: '/login');
+              },
             ),
-            ModalRoute.withName('/validate-code'),
           );
         }
       } else {

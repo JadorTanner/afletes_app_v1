@@ -83,7 +83,6 @@ Future<List<ChatMessage>> getNegotiationChat(id, BuildContext context) async {
           ? double.parse(jsonResp['data']['vehicle']['stars'].toString())
           : 5,
     );
-    log(response.body);
     List listMessages = jsonResp['data']['messages'];
     List<ChatMessage> providerMessages = [];
     chatProvider.setTransportistId(jsonResp['data']['vehicle']['owner_id']);

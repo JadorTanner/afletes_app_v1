@@ -16,7 +16,6 @@ class CarCard2 extends StatefulWidget {
 class _CarCard2State extends State<CarCard2> {
   @override
   Widget build(BuildContext context) {
-    print(widget.vehicle.imgs);
     return GestureDetector(
       onTap: widget.onTap ?? () => {},
       // onTap: () => Navigator.of(context)

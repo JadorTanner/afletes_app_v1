@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -16,6 +17,7 @@ import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -746,64 +748,78 @@ class RegisterButtonState extends State<RegisterButton> {
                     });
                 ScaffoldMessenger.of(context).clearSnackBars();
                 if (responseBody['success']) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 1),
-                      content: Text(responseBody['message']),
-                    ),
-                  );
+                  LocationPermission permission =
+                      await Geolocator.checkPermission();
+                  if (permission == LocationPermission.always ||
+                      permission == LocationPermission.whileInUse) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        duration: const Duration(seconds: 1),
+                        content: Text(responseBody['message']),
+                      ),
+                    );
 
-                  context.read<User>().setUser(
-                      User.userFromArray(responseBody['data']['user']));
-                  //TOKEN PARA MENSAJES PUSH
-                  try {
-                    String? token = await FirebaseMessaging.instance.getToken();
-                    if (token != null) {
-                      Api().postData('user/set-device-token', {
-                        'id': responseBody['data']['user']['id'],
-                        'device_token': token
-                      });
+                    context.read<User>().setUser(
+                        User.userFromArray(responseBody['data']['user']));
+                    //TOKEN PARA MENSAJES PUSH
+                    try {
+                      String? token =
+                          await FirebaseMessaging.instance.getToken();
+                      if (token != null) {
+                        Api().postData('user/set-device-token', {
+                          'id': responseBody['data']['user']['id'],
+                          'device_token': token
+                        });
+                      }
+                    } catch (e) {}
+
+                    await User().login(context, email.text, password.text);
+                    SharedPreferences pref =
+                        await SharedPreferences.getInstance();
+                    if (pref.getString('user') != null) {
+                      context.read<User>().setOnline(true);
+                      Map user = jsonDecode(pref.getString('user')!);
+                      user['online'] = true;
+                      pref.setString('user', jsonEncode(user));
+                      Api().postData(
+                        'set-online',
+                        {
+                          'online': true.toString(),
+                        },
+                      );
                     }
-                  } catch (e) {}
 
-                  await User().login(context, email.text, password.text);
-                  SharedPreferences pref =
-                      await SharedPreferences.getInstance();
-                  if (pref.getString('user') != null) {
-                    context.read<User>().setOnline(true);
-                    Map user = jsonDecode(pref.getString('user')!);
-                    user['online'] = true;
-                    pref.setString('user', jsonEncode(user));
-                    Api().postData(
-                      'set-online',
-                      {
-                        'online': true.toString(),
-                      },
-                    );
-                  }
+                    if (responseBody['data']['user']['is_carrier']) {
+                      PusherApi().init(
+                        context,
+                        context.read<NotificationsApi>(),
+                        context.read<TransportistsLocProvider>(),
+                        context.read<ChatProvider>(),
+                      );
+                      await FirebaseMessaging.instance
+                          .subscribeToTopic("new-loads");
 
-                  if (responseBody['data']['user']['is_carrier']) {
-                    PusherApi().init(
-                      context,
-                      context.read<NotificationsApi>(),
-                      context.read<TransportistsLocProvider>(),
-                      context.read<ChatProvider>(),
-                    );
-                    await FirebaseMessaging.instance
-                        .subscribeToTopic("new-loads");
-
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const CreateVehicleAfterReg()));
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => const CreateVehicleAfterReg()));
+                    } else {
+                      PusherApi().init(
+                        context,
+                        context.read<NotificationsApi>(),
+                        context.read<TransportistsLocProvider>(),
+                        context.read<ChatProvider>(),
+                        true,
+                      );
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => const ValidateCode()));
+                    }
                   } else {
-                    PusherApi().init(
-                      context,
-                      context.read<NotificationsApi>(),
-                      context.read<TransportistsLocProvider>(),
-                      context.read<ChatProvider>(),
-                      true,
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return LocationPermissions(route: '/register');
+                        },
+                      ),
                     );
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const ValidateCode()));
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
