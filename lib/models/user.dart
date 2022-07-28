@@ -235,7 +235,7 @@ class User extends ChangeNotifier {
   Future logout(BuildContext context) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     try {
-      await Api().getData('logout');
+      Api().getData('logout');
 
       sharedPreferences.clear();
       sharedPreferences.remove('user');
