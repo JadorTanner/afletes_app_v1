@@ -1,3 +1,4 @@
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
@@ -59,13 +60,64 @@ class _VerTrayectoState extends State<VerTrayecto> {
           TextButton(
               onPressed: () async {
                 try {
-                  Position position = await Geolocator.getCurrentPosition();
+                  Position? position = await Constants.getPosition(context);
+
+                  if (position == null) {
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text(
+                                'Para una mejor experiencia, desea brindarnos información de su ubicación?',
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () async {
+                                position = await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return LocationPermissions();
+                                    },
+                                  ),
+                                );
+                                if (position != null) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: const Text('Continuar'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancelar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                  position ??= Position(
+                    longitude: -57.63258238789227,
+                    latitude: -25.281357063581734,
+                    timestamp: DateTime.now(),
+                    accuracy: 0,
+                    altitude: 0,
+                    heading: 0,
+                    speed: 0,
+                    speedAccuracy: 0,
+                  );
                   String latOrigin = load.latitudeFrom;
                   String lngOrigin = load.longitudeFrom;
                   String latDestination = load.destinLatitude;
                   String lngDestination = load.destinLongitude;
                   String url =
-                      "https://www.google.com/maps/dir/?api=1&origin=${position.latitude.toString()},${position.longitude.toString()}&destination=$latDestination,$lngDestination&waypoints=$latOrigin,$lngOrigin&travelmode=driving&dir_action=navigate";
+                      "https://www.google.com/maps/dir/?api=1&origin=${position!.latitude.toString()},${position!.longitude.toString()}&destination=$latDestination,$lngDestination&waypoints=$latOrigin,$lngOrigin&travelmode=driving&dir_action=navigate";
                   await launch(url);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

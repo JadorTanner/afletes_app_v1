@@ -201,8 +201,8 @@ class ReturnBackState extends State<ReturnBack> {
         } catch (e) {}
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/login',
-          ModalRoute.withName('/login'),
+          '/landing',
+          ModalRoute.withName('/landing'),
         );
       },
       child: Row(

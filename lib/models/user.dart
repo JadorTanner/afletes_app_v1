@@ -243,8 +243,8 @@ class User extends ChangeNotifier {
       PusherApi().pusher.disconnect();
       await sharedPreferences.setBool('pusher_connected', false);
       Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        ModalRoute.withName('/login'),
+        '/landing',
+        ModalRoute.withName('/landing'),
       );
     } catch (e) {
       return false;

@@ -1,15 +1,16 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 class Constants {
 //casa
-  // static String baseUrl = 'http://181.120.66.16:8000/';
+  static String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
   // static String baseUrl = 'http://192.168.1.109:8000/';
 //producción
-  static String baseUrl = 'https://www.afletes.com/';
+  // static String baseUrl = 'https://www.afletes.com/';
 
   static String apiUrl = baseUrl + 'api/';
 
@@ -48,5 +49,79 @@ class Constants {
         cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
+  }
+
+  static Future<Position?> getPosition(BuildContext context) async {
+    try {
+      int permission = await determinePosition();
+      if (permission == 1) {
+        return Geolocator.getCurrentPosition();
+      } else if (permission == 4) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content:
+                const Text('Por favor habilite los servicios de ubicación'),
+            actions: [
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.check),
+                label: const Text('Entendido'),
+              )
+            ],
+          ),
+        );
+        return null;
+      } else {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content:
+                const Text('Esta aplicación require permisos de ubicación'),
+            actions: [
+              TextButton.icon(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                },
+                icon: const Icon(Icons.check),
+                label: const Text('Entendido'),
+              )
+            ],
+          ),
+        );
+        return null;
+      }
+    } catch (e) {
+      return Position(
+        longitude: -57.63258238789227,
+        latitude: -25.281357063581734,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    }
+  }
+
+//PERMISOS DE LOCALIZACION
+  static Future determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.value(4);
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      return Future.value(2);
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.value(3);
+    }
+    return Future.value(1);
   }
 }

@@ -1,8 +1,8 @@
 // ignore_for_file: must_be_immutable
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
@@ -37,7 +37,7 @@ List cities = [
   },
 ];
 
-late Position position;
+Position? position;
 TextEditingController stateIdController = TextEditingController();
 TextEditingController cityId = TextEditingController();
 TextEditingController unidadMedidaPickerController = TextEditingController();
@@ -178,10 +178,61 @@ class _VehiclesListState extends State<VehiclesList> {
 
 //OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
-    position = await Geolocator.getCurrentPosition();
+    position = await Constants.getPosition(context);
+
+    if (position == null) {
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  'Para una mejor experiencia, desea brindarnos información de su ubicación?',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  position = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return LocationPermissions();
+                      },
+                    ),
+                  );
+                  if (position != null) {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: const Text('Continuar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancelar'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+    position ??= Position(
+      longitude: -57.63258238789227,
+      latitude: -25.281357063581734,
+      timestamp: DateTime.now(),
+      accuracy: 0,
+      altitude: 0,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
     setState(() {
       mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(position.latitude, position.longitude)));
+          LatLng(position!.latitude, position!.longitude)));
     });
   }
 
@@ -551,7 +602,7 @@ class _VehiclesListState extends State<VehiclesList> {
               onPressed: () async {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(
-                      LatLng(position.latitude, position.longitude), 14),
+                      LatLng(position!.latitude, position!.longitude), 14),
                 );
               },
               icon: const Icon(Icons.location_searching_rounded),

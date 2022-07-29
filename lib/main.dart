@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/landing.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
@@ -116,6 +116,10 @@ void main() async {
             builder: (_) => const LoginPage(),
           );
         }
+      } else if (settings.name == '/landing') {
+        return MaterialPageRoute(
+          builder: (_) => const LandingPage(),
+        );
       } else if (settings.name == '/login') {
         return MaterialPageRoute(
           builder: (_) => const LoginPage(),
@@ -279,16 +283,18 @@ class _AfletesAppState extends State<AfletesApp>
     String? user = sharedPreferences.getString('user');
 
     if (user != null) {
-      if (permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse) {
-        context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
-        context.read<User>().setOnline(jsonDecode(user)['online']);
-        if (jsonDecode(user)['confirmed']) {
-          if (jsonDecode(user)['habilitado']) {
-            LocationSettings locationSettings = const LocationSettings(
-              accuracy: LocationAccuracy.best,
-              distanceFilter: 20,
-            );
+      // if (permission == LocationPermission.always ||
+      //     permission == LocationPermission.whileInUse) {
+      context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+      context.read<User>().setOnline(jsonDecode(user)['online']);
+      if (jsonDecode(user)['confirmed']) {
+        if (jsonDecode(user)['habilitado']) {
+          LocationSettings locationSettings = const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            distanceFilter: 20,
+          );
+          if (permission == LocationPermission.always ||
+              permission == LocationPermission.whileInUse) {
             Geolocator.getPositionStream(locationSettings: locationSettings)
                 .listen((Position? position) {
               Api api = Api();
@@ -297,55 +303,56 @@ class _AfletesAppState extends State<AfletesApp>
                 'longitude': position.longitude,
               });
             });
-            if (jsonDecode(user)['is_carrier']) {
-              // await context.read<Load>().getPendingLoad(context);
-              //ENVIAR UBICACION CUANDO CAMBIE
+          }
+          if (jsonDecode(user)['is_carrier']) {
+            // await context.read<Load>().getPendingLoad(context);
+            //ENVIAR UBICACION CUANDO CAMBIE
 
-              if (sharedPreferences.getInt('vehicles')! > 0) {
-                navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/loads',
-                  ModalRoute.withName('/loads'),
-                );
-              } else {
-                navigatorKey.currentState!.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVehicleAfterReg(),
-                    ),
-                    ModalRoute.withName('/create-vehicle-after-registration'));
-              }
-            } else {
+            if (sharedPreferences.getInt('vehicles')! > 0) {
               navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/vehicles', ModalRoute.withName('/vehicles'));
+                '/loads',
+                ModalRoute.withName('/loads'),
+              );
+            } else {
+              navigatorKey.currentState!.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateVehicleAfterReg(),
+                  ),
+                  ModalRoute.withName('/create-vehicle-after-registration'));
             }
           } else {
-            navigatorKey.currentState!.pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => const WaitHabilitacion(),
-              ),
-              ModalRoute.withName('/wait-habilitacion'),
-            );
+            navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                '/vehicles', ModalRoute.withName('/vehicles'));
           }
         } else {
           navigatorKey.currentState!.pushAndRemoveUntil(
             MaterialPageRoute(
-              builder: (context) => const ValidateCode(),
+              builder: (context) => const WaitHabilitacion(),
             ),
-            ModalRoute.withName('/validate-code'),
+            ModalRoute.withName('/wait-habilitacion'),
           );
         }
       } else {
-        Navigator.of(context).push(
+        navigatorKey.currentState!.pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) {
-              return LocationPermissions(route: '/login');
-            },
+            builder: (context) => const ValidateCode(),
           ),
+          ModalRoute.withName('/validate-code'),
         );
       }
+      // } else {
+      //   Navigator.of(context).push(
+      //     MaterialPageRoute(
+      //       builder: (context) {
+      //         return LocationPermissions(route: '/login');
+      //       },
+      //     ),
+      //   );
+      // }
     } else {
       navigatorKey.currentState!.pushNamedAndRemoveUntil(
-        '/login',
-        ModalRoute.withName('/login'),
+        '/landing',
+        ModalRoute.withName('/landing'),
       );
     }
   }
