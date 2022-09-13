@@ -75,46 +75,50 @@ class PusherApi extends ChangeNotifier {
                   if (user.id == jsonData['user_id']) {
                     if (jsonData['ask_location']) {
                       if (jsonData['ask_location']) {
-                        Position position =
-                            await Geolocator.getCurrentPosition();
+                        int permission = await Constants.determinePosition();
+                        if (permission != 1) {
+                          Position position =
+                              await Geolocator.getCurrentPosition();
 
-                        Api api = Api();
-                        api.postData('update-location', {
-                          'latitude': position.latitude,
-                          'longitude': position.longitude,
-                          'heading': position.heading,
-                        });
-
-                        Map loc = {
-                          'coords': {
+                          Api api = Api();
+                          api.postData('update-location', {
                             'latitude': position.latitude,
                             'longitude': position.longitude,
                             'heading': position.heading,
-                          }
-                        };
+                          });
 
-                        try {
-                          Api api = Api();
-                          api.postData(
-                            'user/send-location',
-                            {
-                              'negotiation_id': jsonData['negotiation_id'],
-                              'user_id': jsonData['sender_id'],
-                              'location': loc,
-                            },
-                          );
-                        } on SocketException {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Compruebe su conexión a internet'),
-                            ),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Ha ocurrido un error'),
-                            ),
-                          );
+                          Map loc = {
+                            'coords': {
+                              'latitude': position.latitude,
+                              'longitude': position.longitude,
+                              'heading': position.heading,
+                            }
+                          };
+
+                          try {
+                            Api api = Api();
+                            api.postData(
+                              'user/send-location',
+                              {
+                                'negotiation_id': jsonData['negotiation_id'],
+                                'user_id': jsonData['sender_id'],
+                                'location': loc,
+                              },
+                            );
+                          } on SocketException {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Compruebe su conexión a internet'),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Ha ocurrido un error'),
+                              ),
+                            );
+                          }
                         }
                       }
                     }

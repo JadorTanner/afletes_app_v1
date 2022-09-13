@@ -355,6 +355,83 @@ class _MyProfilePageState extends State<MyProfilePage>
                     const SizedBox(
                       height: 20,
                     ),
+                    UpdateDeleteButton(
+                      onPressed: () async {
+                        if (passwordController.text == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Ingrese su contraseña'),
+                            ),
+                          );
+                          return false;
+                        }
+                        if (passwordConfirmationController.text == '' ||
+                            passwordConfirmationController.text !=
+                                passwordController.text) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Confirme su contraseña'),
+                            ),
+                          );
+                          return false;
+                        }
+                        await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              content: Column(
+                                children: const [
+                                  Text(
+                                      'Está seguro que desea eliminar su cuenta?'),
+                                  Text(
+                                      'Todos los datos existentes serán borrados.'),
+                                  Text('Esta acción no puede revertirse'),
+                                ],
+                              ),
+                              actions: [
+                                TextButton.icon(
+                                  label: const Text('Continuar'),
+                                  onPressed: () async {
+                                    Api api = Api();
+                                    Response response = await api.postData(
+                                        Constants.apiUrl +
+                                            'user/delete-account',
+                                        {});
+                                    if (response.statusCode == 200) {
+                                      Map jsonResponse =
+                                          jsonDecode(response.body);
+                                      if (jsonResponse['success']) {
+                                        context.read<User>().logout(context);
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Su cuenta ha sido eliminada, gracias por usar nuestros servicios.'),
+                                          ),
+                                        );
+
+                                        Navigator.of(context)
+                                            .pushReplacementNamed('/login');
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                ),
+                                TextButton.icon(
+                                  label: const Text('Cancelar'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  icon: const Icon(Icons.close),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      isDelete: true,
+                    ),
                   ],
                 ),
               ),
@@ -366,11 +443,54 @@ class _MyProfilePageState extends State<MyProfilePage>
                 child: Row(
                   children: [
                     Flexible(
-                      child: UpdateButton(
-                        () {
-                          setState(() {
-                            canUpdate = false;
-                          });
+                      child: UpdateDeleteButton(
+                        onPressed: () async {
+                          try {
+                            Api api = Api();
+
+                            Response response =
+                                await api.postData('user/update-profile', {
+                              'password': passwordController.text,
+                              'password_confirmation':
+                                  passwordConfirmationController.text,
+                              'first_name': nombreController.text,
+                              'last_name': apellidoController.text,
+                              'full_name': apellidoController.text +
+                                  ' ' +
+                                  nombreController.text,
+                              'legal_name': legalNameController.text,
+                              'document_number': documentNumberController.text,
+                              'cellphone': cellphoneController.text,
+                              'phone': phoneController.text,
+                              'street1': street1Controller.text,
+                              'street2': street2Controller.text,
+                              'house_number': houseNumberController.text,
+                            });
+                            Map resp = jsonDecode(response.body);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(resp['message'])));
+                            if (resp['success']) {
+                              SharedPreferences shared =
+                                  await SharedPreferences.getInstance();
+                              shared.setString(
+                                  'user', jsonEncode(resp['data']));
+                              context
+                                  .read<User>()
+                                  .setUser(User.userFromArray(resp['data']));
+
+                              setState(() {
+                                canUpdate = false;
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Ha ocurrido un error')));
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Ha ocurrido un error')));
+                          }
                         },
                       ),
                     )
@@ -387,61 +507,28 @@ class _MyProfilePageState extends State<MyProfilePage>
   bool get wantKeepAlive => true;
 }
 
-class UpdateButton extends StatefulWidget {
-  UpdateButton(this.afterUpdate, {Key? key}) : super(key: key);
-  var afterUpdate;
+class UpdateDeleteButton extends StatefulWidget {
+  UpdateDeleteButton({required this.onPressed, this.isDelete = false, Key? key})
+      : super(key: key);
+  Function onPressed;
+  bool isDelete;
   @override
-  State<UpdateButton> createState() => _UpdateButtonState();
+  State<UpdateDeleteButton> createState() => _UpdateDeleteButtonState();
 }
 
-class _UpdateButtonState extends State<UpdateButton> {
+class _UpdateDeleteButtonState extends State<UpdateDeleteButton> {
   bool loading = false;
   @override
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: loading
           ? () => {}
-          : () async {
+          : () {
               setState(() {
                 loading = !loading;
               });
-              try {
-                Api api = Api();
+              widget.onPressed();
 
-                Response response = await api.postData('user/update-profile', {
-                  'password': passwordController.text,
-                  'password_confirmation': passwordConfirmationController.text,
-                  'first_name': nombreController.text,
-                  'last_name': apellidoController.text,
-                  'full_name':
-                      apellidoController.text + ' ' + nombreController.text,
-                  'legal_name': legalNameController.text,
-                  'document_number': documentNumberController.text,
-                  'cellphone': cellphoneController.text,
-                  'phone': phoneController.text,
-                  'street1': street1Controller.text,
-                  'street2': street2Controller.text,
-                  'house_number': houseNumberController.text,
-                });
-                Map resp = jsonDecode(response.body);
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(resp['message'])));
-                if (resp['success']) {
-                  SharedPreferences shared =
-                      await SharedPreferences.getInstance();
-                  shared.setString('user', jsonEncode(resp['data']));
-                  context
-                      .read<User>()
-                      .setUser(User.userFromArray(resp['data']));
-                  widget.afterUpdate();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ha ocurrido un error')));
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ha ocurrido un error')));
-              }
               setState(() {
                 loading = !loading;
               });
@@ -449,8 +536,9 @@ class _UpdateButtonState extends State<UpdateButton> {
       style: ButtonStyle(
         padding: MaterialStateProperty.all<EdgeInsets>(
             const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor:
-            MaterialStateProperty.all<Color>(const Color(0xFFF58633)),
+        backgroundColor: MaterialStateProperty.all<Color>(widget.isDelete
+            ? const Color.fromARGB(255, 245, 83, 51)
+            : const Color(0xFFF58633)),
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
           const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(0)),
@@ -466,14 +554,14 @@ class _UpdateButtonState extends State<UpdateButton> {
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(
-                  Icons.update,
+                  widget.isDelete ? Icons.delete : Icons.update,
                   color: Colors.white,
                 ),
                 Text(
-                  'Actualizar datos',
-                  style: TextStyle(
+                  widget.isDelete ? 'Borrar cuenta' : 'Actualizar datos',
+                  style: const TextStyle(
                     color: Colors.white,
                   ),
                 )

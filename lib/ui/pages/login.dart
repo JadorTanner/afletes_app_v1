@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -62,70 +61,62 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           isLoading = !isLoading;
         });
 
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.always ||
-            permission == LocationPermission.whileInUse) {
-          SharedPreferences sharedPreferences =
-              await SharedPreferences.getInstance();
-          Map user = jsonDecode(sharedPreferences.getString('user')!);
-          //TOKEN PARA MENSAJES PUSH
-          try {
-            String? token = await FirebaseMessaging.instance.getToken();
-            await Api().postData('user/set-device-token',
-                {'id': user['id'], 'device_token': token ?? ''});
-          } catch (e) {}
-          if (user['confirmed']) {
-            if (user['habilitado']) {
-              if (user['is_carrier']) {
-                await FirebaseMessaging.instance.subscribeToTopic("new-loads");
-                //ENVIAR UBICACION CUANDO CAMBIE
-                LocationSettings locationSettings = const LocationSettings(
-                  accuracy: LocationAccuracy.best,
-                  distanceFilter: 5,
-                );
-                await sharedPreferences.setBool('pusher_connected', true);
+        // LocationPermission permission = await Geolocator.checkPermission();
+        // if (permission == LocationPermission.always ||
+        //     permission == LocationPermission.whileInUse) {
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        Map user = jsonDecode(sharedPreferences.getString('user')!);
+        //TOKEN PARA MENSAJES PUSH
+        try {
+          String? token = await FirebaseMessaging.instance.getToken();
+          await Api().postData('user/set-device-token',
+              {'id': user['id'], 'device_token': token ?? ''});
+        } catch (e) {}
+        if (user['confirmed']) {
+          if (user['habilitado']) {
+            if (user['is_carrier']) {
+              await FirebaseMessaging.instance.subscribeToTopic("new-loads");
+              //ENVIAR UBICACION CUANDO CAMBIE
+              LocationSettings locationSettings = const LocationSettings(
+                accuracy: LocationAccuracy.best,
+                distanceFilter: 5,
+              );
+              await sharedPreferences.setBool('pusher_connected', true);
 
-                try {
-                  if (PusherApi().pusher.connectionState != '') {
-                    if (PusherApi().pusher.connectionState == 'CONNECTED') {
-                      PusherApi().disconnect();
-                    }
-                    if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
-                      PusherApi().init(
-                          context,
-                          context.read<NotificationsApi>(),
-                          context.read<TransportistsLocProvider>(),
-                          context.read<ChatProvider>());
-                    }
+              try {
+                if (PusherApi().pusher.connectionState != '') {
+                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                    PusherApi().disconnect();
                   }
-                } catch (e) {}
-                if (sharedPreferences.getInt('vehicles')! > 0) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/loads', ModalRoute.withName('/loads'));
-                } else {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVehicleAfterReg(),
-                    ),
-                    ModalRoute.withName('/create-vehicle-after-registration'),
-                  );
+                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
+                    PusherApi().init(
+                        context,
+                        context.read<NotificationsApi>(),
+                        context.read<TransportistsLocProvider>(),
+                        context.read<ChatProvider>());
+                  }
                 }
+              } catch (e) {}
+              if (sharedPreferences.getInt('vehicles')! > 0) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/loads', ModalRoute.withName('/loads'));
               } else {
-                await sharedPreferences.setBool('pusher_connected', true);
-                try {
-                  if (PusherApi().pusher.connectionState != '') {
-                    if (PusherApi().pusher.connectionState == 'CONNECTED') {
-                      PusherApi().disconnect();
-                    }
-                    if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
-                      PusherApi().init(
-                          context,
-                          context.read<NotificationsApi>(),
-                          context.read<TransportistsLocProvider>(),
-                          context.read<ChatProvider>(),
-                          true);
-                    }
-                  } else {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateVehicleAfterReg(),
+                  ),
+                  ModalRoute.withName('/create-vehicle-after-registration'),
+                );
+              }
+            } else {
+              await sharedPreferences.setBool('pusher_connected', true);
+              try {
+                if (PusherApi().pusher.connectionState != '') {
+                  if (PusherApi().pusher.connectionState == 'CONNECTED') {
+                    PusherApi().disconnect();
+                  }
+                  if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
                     PusherApi().init(
                         context,
                         context.read<NotificationsApi>(),
@@ -133,35 +124,43 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         context.read<ChatProvider>(),
                         true);
                   }
-                } catch (e) {}
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/vehicles', ModalRoute.withName('/vehicles'));
-              }
-            } else {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => const WaitHabilitacion(),
-                ),
-                ModalRoute.withName('/wait-habilitacion'),
-              );
+                } else {
+                  PusherApi().init(
+                      context,
+                      context.read<NotificationsApi>(),
+                      context.read<TransportistsLocProvider>(),
+                      context.read<ChatProvider>(),
+                      true);
+                }
+              } catch (e) {}
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/vehicles', ModalRoute.withName('/vehicles'));
             }
           } else {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => const ValidateCode(),
+                builder: (context) => const WaitHabilitacion(),
               ),
-              ModalRoute.withName('/validate-code'),
+              ModalRoute.withName('/wait-habilitacion'),
             );
           }
         } else {
-          Navigator.of(context).push(
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
-              builder: (context) {
-                return LocationPermissions(route: '/login');
-              },
+              builder: (context) => const ValidateCode(),
             ),
+            ModalRoute.withName('/validate-code'),
           );
         }
+        // } else {
+        //   Navigator.of(context).push(
+        //     MaterialPageRoute(
+        //       builder: (context) {
+        //         return LocationPermissions(route: '/login');
+        //       },
+        //     ),
+        //   );
+        // }
       } else {
         setState(() {
           isLoading = !isLoading;
@@ -184,49 +183,70 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        reverse: true,
+      body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: const AlignmentDirectional(-1, -1),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.6,
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Image.asset(
-                  'assets/icons/logo-naranja.png',
-                  width: 50,
-                  height: 50,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/landing');
+                  },
+                  icon: const Icon(Icons.navigate_before),
                 ),
-              ),
+              ],
             ),
-            FormContainer(isLoading, loginFunction),
-            // const Spacer(),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: [
-                  const WidgetSpan(child: Text('Aún no tienes una cuenta? ')),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/register'),
-                      child: const Text(
-                        'Crea una aquí!',
-                        style: TextStyle(
-                            color: Color(0xFFED8232),
-                            fontSize: 16,
-                            decoration: TextDecoration.underline),
+            Expanded(
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: const AlignmentDirectional(-1, -1),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        decoration: const BoxDecoration(color: Colors.white),
+                        child: Image.asset(
+                          'assets/icons/logo-naranja.png',
+                          width: 50,
+                          height: 50,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    FormContainer(isLoading, loginFunction),
+                    // const Spacer(),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: [
+                          const WidgetSpan(
+                              child: Text('Aún no tienes una cuenta? ')),
+                          WidgetSpan(
+                            child: GestureDetector(
+                              onTap: () =>
+                                  Navigator.pushNamed(context, '/register'),
+                              child: const Text(
+                                'Crea una aquí!',
+                                style: TextStyle(
+                                    color: Color(0xFFED8232),
+                                    fontSize: 16,
+                                    decoration: TextDecoration.underline),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // const Spacer(),
+                    const SizedBox(
+                      width: 100,
+                      height: 20,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // const Spacer(),
-            const SizedBox(
-              width: 100,
-              height: 20,
             ),
           ],
         ),
@@ -243,7 +263,7 @@ class FormContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(40, 20, 40, 40),
+      padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,

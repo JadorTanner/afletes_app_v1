@@ -235,7 +235,7 @@ class User extends ChangeNotifier {
   Future logout(BuildContext context) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     try {
-      await Api().getData('logout');
+      Api().getData('logout');
 
       sharedPreferences.clear();
       sharedPreferences.remove('user');
@@ -243,8 +243,8 @@ class User extends ChangeNotifier {
       PusherApi().pusher.disconnect();
       await sharedPreferences.setBool('pusher_connected', false);
       Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        ModalRoute.withName('/login'),
+        '/landing',
+        ModalRoute.withName('/landing'),
       );
     } catch (e) {
       return false;

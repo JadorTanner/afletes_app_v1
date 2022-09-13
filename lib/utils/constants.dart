@@ -1,6 +1,9 @@
 import 'dart:math';
 
+import 'package:afletes_app_v1/location_permission.dart';
+import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 class Constants {
@@ -48,5 +51,120 @@ class Constants {
         cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
+  }
+
+  static Future<Position?> getPosition(BuildContext context) async {
+    try {
+      int permission = await determinePosition();
+      print('LOCATION PERMISSION $permission');
+      Position? position;
+      if (permission == 1) {
+        return await Geolocator.getCurrentPosition();
+      } else if (permission == 4) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content:
+                const Text('Por favor habilite los servicios de ubicación'),
+            actions: [
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.check),
+                label: const Text('Entendido'),
+              )
+            ],
+          ),
+        );
+        return null;
+      } else if (permission == 2) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content:
+                const Text('Esta aplicación require permisos de ubicación'),
+            actions: [
+              TextButton.icon(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Para una mejor experiencia, ¿desea brindarnos información de su ubicación?',
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          LoadingButton(
+                            clickEvent: () async {
+                              position = await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return LocationPermissions();
+                                  },
+                                ),
+                              );
+                              if (position != null) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            title: 'Continuar',
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancelar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  Navigator.of(context).pop();
+                },
+                icon: const Icon(Icons.check),
+                label: const Text('Entendido'),
+              )
+            ],
+          ),
+        );
+        return null;
+      }
+    } catch (e) {
+      return Position(
+        longitude: -57.63258238789227,
+        latitude: -25.281357063581734,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    }
+    return null;
+  }
+
+//PERMISOS DE LOCALIZACION
+  static Future determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.value(4);
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      return Future.value(2);
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.value(3);
+    }
+    return Future.value(1);
   }
 }

@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:afletes_app_v1/location_permission.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
+import 'package:afletes_app_v1/ui/landing.dart';
 import 'package:afletes_app_v1/ui/pages/loads.dart';
 import 'package:afletes_app_v1/ui/pages/loads/create_load.dart';
 import 'package:afletes_app_v1/ui/pages/loads/my_loads.dart';
@@ -30,7 +31,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -116,6 +116,10 @@ void main() async {
             builder: (_) => const LoginPage(),
           );
         }
+      } else if (settings.name == '/landing') {
+        return MaterialPageRoute(
+          builder: (_) => const LandingPage(),
+        );
       } else if (settings.name == '/login') {
         return MaterialPageRoute(
           builder: (_) => const LoginPage(),
@@ -271,81 +275,103 @@ class _AfletesAppState extends State<AfletesApp>
   late ChatProvider chatProvider;
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    FlutterNativeSplash.remove();
+    // If the system can show an authorization request dialog
+    if (await AppTrackingTransparency.trackingAuthorizationStatus ==
+        TrackingStatus.notDetermined) {
+      // Show a custom explainer dialog before the system dialog
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Column(
+              children: [
+                Text(
+                  'Esta aplicación utiliza información sensible',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                Text(
+                  'Por motivos de funcionamiento de la aplicación y de seguridad para usted y los demás usuarios, afletes recopila datos como su nombre, email, dirección física y ubicación. Sus fotos son accesibles solo al momento de realizar una carga o crear un nuevo vehículo.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                Text(
+                  'Estos datos son guardados de manera segura y no son publicados, compartidos ni utilizados con fines de lucro.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('Continuar'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      // Wait for dialog popping animation
+      await Future.delayed(const Duration(milliseconds: 200));
+      // Request system's tracking authorization dialog
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
 
     FlutterNativeSplash.remove();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
 
     if (user != null) {
-      if (permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse) {
-        context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
-        context.read<User>().setOnline(jsonDecode(user)['online']);
-        if (jsonDecode(user)['confirmed']) {
-          if (jsonDecode(user)['habilitado']) {
-            LocationSettings locationSettings = const LocationSettings(
-              accuracy: LocationAccuracy.best,
-              distanceFilter: 20,
-            );
-            Geolocator.getPositionStream(locationSettings: locationSettings)
-                .listen((Position? position) {
-              Api api = Api();
-              api.postData('update-location', {
-                'latitude': position!.latitude,
-                'longitude': position.longitude,
-              });
-            });
-            if (jsonDecode(user)['is_carrier']) {
-              // await context.read<Load>().getPendingLoad(context);
-              //ENVIAR UBICACION CUANDO CAMBIE
+      // if (permission == LocationPermission.always ||
+      //     permission == LocationPermission.whileInUse) {
+      context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
+      context.read<User>().setOnline(jsonDecode(user)['online']);
+      if (jsonDecode(user)['confirmed']) {
+        if (jsonDecode(user)['habilitado']) {
+          if (jsonDecode(user)['is_carrier']) {
+            // await context.read<Load>().getPendingLoad(context);
+            //ENVIAR UBICACION CUANDO CAMBIE
 
-              if (sharedPreferences.getInt('vehicles')! > 0) {
-                navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/loads',
-                  ModalRoute.withName('/loads'),
-                );
-              } else {
-                navigatorKey.currentState!.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVehicleAfterReg(),
-                    ),
-                    ModalRoute.withName('/create-vehicle-after-registration'));
-              }
-            } else {
+            if (sharedPreferences.getInt('vehicles')! > 0) {
               navigatorKey.currentState!.pushNamedAndRemoveUntil(
-                  '/vehicles', ModalRoute.withName('/vehicles'));
+                '/loads',
+                ModalRoute.withName('/loads'),
+              );
+            } else {
+              navigatorKey.currentState!.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateVehicleAfterReg(),
+                  ),
+                  ModalRoute.withName('/create-vehicle-after-registration'));
             }
           } else {
-            navigatorKey.currentState!.pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => const WaitHabilitacion(),
-              ),
-              ModalRoute.withName('/wait-habilitacion'),
-            );
+            navigatorKey.currentState!.pushNamedAndRemoveUntil(
+                '/vehicles', ModalRoute.withName('/vehicles'));
           }
         } else {
           navigatorKey.currentState!.pushAndRemoveUntil(
             MaterialPageRoute(
-              builder: (context) => const ValidateCode(),
+              builder: (context) => const WaitHabilitacion(),
             ),
-            ModalRoute.withName('/validate-code'),
+            ModalRoute.withName('/wait-habilitacion'),
           );
         }
       } else {
-        Navigator.of(context).push(
+        navigatorKey.currentState!.pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) {
-              return LocationPermissions(route: '/login');
-            },
+            builder: (context) => const ValidateCode(),
           ),
+          ModalRoute.withName('/validate-code'),
         );
       }
+      // } else {
+      //   Navigator.of(context).push(
+      //     MaterialPageRoute(
+      //       builder: (context) {
+      //         return LocationPermissions(route: '/login');
+      //       },
+      //     ),
+      //   );
+      // }
     } else {
       navigatorKey.currentState!.pushNamedAndRemoveUntil(
-        '/login',
-        ModalRoute.withName('/login'),
+        '/landing',
+        ModalRoute.withName('/landing'),
       );
     }
   }

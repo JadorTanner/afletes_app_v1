@@ -1,9 +1,9 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -198,16 +198,67 @@ Future sendMessage(id, BuildContext context, ChatProvider chat,
     FocusManager.instance.primaryFocus?.unfocus();
     String offer = oferta.text;
     oferta.text = '';
-    Position? location;
+    Position? position;
     String mapImgUrl = "";
     String mapKey = Constants.googleMapKey;
     DateTime time = DateTime.now();
     if (isLocation) {
-      location = await Geolocator.getCurrentPosition();
+      position = await Constants.getPosition(context);
+
+      if (position == null) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Para una mejor experiencia, desea brindarnos información de su ubicación?',
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    position = await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return LocationPermissions();
+                        },
+                      ),
+                    );
+                    if (position != null) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Text('Continuar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancelar'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      position ??= Position(
+        longitude: -57.63258238789227,
+        latitude: -25.281357063581734,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
       mapImgUrl =
-          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${location.latitude},${location.longitude}&key=$mapKey";
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=600x300&maptype=roadmap&markers=color:red%7C${position!.latitude},${position!.longitude}&key=$mapKey";
       message =
-          """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${location.latitude}%2C${location.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
+          """<a href="https://www.google.com/maps/search/?zoom=18&api=1&query=${position!.latitude}%2C${position!.longitude}" title="ubicación" target="_blank"><img src="$mapImgUrl" ><br>Mi ubicación</a>""";
 
       chat.addMessage(
         id,
