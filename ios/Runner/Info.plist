@@ -32,6 +32,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to user camera to create an account, create new loads and/or vehicles.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs access to location while in use to appear to other users in their map.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -42,8 +44,6 @@
 	<string>This app needs access to location when open to show your position to load generators and make you able to negotiate.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to user photos to allow them sign up in our application. Also photos are used to generate new loads and create new vehicles.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to user camera to create an account, create new loads and/or vehicles.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
