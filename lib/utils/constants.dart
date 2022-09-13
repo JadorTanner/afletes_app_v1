@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:afletes_app_v1/location_permission.dart';
+import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -97,8 +98,8 @@ class Constants {
                           ],
                         ),
                         actions: [
-                          TextButton(
-                            onPressed: () async {
+                          LoadingButton(
+                            clickEvent: () async {
                               position = await Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) {
@@ -110,7 +111,7 @@ class Constants {
                                 Navigator.of(context).pop();
                               }
                             },
-                            child: const Text('Continuar'),
+                            title: 'Continuar',
                           ),
                           TextButton(
                             onPressed: () {
