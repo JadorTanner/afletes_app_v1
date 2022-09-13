@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:afletes_app_v1/location_permission.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/load_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -19,7 +18,6 @@ import 'package:http/http.dart';
 import 'package:timelines/timelines.dart';
 
 List<Load> loads = [];
-List<Load> closedLoads = [];
 GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
 GlobalKey<OverlayState> stackKey = GlobalKey<OverlayState>();
 late GlobalKey<_LoadsMapState> loadsMapKey;
@@ -28,59 +26,6 @@ late PageController pageController;
 Future<List<Load>> getLoads(BuildContext context, [callback]) async {
   try {
     Response response = await Api().getData('user/find-loads');
-    Position? position = await Constants.getPosition(context);
-
-    if (position == null) {
-      await showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  'Para una mejor experiencia, desea brindarnos información de su ubicación?',
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  position = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return LocationPermissions();
-                      },
-                    ),
-                  );
-                  if (position != null) {
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: const Text('Continuar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancelar'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-    position ??= Position(
-      longitude: -57.63258238789227,
-      latitude: -25.281357063581734,
-      timestamp: DateTime.now(),
-      accuracy: 0,
-      altitude: 0,
-      heading: 0,
-      speed: 0,
-      speedAccuracy: 0,
-    );
-
     if (response.statusCode == 200) {
       Map jsonResponse = jsonDecode(response.body);
       for (var element in loads) {
@@ -124,14 +69,6 @@ Future<List<Load>> getLoads(BuildContext context, [callback]) async {
             double parsedDestinLongitude =
                 double.parse(loads[key].destinLongitude);
 
-            if ((parsedLatitude <= (position!.latitude + 1.00000000000000) &&
-                    parsedLatitude >=
-                        (position!.latitude - 1.00000000000000)) &&
-                (parsedLongitude <= (position!.longitude + 1.00000000000000) &&
-                    parsedLongitude >=
-                        (position!.longitude - 1.00000000000000))) {
-              closedLoads.add(loads[key]);
-            }
             animatedListKey.currentState != null
                 ? animatedListKey.currentState!
                     .insertItem(0, duration: const Duration(milliseconds: 100))
@@ -372,18 +309,29 @@ class _LoadsMapState extends State<LoadsMap> {
   }
 
   //coordenada inicial
-  late Position position;
+  Position? position;
   //LISTA DE MARCADORES
   List<Marker> markers = [];
 
 //OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
-    position = await Geolocator.getCurrentPosition();
-    setState(() {
-      mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(position.latitude, position.longitude)));
-    });
-    setLoadsMarkers(position);
+    LocationPermission permission = await Geolocator.checkPermission();
+    position = await Constants.getPosition(context);
+
+    position ??= Position(
+      longitude: -57.63258238789227,
+      latitude: -25.281357063581734,
+      timestamp: DateTime.now(),
+      accuracy: 0,
+      altitude: 0,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
+    mapController.animateCamera(CameraUpdate.newLatLng(
+        LatLng(position!.latitude, position!.longitude)));
+    setState(() {});
+    setLoadsMarkers(position!);
   }
 
   //AGREGA LOS MARCADORES EN CASO DE QUE SE LE PASE
@@ -568,7 +516,7 @@ class _LoadsMapState extends State<LoadsMap> {
               color: Constants.kBlack,
               onPressed: () async {
                 loads = await getLoads(context);
-                setLoadsMarkers(position);
+                setLoadsMarkers(position!);
                 setState(() {});
               },
               icon: const Icon(Icons.refresh),
@@ -585,9 +533,21 @@ class _LoadsMapState extends State<LoadsMap> {
             child: IconButton(
               color: Constants.kBlack,
               onPressed: () async {
+                position = await Constants.getPosition(context);
+
+                position ??= Position(
+                  longitude: -57.63258238789227,
+                  latitude: -25.281357063581734,
+                  timestamp: DateTime.now(),
+                  accuracy: 0,
+                  altitude: 0,
+                  heading: 0,
+                  speed: 0,
+                  speedAccuracy: 0,
+                );
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(
-                      LatLng(position.latitude, position.longitude), 14),
+                      LatLng(position!.latitude, position!.longitude), 14),
                 );
               },
               icon: const Icon(Icons.location_searching_rounded),
@@ -650,7 +610,7 @@ class _LoadsMapState extends State<LoadsMap> {
                         // setLoadMarkerInfo(loads[index], position, context);
                       },
                       onClose: () {
-                        setLoadsMarkers(position, true);
+                        setLoadsMarkers(position!, true);
 
                         _polylines.clear();
                         polylineCoordinates.clear();

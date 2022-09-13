@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
@@ -30,7 +31,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -275,8 +275,42 @@ class _AfletesAppState extends State<AfletesApp>
   late ChatProvider chatProvider;
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    FlutterNativeSplash.remove();
+    // If the system can show an authorization request dialog
+    if (await AppTrackingTransparency.trackingAuthorizationStatus ==
+        TrackingStatus.notDetermined) {
+      // Show a custom explainer dialog before the system dialog
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Column(
+              children: [
+                Text(
+                  'Esta aplicación utiliza información sensible',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                Text(
+                  'Por motivos de funcionamiento de la aplicación y de seguridad para usted y los demás usuarios, afletes recopila datos como su nombre, email, dirección física y ubicación. Sus fotos son accesibles solo al momento de realizar una carga o crear un nuevo vehículo.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                Text(
+                  'Estos datos son guardados de manera segura y no son publicados, compartidos ni utilizados con fines de lucro.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('Continuar'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      // Wait for dialog popping animation
+      await Future.delayed(const Duration(milliseconds: 200));
+      // Request system's tracking authorization dialog
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
 
     FlutterNativeSplash.remove();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -289,21 +323,6 @@ class _AfletesAppState extends State<AfletesApp>
       context.read<User>().setOnline(jsonDecode(user)['online']);
       if (jsonDecode(user)['confirmed']) {
         if (jsonDecode(user)['habilitado']) {
-          LocationSettings locationSettings = const LocationSettings(
-            accuracy: LocationAccuracy.best,
-            distanceFilter: 20,
-          );
-          if (permission == LocationPermission.always ||
-              permission == LocationPermission.whileInUse) {
-            Geolocator.getPositionStream(locationSettings: locationSettings)
-                .listen((Position? position) {
-              Api api = Api();
-              api.postData('update-location', {
-                'latitude': position!.latitude,
-                'longitude': position.longitude,
-              });
-            });
-          }
           if (jsonDecode(user)['is_carrier']) {
             // await context.read<Load>().getPendingLoad(context);
             //ENVIAR UBICACION CUANDO CAMBIE

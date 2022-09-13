@@ -1,16 +1,17 @@
 import 'dart:math';
 
+import 'package:afletes_app_v1/location_permission.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 class Constants {
 //casa
-  static String baseUrl = 'http://181.120.66.16:8000/';
+  // static String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
   // static String baseUrl = 'http://192.168.1.109:8000/';
 //producción
-  // static String baseUrl = 'https://www.afletes.com/';
+  static String baseUrl = 'https://www.afletes.com/';
 
   static String apiUrl = baseUrl + 'api/';
 
@@ -54,8 +55,10 @@ class Constants {
   static Future<Position?> getPosition(BuildContext context) async {
     try {
       int permission = await determinePosition();
+      print('LOCATION PERMISSION $permission');
+      Position? position;
       if (permission == 1) {
-        return Geolocator.getCurrentPosition();
+        return await Geolocator.getCurrentPosition();
       } else if (permission == 4) {
         await showDialog(
           context: context,
@@ -72,7 +75,7 @@ class Constants {
           ),
         );
         return null;
-      } else {
+      } else if (permission == 2) {
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -81,6 +84,44 @@ class Constants {
             actions: [
               TextButton.icon(
                 onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Para una mejor experiencia, ¿desea brindarnos información de su ubicación?',
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () async {
+                              position = await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return LocationPermissions();
+                                  },
+                                ),
+                              );
+                              if (position != null) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: const Text('Continuar'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancelar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                   Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.check),
@@ -103,6 +144,7 @@ class Constants {
         speedAccuracy: 0,
       );
     }
+    return null;
   }
 
 //PERMISOS DE LOCALIZACION
