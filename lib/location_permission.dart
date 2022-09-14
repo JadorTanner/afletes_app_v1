@@ -12,8 +12,7 @@ class LocationPermissions extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(40),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
