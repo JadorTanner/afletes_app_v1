@@ -1,4 +1,6 @@
 PODS:
+  - app_tracking_transparency (0.0.1):
+    - Flutter
   - Firebase/CoreOnly (8.14.0):
     - FirebaseCore (= 8.14.0)
   - Firebase/Messaging (8.14.0):
@@ -100,6 +102,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
@@ -132,6 +135,8 @@ SPEC REPOS:
     - TweetNacl
 
 EXTERNAL SOURCES:
+  app_tracking_transparency:
+    :path: ".symlinks/plugins/app_tracking_transparency/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_messaging:
@@ -160,6 +165,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher/ios"
 
 SPEC CHECKSUMS:
+  app_tracking_transparency: 5b1745ef9ade815f7455cb6a0848349589afb7c5
   Firebase: 7e8fe528c161b9271d365217a74c16aaf834578e
   firebase_core: cdef02fcf55872191eb0568d4c31a7a700e38582
   firebase_messaging: 57f89047ec0084a4049e253ce84cea39becadad4

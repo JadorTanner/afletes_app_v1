@@ -32,8 +32,6 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>This app needs permission to track your email, name, physical addres and phone number for security and users integrity purposes, your data will not be shared to 3rd parties. Photos or videos will be used to allow you to receive new negotiations. Youre coarse location and precise location will be used for security reasons.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to user camera to create an account, create new loads and/or vehicles.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -46,6 +44,8 @@
 	<string>This app needs access to location when open to show your position to load generators and make you able to negotiate.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to user photos to allow them sign up in our application. Also photos are used to generate new loads and create new vehicles.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This app needs permission to track your email, name, physical addres and phone number for security and users integrity purposes, your data will not be shared to 3rd parties. Photos or videos will be used to allow you to receive new negotiations. Youre coarse location and precise location will be used for security reasons.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

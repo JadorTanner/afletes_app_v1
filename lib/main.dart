@@ -275,6 +275,7 @@ class _AfletesAppState extends State<AfletesApp>
   late ChatProvider chatProvider;
   late NotificationsApi notificationsApiProvider;
   changeScreen() async {
+    FlutterNativeSplash.remove();
     // If the system can show an authorization request dialog
     if (await AppTrackingTransparency.trackingAuthorizationStatus ==
         TrackingStatus.notDetermined) {
@@ -283,25 +284,30 @@ class _AfletesAppState extends State<AfletesApp>
         context: context,
         builder: (context) {
           return Dialog(
-            child: Column(
-              children: [
-                Text(
-                  'Esta aplicación utiliza información sensible',
-                  style: Theme.of(context).textTheme.headline6,
-                ),
-                Text(
-                  'Por motivos de funcionamiento de la aplicación y de seguridad para usted y los demás usuarios, afletes recopila datos como su nombre, email, dirección física y ubicación. Sus fotos son accesibles solo al momento de realizar una carga o crear un nuevo vehículo.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                Text(
-                  'Estos datos son guardados de manera segura y no son publicados, compartidos ni utilizados con fines de lucro.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Continuar'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text(
+                    'Esta aplicación utiliza información sensible',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                  Text(
+                    'Por motivos de funcionamiento de la aplicación y de seguridad para usted y los demás usuarios, afletes recopila datos como su nombre, email, dirección física y ubicación. Sus fotos son accesibles solo al momento de realizar una carga o crear un nuevo vehículo.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    'Estos datos son guardados de manera segura y no son publicados, compartidos ni utilizados con fines de lucro.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Continuar'),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -312,7 +318,6 @@ class _AfletesAppState extends State<AfletesApp>
       await AppTrackingTransparency.requestTrackingAuthorization();
     }
 
-    FlutterNativeSplash.remove();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? user = sharedPreferences.getString('user');
 
