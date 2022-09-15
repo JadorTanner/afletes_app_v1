@@ -85,6 +85,7 @@ class Constants {
             actions: [
               TextButton.icon(
                 onPressed: () async {
+                  Navigator.of(context).pop();
                   await showDialog(
                     context: context,
                     builder: (context) {
@@ -107,9 +108,7 @@ class Constants {
                                   },
                                 ),
                               );
-                              if (position != null) {
-                                Navigator.of(context).pop();
-                              }
+                              Navigator.of(context).pop();
                             },
                             title: 'Continuar',
                           ),
@@ -123,7 +122,6 @@ class Constants {
                       );
                     },
                   );
-                  Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Entendido'),

@@ -248,7 +248,6 @@ class Loads extends StatefulWidget {
 
 class _LoadsState extends State<Loads> {
   TextEditingController textEditingController = TextEditingController();
-
   // late User user;
 
   @override
@@ -316,7 +315,10 @@ class _LoadsMapState extends State<LoadsMap> {
 //OBTIENE LA POSICIÓN DEL USUARIO
   getPosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    position = await Constants.getPosition(context);
+    if (permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
+      position = await Constants.getPosition(context);
+    }
 
     position ??= Position(
       longitude: -57.63258238789227,
