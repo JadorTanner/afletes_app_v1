@@ -80,56 +80,32 @@ class Constants {
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            content:
-                const Text('Esta aplicación require permisos de ubicación'),
+            content: const Text(
+                'Para una mejor experiencia, ¿desea brindarnos información de su ubicación?'),
             actions: [
-              TextButton.icon(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              'Para una mejor experiencia, ¿desea brindarnos información de su ubicación?',
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          LoadingButton(
-                            clickEvent: () async {
-                              position = await Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return LocationPermissions();
-                                  },
-                                ),
-                              );
-                              Navigator.of(context).pop();
-                            },
-                            title: 'Continuar',
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancelar'),
-                          ),
-                        ],
-                      );
-                    },
+              LoadingButton(
+                clickEvent: () async {
+                  position = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return LocationPermissions();
+                      },
+                    ),
                   );
+                  Navigator.of(context).pop();
                 },
-                icon: const Icon(Icons.check),
-                label: const Text('Entendido'),
-              )
+                title: 'Continuar',
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancelar'),
+              ),
             ],
           ),
         );
-        return null;
+        return position;
       }
     } catch (e) {
       return Position(

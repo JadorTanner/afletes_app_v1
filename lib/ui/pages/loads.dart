@@ -498,7 +498,7 @@ class _LoadsMapState extends State<LoadsMap> {
           myLocationButtonEnabled: false,
           polylines: _polylines,
           onMapCreated: _onMapCreated,
-          myLocationEnabled: true,
+          myLocationEnabled: false,
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
             zoom: 14,

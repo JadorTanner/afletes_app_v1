@@ -90,8 +90,8 @@ class LocationPermissions extends StatelessWidget {
                     width: 10,
                   ),
                   TextButton(
-                    onPressed: () {
-                      showDialog(
+                    onPressed: () async {
+                      await showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           content: Padding(
@@ -124,14 +124,19 @@ class LocationPermissions extends StatelessWidget {
                             ),
                             TextButton.icon(
                               onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
+                                Navigator.of(context).pop(true);
                               },
                               icon: const Icon(Icons.close),
-                              label: const Text('Cancelar'),
+                              label: const Text('Cerrar de todos modos'),
                             ),
                           ],
                         ),
+                      ).then(
+                        (value) {
+                          if (value != null) {
+                            Navigator.of(context).pop();
+                          }
+                        },
                       );
                     },
                     child: const Text('Cancelar'),
