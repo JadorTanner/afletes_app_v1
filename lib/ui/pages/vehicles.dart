@@ -580,7 +580,7 @@ class _VehiclesListState extends State<VehiclesList> {
           key: widget.key,
           onMapCreated: (controller) =>
               _onMapCreated(controller, transportists),
-          myLocationEnabled: true,
+          myLocationEnabled: false,
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
             zoom: 14,
