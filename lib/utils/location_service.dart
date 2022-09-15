@@ -82,5 +82,51 @@ class LocationService extends ChangeNotifier {
   List<LatLng> polylineCoordinates = [];
   late PolylinePoints polylinePoints;
 
-  generatePolylines() {}
+  generatePolylines({
+    required LatLng origin,
+    required LatLng destination,
+    required GoogleMapController mapController,
+  }) async {
+    var result = await polylinePoints.getRouteBetweenCoordinates(
+      'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs',
+      PointLatLng(origin.latitude, origin.longitude),
+      PointLatLng(destination.latitude, destination.longitude),
+    );
+
+    if (result.points.isNotEmpty) {
+      for (var pointLatLng in result.points) {
+        polylineCoordinates
+            .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
+      }
+
+      double southwestLat = 0;
+      double southwestLng = 0;
+      double northeastLat = 0;
+      double northeastLng = 0;
+
+      if (origin.latitude <= destination.latitude) {
+        southwestLat = origin.latitude;
+        northeastLat = destination.latitude;
+      } else {
+        southwestLat = destination.latitude;
+        northeastLat = origin.latitude;
+      }
+      if (origin.longitude <= destination.longitude) {
+        southwestLng = origin.longitude;
+        northeastLng = destination.longitude;
+      } else {
+        southwestLng = destination.longitude;
+        northeastLng = origin.longitude;
+      }
+
+      mapController.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+              southwest: LatLng(southwestLat, southwestLng),
+              northeast: LatLng(northeastLat, northeastLng)),
+          10,
+        ),
+      );
+    }
+  }
 }
