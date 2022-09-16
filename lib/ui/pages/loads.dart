@@ -317,7 +317,7 @@ class _LoadsMapState extends State<LoadsMap> {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission != LocationPermission.always &&
         permission != LocationPermission.whileInUse) {
-      position = await Constants.getPosition(context);
+      position = await Geolocator.getCurrentPosition();
     }
 
     position ??= Position(

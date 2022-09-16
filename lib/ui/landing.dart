@@ -186,17 +186,22 @@ class LandingPage extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: Center(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Permisos necesarios',
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Center(
+                        child: Text(
+                          'Permisos necesarios',
+                          style: Theme.of(context).textTheme.titleLarge,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       const SizedBox(
                         height: 10,
                       ),
-                      const Text(
-                        'Nuestra aplicación recopila información sobre tu ubicación en tiempo real, necesitamos tu permiso para poder mostrar al resto de usuarios los transportistas cercanos y cargas cercanas disponibles.',
-                      ),
+                      Text("Afletes recopila datos de ubicación para habilitar las siguientes caracteristicas."),
+                      Text('- Búsqueda de vehículos disponibles en tiempo real'),
+                      Text('- Ubicación de las cargas disponibles'),
+                      Text('Esta información no es compartida y es utilizada con fines de seguridad y funcionamiento de la app'),
                       const SizedBox(
                         height: 10,
                       ),

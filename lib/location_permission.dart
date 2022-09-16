@@ -44,15 +44,13 @@ class LocationPermissions extends StatelessWidget {
                 height: 20,
               ),
               Text(
-                'Afletes recopila datos de ubicación para habilitar la búsqueda de vehículos disponibles en tiempo real, ubicación de las cargas disponibles e información de ubicación de la carga incluso cuando la aplicación está cerrada o no está en uso".',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
+                  "Afletes recopila datos de ubicación para habilitar las siguientes caracteristicas."),
+              Text('- Búsqueda de vehículos disponibles en tiempo real'),
+              Text('- Ubicación de las cargas disponibles cerca de tu ubicación'),
+              Text(
+                  'Esta información no es compartida y es utilizada con fines de seguridad y funcionamiento de la app'),
               const SizedBox(
                 height: 20,
-              ),
-              Text(
-                'Esta aplicación necesita monitorizar su ubicación para proporcionar datos acertados a los demás usuarios. Utilizamos su ubicación para mejorar la búsqueda de transportistas y cargas disponibles en su cercanía.',
-                style: Theme.of(context).textTheme.subtitle1,
               ),
               const SizedBox(
                 height: 20,
@@ -82,7 +80,7 @@ class LocationPermissions extends StatelessWidget {
                             .pop(await Geolocator.getCurrentPosition());
                       }
                     },
-                    child: const Text('Continuar'),
+                    child: const Text('Conceder permisos'),
                   ),
                   const VerticalDivider(
                     color: Colors.black,
@@ -91,53 +89,7 @@ class LocationPermissions extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-                      await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          content: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Text(
-                                    'Para una mejor experiencia de uso, es necesario que nos brinde permisos a su ubicación.'),
-                                Text(
-                                    'Si no puede ver la solicitud, vaya a configuración > aplicaciones > afletes y borre todos los datos de la aplicación o bien, desinstale la aplicación y vuelva a instalarla.'),
-                              ],
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () async {
-                                await Geolocator.openLocationSettings();
-                                Navigator.of(context).pop();
-                              },
-                              child:
-                                  const Text('Abrir configuracion de la app'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              icon: const Icon(Icons.check),
-                              label: const Text('Aceptar'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
-                              },
-                              icon: const Icon(Icons.close),
-                              label: const Text('Cerrar de todos modos'),
-                            ),
-                          ],
-                        ),
-                      ).then(
-                        (value) {
-                          if (value != null) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      );
+                      Navigator.of(context).pop();
                     },
                     child: const Text('Cancelar'),
                   ),

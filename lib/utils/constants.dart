@@ -70,39 +70,18 @@ class Constants {
               TextButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.check),
-                label: const Text('Entendido'),
+                label: const Text('Cerrar'),
               )
             ],
           ),
         );
         return null;
       } else if (permission == 2) {
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: const Text(
-                'Para una mejor experiencia, ¿desea brindarnos información de su ubicación?'),
-            actions: [
-              LoadingButton(
-                clickEvent: () async {
-                  position = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return LocationPermissions();
-                      },
-                    ),
-                  );
-                  Navigator.of(context).pop();
-                },
-                title: 'Continuar',
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancelar'),
-              ),
-            ],
+        position = await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return LocationPermissions();
+            },
           ),
         );
         return position;
