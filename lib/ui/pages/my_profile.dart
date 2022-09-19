@@ -47,6 +47,7 @@ class _MyProfilePageState extends State<MyProfilePage>
       street2initialValue = '',
       housenumberinitialValue = '';
   bool canUpdate = false;
+  late User user;
   @override
   void initState() {
     super.initState();
@@ -67,6 +68,7 @@ class _MyProfilePageState extends State<MyProfilePage>
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of<User>(context).user;
     return BaseApp(
       Container(
         decoration: const BoxDecoration(
@@ -87,122 +89,130 @@ class _MyProfilePageState extends State<MyProfilePage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      backgroundColor: Constants.kGrey,
-                      minRadius: 60,
-                      child: Text(
-                        Provider.of<User>(context)
-                            .user
-                            .fullName
-                            .split(' ')
-                            .map((e) => e.length > 2 ? e.substring(0, 1) : '')
-                            .join(''),
-                        style:
-                            const TextStyle(fontSize: 40, color: Colors.white),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Theme.of(context).backgroundColor,
+                          minRadius: 30,
+                          child: Text(
+                            user.fullName
+                                .split(' ')
+                                .map((e) =>
+                                    e.length > 2 ? e.substring(0, 1) : '')
+                                .join(''),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(user.fullName),
+                            Text(user.email.length > 20
+                                ? user.email.replaceRange(20, null, '...')
+                                : user.email),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(
                       height: 10,
                     ),
-                    Align(
-                      child: Text(Provider.of<User>(context).user.fullName),
-                      alignment: Alignment.center,
-                    ),
                     const SizedBox(
                       height: 30,
                     ),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: CustomFormField(
-                            documentNumberController,
-                            'Documento',
-                            onChange: (value) {
-                              if (value != documentinitialValue) {
-                                if (!canUpdate) {
-                                  setState(() {
-                                    canUpdate = !canUpdate;
-                                  });
-                                }
-                              } else {
-                                setState(() {
-                                  canUpdate = !canUpdate;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Flexible(
-                          child: CustomFormField(
-                            legalNameController,
-                            'Razón social',
-                            onChange: (value) {
-                              if (value != legalnameinitialValue) {
-                                if (!canUpdate) {
-                                  setState(() {
-                                    canUpdate = !canUpdate;
-                                  });
-                                }
-                              } else {
-                                setState(() {
-                                  canUpdate = !canUpdate;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
+                    CustomFormField(
+                      documentNumberController,
+                      'Documento',
+                      onChange: (value) {
+                        if (value != documentinitialValue) {
+                          if (!canUpdate) {
+                            setState(() {
+                              canUpdate = !canUpdate;
+                            });
+                          }
+                        } else {
+                          setState(() {
+                            canUpdate = !canUpdate;
+                          });
+                        }
+                      },
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: CustomFormField(
-                            nombreController,
-                            'Nombre',
-                            onChange: (value) {
-                              if (value != nombreinitialValue) {
-                                if (!canUpdate) {
-                                  setState(() {
-                                    canUpdate = !canUpdate;
-                                  });
-                                }
-                              } else {
-                                setState(() {
-                                  canUpdate = !canUpdate;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Flexible(
-                          child: CustomFormField(
-                            apellidoController,
-                            'Apellido',
-                            onChange: (value) {
-                              if (value != apellidoinitialValue) {
-                                if (!canUpdate) {
-                                  setState(() {
-                                    canUpdate = !canUpdate;
-                                  });
-                                }
-                              } else {
-                                setState(() {
-                                  canUpdate = !canUpdate;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
+                    CustomFormField(
+                      legalNameController,
+                      'Razón social',
+                      onChange: (value) {
+                        if (value != legalnameinitialValue) {
+                          if (!canUpdate) {
+                            setState(() {
+                              canUpdate = !canUpdate;
+                            });
+                          }
+                        } else {
+                          setState(() {
+                            canUpdate = !canUpdate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomFormField(
+                      nombreController,
+                      'Nombre',
+                      onChange: (value) {
+                        if (value != nombreinitialValue) {
+                          if (!canUpdate) {
+                            setState(() {
+                              canUpdate = !canUpdate;
+                            });
+                          }
+                        } else {
+                          setState(() {
+                            canUpdate = !canUpdate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomFormField(
+                      apellidoController,
+                      'Apellido',
+                      onChange: (value) {
+                        if (value != apellidoinitialValue) {
+                          if (!canUpdate) {
+                            setState(() {
+                              canUpdate = !canUpdate;
+                            });
+                          }
+                        } else {
+                          setState(() {
+                            canUpdate = !canUpdate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomFormField(
+                      emailController,
+                      'Email',
+                      type: TextInputType.emailAddress,
+                      enabled: false,
                     ),
                     const SizedBox(
                       height: 20,
@@ -323,35 +333,17 @@ class _MyProfilePageState extends State<MyProfilePage>
                     const SizedBox(
                       height: 20,
                     ),
-                    CustomFormField(
-                      emailController,
-                      'Email',
-                      type: TextInputType.emailAddress,
-                      enabled: false,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
                     const Text(
                         'Confirma tu contraseña para guardar los cambios'),
                     const SizedBox(
                       height: 20,
                     ),
-                    Row(
-                      children: [
-                        Flexible(
-                          child:
-                              PasswordField('Contraseña', passwordController),
-                        ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Flexible(
-                          child: PasswordField('Confirmar contraseña',
-                              passwordConfirmationController),
-                        ),
-                      ],
+                    PasswordField('Contraseña', passwordController),
+                    const SizedBox(
+                      height: 20,
                     ),
+                    PasswordField(
+                        'Confirmar contraseña', passwordConfirmationController),
                     const SizedBox(
                       height: 20,
                     ),
@@ -431,6 +423,9 @@ class _MyProfilePageState extends State<MyProfilePage>
                         );
                       },
                       isDelete: true,
+                    ),
+                    const SizedBox(
+                      height: 20,
                     ),
                   ],
                 ),
@@ -536,9 +531,8 @@ class _UpdateDeleteButtonState extends State<UpdateDeleteButton> {
       style: ButtonStyle(
         padding: MaterialStateProperty.all<EdgeInsets>(
             const EdgeInsets.symmetric(vertical: 20)),
-        backgroundColor: MaterialStateProperty.all<Color>(widget.isDelete
-            ? const Color.fromARGB(255, 245, 83, 51)
-            : const Color(0xFFF58633)),
+        backgroundColor: MaterialStateProperty.all<Color>(
+            widget.isDelete ? Colors.transparent : const Color(0xFFF58633)),
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
           const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(0)),
@@ -552,7 +546,9 @@ class _UpdateDeleteButtonState extends State<UpdateDeleteButton> {
               ),
             )
           : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: widget.isDelete
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
@@ -561,8 +557,8 @@ class _UpdateDeleteButtonState extends State<UpdateDeleteButton> {
                 ),
                 Text(
                   widget.isDelete ? 'Borrar cuenta' : 'Actualizar datos',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: widget.isDelete ? Colors.red : Colors.white,
                   ),
                 )
               ],

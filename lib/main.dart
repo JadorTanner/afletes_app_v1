@@ -59,6 +59,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   /// To verify things are working, check out the native platform logs.
 

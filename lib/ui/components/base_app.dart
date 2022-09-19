@@ -153,32 +153,45 @@ class _CustomDrawerState extends State<CustomDrawer> {
     return Drawer(
       child: SafeArea(
         minimum: const EdgeInsets.all(15),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(
               height: 20,
             ),
-            CircleAvatar(
-              backgroundColor: theme.backgroundColor,
-              minRadius: 60,
-              child: Text(
-                user.fullName
-                    .split(' ')
-                    .map((e) => e.length > 2 ? e.substring(0, 1) : '')
-                    .join(''),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: theme.backgroundColor,
+                  minRadius: 30,
+                  child: Text(
+                    user.fullName
+                        .split(' ')
+                        .map((e) => e.length > 2 ? e.substring(0, 1) : '')
+                        .join(''),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.fullName),
+                    Text(user.email.length > 20
+                        ? user.email.replaceRange(20, null, '...')
+                        : user.email),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(
               height: 20,
-            ),
-            Text(user.fullName),
-            Text(user.email),
-            const SizedBox(
-              height: 25,
             ),
             Container(
               width: double.infinity,
@@ -194,43 +207,24 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   builder: (context) => MyProfilePage(user),
                 ))
               },
-              icon: CircleAvatar(
-                backgroundColor: Constants.kGrey,
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                ),
+              icon: Icon(
+                Icons.person,
+                color: Constants.kGrey,
               ),
-              label: Container(
-                padding: const EdgeInsets.all(15),
-                width: double.infinity,
-                child: Text(
-                  'Mi perfil',
-                  style: theme.textTheme.bodyText1,
-                ),
+              label: Text(
+                'Mi perfil',
+                style: theme.textTheme.bodyText1,
               ),
-            ),
-            const SizedBox(
-              height: 15,
             ),
             DrawerItem(
                 user.isCarrier ? '/my-vehicles' : '/my-loads',
                 user.isCarrier ? 'Mis vehículos' : 'Mis cargas',
                 Icons.local_activity),
-            const SizedBox(
-              height: 15,
-            ),
             DrawerItem(
                 user.isCarrier ? '/loads' : '/vehicles',
                 user.isCarrier ? 'Buscar cargas' : 'Buscar vehículos',
                 Icons.search),
-            const SizedBox(
-              height: 15,
-            ),
             DrawerItem('/my-negotiations', 'Mis negociaciones', Icons.ac_unit),
-            const SizedBox(
-              height: 15,
-            ),
             user.isCarrier
                 ? DrawerItem(
                     '/pending-loads', 'Cargas pendientes', Icons.all_inbox)
@@ -240,20 +234,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 TextButton.icon(
                   onPressed: () =>
                       {Navigator.of(context).pushNamed('/notifications')},
-                  icon: CircleAvatar(
-                    backgroundColor: Constants.kGrey,
-                    child: const Icon(
-                      Icons.notification_important,
-                      color: Colors.white,
-                    ),
+                  icon: Icon(
+                    Icons.notification_important,
+                    color: Constants.kGrey,
                   ),
-                  label: Container(
-                    padding: const EdgeInsets.all(15),
-                    width: double.infinity,
-                    child: Text(
-                      'Notificaciones',
-                      style: Theme.of(context).textTheme.bodyText1,
-                    ),
+                  label: Text(
+                    'Notificaciones',
+                    style: Theme.of(context).textTheme.bodyText1,
                   ),
                 ),
                 notifications.isNotEmpty
@@ -268,21 +255,35 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     : const SizedBox.shrink()
               ],
             ),
-            const SizedBox(
-              height: 80,
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: LoadingButton(
+                clickEvent: () async {
+                  await setOnline(!context.read<User>().online);
+                },
+                buttonStyle: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        context.read<User>().online
+                            ? Colors.green
+                            : Colors.red)),
+                textStyle: const TextStyle(color: Colors.white),
+                title:
+                    context.watch<User>().online ? 'Conectado' : 'Desconectado',
+              ),
             ),
-            LoadingButton(
-              clickEvent: () async {
-                await setOnline(!context.read<User>().online);
-              },
-              title:
-                  context.watch<User>().online ? 'Desconectarme' : 'Conectarme',
-            ),
-            LoadingButton(
-              clickEvent: () async {
-                await user.logout(context);
-              },
-              title: 'Cerrar sesión',
+            SizedBox(
+              width: double.infinity,
+              child: LoadingButton(
+                buttonStyle: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.grey),
+                ),
+                textStyle: const TextStyle(color: Colors.white),
+                clickEvent: () async {
+                  await user.logout(context);
+                },
+                title: 'Cerrar sesión',
+              ),
             ),
             const SizedBox(
               height: 20,
@@ -295,10 +296,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
 }
 
 class LoadingButton extends StatefulWidget {
-  LoadingButton({required this.clickEvent, required this.title, Key? key})
-      : super(key: key);
+  LoadingButton({
+    required this.clickEvent,
+    required this.title,
+    this.buttonStyle,
+    this.textStyle,
+    Key? key,
+  }) : super(key: key);
   Function clickEvent;
   String title;
+  ButtonStyle? buttonStyle;
+  TextStyle? textStyle;
   @override
   State<LoadingButton> createState() => _LoadingButtonState();
 }
@@ -307,30 +315,35 @@ class _LoadingButtonState extends State<LoadingButton> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: isLoading
-          ? () {}
-          : () async {
-              setState(() {
-                isLoading = !isLoading;
-              });
-              await widget.clickEvent();
-              setState(() {
-                isLoading = !isLoading;
-              });
-            },
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(),
-            )
-          : Text(
-              widget.title,
-              style: const TextStyle(
-                decoration: TextDecoration.underline,
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        style: widget.buttonStyle,
+        onPressed: isLoading
+            ? () {}
+            : () async {
+                setState(() {
+                  isLoading = !isLoading;
+                });
+                await widget.clickEvent();
+                setState(() {
+                  isLoading = !isLoading;
+                });
+              },
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(),
+              )
+            : Text(
+                widget.title,
+                style: widget.textStyle ??
+                    const TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
               ),
-            ),
+      ),
     );
   }
 }
@@ -345,20 +358,13 @@ class DrawerItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: () => {Navigator.of(context).pushNamed(routeName)},
-      icon: CircleAvatar(
-        backgroundColor: Constants.kGrey,
-        child: Icon(
-          icon,
-          color: Colors.white,
-        ),
+      icon: Icon(
+        icon,
+        color: Constants.kGrey,
       ),
-      label: Container(
-        padding: const EdgeInsets.all(15),
-        width: double.infinity,
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.bodyText1,
-        ),
+      label: Text(
+        title,
+        style: Theme.of(context).textTheme.bodyText1,
       ),
     );
   }

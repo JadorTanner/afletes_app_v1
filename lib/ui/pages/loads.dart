@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/load_card.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 
 List<Load> loads = [];
@@ -499,6 +501,9 @@ class _LoadsMapState extends State<LoadsMap> {
           polylines: _polylines,
           onMapCreated: _onMapCreated,
           myLocationEnabled: false,
+          padding: const EdgeInsets.all(20).copyWith(
+            bottom: MediaQuery.of(context).size.height * 0.2,
+          ),
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
             zoom: 14,
@@ -508,129 +513,158 @@ class _LoadsMapState extends State<LoadsMap> {
           zoomControlsEnabled: false,
         ),
         Positioned(
-          bottom: 60 * 4,
+          bottom: MediaQuery.of(context).size.height * 0.22,
           right: 30,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(50))),
-            child: IconButton(
-              color: Constants.kBlack,
-              onPressed: () async {
-                loads = await getLoads(context);
-                setLoadsMarkers(position!);
-                setState(() {});
-              },
-              icon: const Icon(Icons.refresh),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 60 * 5,
-          right: 30,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(50))),
-            child: IconButton(
-              color: Constants.kBlack,
-              onPressed: () async {
-                position = await Constants.getPosition(context);
-
-                position ??= Position(
-                  longitude: -57.63258238789227,
-                  latitude: -25.281357063581734,
-                  timestamp: DateTime.now(),
-                  accuracy: 0,
-                  altitude: 0,
-                  heading: 0,
-                  speed: 0,
-                  speedAccuracy: 0,
-                );
-                mapController.animateCamera(
-                  CameraUpdate.newLatLngZoom(
-                      LatLng(position!.latitude, position!.longitude), 14),
-                );
-              },
-              icon: const Icon(Icons.location_searching_rounded),
-            ),
-          ),
-        ),
-        Positioned(
-            child: DraggableScrollableSheet(
-          minChildSize: 0.2,
-          maxChildSize: 0.5,
-          initialChildSize: 0.2,
-          snap: true,
-          controller: scrollableController,
-          builder: (context, scrollController) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+          child: Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+                child: IconButton(
+                  color: Constants.kBlack,
+                  onPressed: () async {
+                    loads = await getLoads(context);
+                    setLoadsMarkers(position!);
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.refresh),
                 ),
               ),
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Constants.kBlack,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    'Cargas disponibles',
-                    style: Theme.of(context).textTheme.headline6,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ...List.generate(
-                    loads.length,
-                    (index) => LoadCard(
-                      loads[index],
-                      hasData: true,
-                      isCarrier: true,
-                      isFinalOffer: false,
-                      onTap: () async {
-                        // setLoadMarkerInfo(loads[index], position, context);
-                      },
-                      onClose: () {
-                        setLoadsMarkers(position!, true);
+              const SizedBox(
+                height: 15,
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+                child: IconButton(
+                  color: Constants.kBlack,
+                  onPressed: () async {
+                    position = await Constants.getPosition(context);
 
-                        _polylines.clear();
-                        polylineCoordinates.clear();
-                        setState(() {});
-                      },
+                    position ??= Position(
+                      longitude: -57.63258238789227,
+                      latitude: -25.281357063581734,
+                      timestamp: DateTime.now(),
+                      accuracy: 0,
+                      altitude: 0,
+                      heading: 0,
+                      speed: 0,
+                      speedAccuracy: 0,
+                    );
+                    mapController.animateCamera(
+                      CameraUpdate.newLatLngZoom(
+                          LatLng(position!.latitude, position!.longitude), 14),
+                    );
+                  },
+                  icon: const Icon(Icons.location_searching_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          child: DraggableScrollableSheet(
+            minChildSize: 0.2,
+            maxChildSize: 0.8,
+            initialChildSize: 0.2,
+            snap: true,
+            controller: scrollableController,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Constants.kBlack,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      'Cargas disponibles',
+                      style: Theme.of(context).textTheme.headline6,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ...List.generate(
+                      loads.length,
+                      (index) => LoadCard(
+                        loads[index],
+                        hasData: true,
+                        isCarrier: true,
+                        isFinalOffer: false,
+                        onTap: () async {
+                          // setLoadMarkerInfo(loads[index], position, context);
+                        },
+                        onClose: () {
+                          setLoadsMarkers(position!, true);
+
+                          _polylines.clear();
+                          polylineCoordinates.clear();
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                    loads.isEmpty
+                        ? const Text(
+                            'No hay cargas disponibles',
+                            textAlign: TextAlign.center,
+                          )
+                        : const SizedBox.shrink()
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        context.watch<User>().online
+            ? const SizedBox.shrink()
+            : Positioned(
+                child: GestureDetector(
+                  onTap: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: Colors.red[400],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Estás desconectado!',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
-                  loads.isEmpty
-                      ? const Text(
-                          'No hay cargas disponibles',
-                          textAlign: TextAlign.center,
-                        )
-                      : const SizedBox.shrink()
-                ],
+                ),
+                top: 20,
+                left: MediaQuery.of(context).size.width * 0.25,
+                right: MediaQuery.of(context).size.width * 0.25,
               ),
-            );
-          },
-        )),
       ],
     );
   }
