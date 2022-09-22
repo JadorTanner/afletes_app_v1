@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:afletes_app_v1/models/chat.dart';
 import 'package:afletes_app_v1/models/transportists_location.dart';
@@ -31,6 +32,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -327,6 +329,23 @@ class _AfletesAppState extends State<AfletesApp>
       //     permission == LocationPermission.whileInUse) {
       context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
       context.read<User>().setOnline(jsonDecode(user)['online']);
+      int permission = await Constants.determinePosition();
+      print('PERMISSION INTEGER $permission');
+      if (permission == 1) {
+        context.read<User>().setLocationEnabled(true);
+        LocationSettings locationSettings = const LocationSettings(
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 20,
+        );
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
+          Api api = Api();
+          api.postData('update-location', {
+            'latitude': position!.latitude,
+            'longitude': position.longitude,
+          });
+        });
+      }
       if (jsonDecode(user)['confirmed']) {
         if (jsonDecode(user)['habilitado']) {
           if (jsonDecode(user)['is_carrier']) {

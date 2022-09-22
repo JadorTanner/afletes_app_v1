@@ -14,7 +14,10 @@ class User extends ChangeNotifier {
   User get user => _user!;
 
   Map userData = {};
-  bool isCarrier = false, isLoadGenerator = false, online = true;
+  bool isCarrier = false,
+      isLoadGenerator = false,
+      online = true,
+      locationEnabled = false;
   int cityId = 0, id = 0;
   String latitude = '',
       longitude = '',
@@ -78,6 +81,11 @@ class User extends ChangeNotifier {
 
   setUser(User newUser) {
     _user = newUser;
+    notifyListeners();
+  }
+
+  setLocationEnabled(bool newval) {
+    locationEnabled = newval;
     notifyListeners();
   }
 

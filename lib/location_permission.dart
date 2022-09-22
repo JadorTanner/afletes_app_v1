@@ -1,7 +1,9 @@
+import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 
 class LocationPermissions extends StatelessWidget {
   LocationPermissions({this.route, Key? key}) : super(key: key);
@@ -43,11 +45,12 @@ class LocationPermissions extends StatelessWidget {
               const SizedBox(
                 height: 20,
               ),
-              Text(
+              const Text(
                   "Afletes recopila datos de ubicación para habilitar las siguientes caracteristicas."),
-              Text('- Búsqueda de vehículos disponibles en tiempo real'),
-              Text('- Ubicación de las cargas disponibles cerca de tu ubicación'),
-              Text(
+              const Text('- Búsqueda de vehículos disponibles en tiempo real'),
+              const Text(
+                  '- Ubicación de las cargas disponibles cerca de tu ubicación'),
+              const Text(
                   'Esta información no es compartida y es utilizada con fines de seguridad y funcionamiento de la app'),
               const SizedBox(
                 height: 20,
@@ -62,6 +65,7 @@ class LocationPermissions extends StatelessWidget {
                     onPressed: () async {
                       await Geolocator.requestPermission();
                       if (await Constants.determinePosition() == 1) {
+                        context.read<User>().setLocationEnabled(true);
                         LocationSettings locationSettings =
                             const LocationSettings(
                           accuracy: LocationAccuracy.best,
@@ -76,8 +80,14 @@ class LocationPermissions extends StatelessWidget {
                             'longitude': position.longitude,
                           });
                         });
-                        Navigator.of(context)
-                            .pop(await Geolocator.getCurrentPosition());
+                        Position currentPosition =
+                            await Geolocator.getCurrentPosition();
+                        Api api = Api();
+                        api.postData('update-location', {
+                          'latitude': currentPosition.latitude,
+                          'longitude': currentPosition.longitude,
+                        });
+                        Navigator.of(context).pop(currentPosition);
                       }
                     },
                     child: const Text('Conceder permisos'),

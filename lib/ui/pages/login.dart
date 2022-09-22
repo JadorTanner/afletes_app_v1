@@ -8,6 +8,7 @@ import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
 import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
+import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:afletes_app_v1/utils/notifications_api.dart';
 import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -35,6 +36,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   checkIfIssetUser() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString('user') != null) {
+      int permission = await Constants.determinePosition();
+      print('PERMISSION INTEGER $permission');
+      if (permission == 1) {
+        context.read<User>().setLocationEnabled(true);
+        LocationSettings locationSettings = const LocationSettings(
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 20,
+        );
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
+          Api api = Api();
+          api.postData('update-location', {
+            'latitude': position!.latitude,
+            'longitude': position.longitude,
+          });
+        });
+      }
       Navigator.of(context).pushNamedAndRemoveUntil(
         context.read<User>().user.isCarrier ? '/loads' : '/vehicles',
         ModalRoute.withName(

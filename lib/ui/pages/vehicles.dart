@@ -578,9 +578,12 @@ class _VehiclesListState extends State<VehiclesList> {
       children: [
         GoogleMap(
           key: widget.key,
+          padding: const EdgeInsets.all(20).copyWith(
+            bottom: MediaQuery.of(context).size.height * 0.2,
+          ),
           onMapCreated: (controller) =>
               _onMapCreated(controller, transportists),
-          myLocationEnabled: false,
+          myLocationEnabled: context.watch<User>().locationEnabled,
           initialCameraPosition: const CameraPosition(
             target: LatLng(-25.27705190025039, -57.63737049639007),
             zoom: 14,
@@ -591,50 +594,52 @@ class _VehiclesListState extends State<VehiclesList> {
           myLocationButtonEnabled: false,
         ),
         Positioned(
-          bottom: 200,
+          bottom: MediaQuery.of(context).size.height * 0.22,
           right: 30,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(50))),
-            child: IconButton(
-              color: Constants.kBlack,
-              onPressed: () async {
-                mapController.animateCamera(
-                  CameraUpdate.newLatLngZoom(
-                      LatLng(position!.latitude, position!.longitude), 14),
-                );
-              },
-              icon: const Icon(Icons.location_searching_rounded),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 260,
-          right: 30,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(50))),
-            child: IconButton(
-              color: Constants.kBlack,
-              onPressed: () async {
-                await getVehicles('user/find-vehicles');
-                setState(() {});
-              },
-              icon: const Icon(Icons.refresh),
-            ),
+          child: Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+                child: IconButton(
+                  color: Constants.kBlack,
+                  onPressed: () async {
+                    await getVehicles('user/find-vehicles');
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.refresh),
+                ),
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+                child: IconButton(
+                  color: Constants.kBlack,
+                  onPressed: () async {
+                    mapController.animateCamera(
+                      CameraUpdate.newLatLngZoom(
+                          LatLng(position!.latitude, position!.longitude), 14),
+                    );
+                  },
+                  icon: const Icon(Icons.location_searching_rounded),
+                ),
+              ),
+            ],
           ),
         ),
         Positioned(
             child: DraggableScrollableSheet(
           minChildSize: 0.2,
-          maxChildSize: 0.5,
+          maxChildSize: 0.8,
           initialChildSize: 0.2,
           snap: true,
           builder: (context, scrollController) {
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -684,7 +689,7 @@ class _VehiclesListState extends State<VehiclesList> {
                       ),
                     ),
                     SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.4,
+                      height: MediaQuery.of(context).size.height * 0.7,
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 20)
                             .copyWith(bottom: 20),
@@ -715,6 +720,32 @@ class _VehiclesListState extends State<VehiclesList> {
             );
           },
         )),
+        context.watch<User>().online
+            ? const SizedBox.shrink()
+            : Positioned(
+                child: GestureDetector(
+                  onTap: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: Colors.red[400],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Estás desconectado!',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                top: 20,
+                left: MediaQuery.of(context).size.width * 0.25,
+                right: MediaQuery.of(context).size.width * 0.25,
+              ),
       ],
     );
   }

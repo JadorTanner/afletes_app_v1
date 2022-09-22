@@ -500,7 +500,7 @@ class _LoadsMapState extends State<LoadsMap> {
           myLocationButtonEnabled: false,
           polylines: _polylines,
           onMapCreated: _onMapCreated,
-          myLocationEnabled: false,
+          myLocationEnabled: context.watch<User>().locationEnabled,
           padding: const EdgeInsets.all(20).copyWith(
             bottom: MediaQuery.of(context).size.height * 0.2,
           ),
