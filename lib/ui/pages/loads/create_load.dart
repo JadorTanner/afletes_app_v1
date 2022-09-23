@@ -296,15 +296,21 @@ class DatosGenerales extends StatelessWidget {
                           pesoController,
                           'Peso *',
                           type: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           defaultValue: '0',
+                          inputFormatters: [
+                            FilteringTextInputFormatter(RegExp('[0-9 .]'),
+                                allow: true),
+                            FilteringTextInputFormatter(',',
+                                allow: false, replacementString: '.'),
+                          ],
                           validator: (String? txt) {
                             if (pesoController.text == '') {
                               return 'Peso obligatorio';
-                            } else {
-                              if (double.parse(pesoController.text) <= 0) {
-                                return 'Ingrese un valor correcto';
-                              }
+                            }
+                            if (double.parse(pesoController.text) <= 0) {
+                              return 'Ingrese un valor correcto';
                             }
                             return null;
                           },
@@ -319,8 +325,15 @@ class DatosGenerales extends StatelessWidget {
                           volumenController,
                           'Volumen',
                           type: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           defaultValue: '0',
+                          inputFormatters: [
+                            FilteringTextInputFormatter(RegExp('[0-9 .]'),
+                                allow: true),
+                            FilteringTextInputFormatter(',',
+                                allow: false, replacementString: '.'),
+                          ],
                         ),
                       )
                     ],
@@ -340,10 +353,9 @@ class DatosGenerales extends StatelessWidget {
                           validator: (String? txt) {
                             if (vehiculosController.text == '') {
                               return 'Cantidad de vehiculos obligatorio';
-                            } else {
-                              if (int.parse(vehiculosController.text) <= 0) {
-                                return 'Ingrese un valor correcto';
-                              }
+                            }
+                            if (int.parse(vehiculosController.text) <= 0) {
+                              return 'Ingrese un valor correcto';
                             }
                             return null;
                           },
@@ -624,7 +636,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     }
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
+                                      const SnackBar(
                                         content: Text(
                                             'Ha ocurrido un error, intentelo de nuevo mas tarde.'),
                                       ),
@@ -652,7 +664,7 @@ class _ImagesPickerState extends State<ImagesPicker> {
                                     }
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
+                                      const SnackBar(
                                         content: Text(
                                             'Ha ocurrido un error, intentelo de nuevo mas tarde.'),
                                       ),
@@ -1633,6 +1645,12 @@ class PaginaFinal extends StatelessWidget {
                           }
                           return null;
                         },
+                        inputFormatters: [
+                          FilteringTextInputFormatter(
+                            RegExp('[0-9]'),
+                            allow: true,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(
@@ -1650,6 +1668,12 @@ class PaginaFinal extends StatelessWidget {
                           }
                           return null;
                         },
+                        inputFormatters: [
+                          FilteringTextInputFormatter(
+                            RegExp('[0-9]'),
+                            allow: true,
+                          ),
+                        ],
                       ),
                     ),
                   ],

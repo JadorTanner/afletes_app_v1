@@ -2,6 +2,7 @@
 
 import 'package:afletes_app_v1/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomFormField extends StatefulWidget {
   CustomFormField(this.controller, this.label,
@@ -21,6 +22,7 @@ class CustomFormField extends StatefulWidget {
       this.defaultValue = '',
       this.hint = '',
       this.helperText,
+      this.inputFormatters = const [],
       this.action = TextInputAction.next,
       Key? key})
       : super(key: key);
@@ -42,6 +44,7 @@ class CustomFormField extends StatefulWidget {
   String hint;
   String? helperText;
   TextInputAction action;
+  List<TextInputFormatter> inputFormatters;
   var validator;
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
@@ -71,6 +74,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
       keyboardType: widget.type,
       textInputAction: widget.action,
       enabled: widget.enabled,
+      inputFormatters: widget.inputFormatters,
       maxLength: widget.maxLength != 255 ? widget.maxLength : null,
       // onChanged: (value) {
       //   onChange(value) ?? () => {};

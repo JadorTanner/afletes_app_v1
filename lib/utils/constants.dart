@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:afletes_app_v1/location_permission.dart';
-import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
