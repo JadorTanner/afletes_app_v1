@@ -22,6 +22,10 @@ import 'package:image_picker/image_picker.dart';
 ImagePicker _picker = ImagePicker();
 List<XFile> imagenes = [];
 List imagenesNetwork = [];
+List<TextInputFormatter> inputFormatters = [
+  FilteringTextInputFormatter(RegExp('[0-9 .]'), allow: true),
+  FilteringTextInputFormatter(',', allow: false, replacementString: '.'),
+];
 
 bool hasLoadData = false;
 int loadId = 0;
@@ -299,12 +303,7 @@ class DatosGenerales extends StatelessWidget {
                             decimal: true,
                           ),
                           defaultValue: '0',
-                          inputFormatters: [
-                            FilteringTextInputFormatter(RegExp('[0-9 .]'),
-                                allow: true),
-                            FilteringTextInputFormatter(',',
-                                allow: false, replacementString: '.'),
-                          ],
+                          inputFormatters: inputFormatters,
                           validator: (String? txt) {
                             if (pesoController.text == '') {
                               return 'Peso obligatorio';
@@ -328,12 +327,7 @@ class DatosGenerales extends StatelessWidget {
                             decimal: true,
                           ),
                           defaultValue: '0',
-                          inputFormatters: [
-                            FilteringTextInputFormatter(RegExp('[0-9 .]'),
-                                allow: true),
-                            FilteringTextInputFormatter(',',
-                                allow: false, replacementString: '.'),
-                          ],
+                          inputFormatters: inputFormatters,
                         ),
                       )
                     ],
@@ -359,6 +353,7 @@ class DatosGenerales extends StatelessWidget {
                             }
                             return null;
                           },
+                          inputFormatters: inputFormatters,
                         ),
                       ),
                       const SizedBox(
@@ -377,6 +372,7 @@ class DatosGenerales extends StatelessWidget {
                             }
                             return null;
                           },
+                          inputFormatters: inputFormatters,
                         ),
                       ),
                     ],
@@ -400,6 +396,7 @@ class DatosGenerales extends StatelessWidget {
                       }
                       return null;
                     },
+                    inputFormatters: inputFormatters,
                   ),
                   const SizedBox(
                     height: 20,
