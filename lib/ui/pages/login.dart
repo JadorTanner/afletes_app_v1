@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:afletes_app_v1/models/chat.dart';
-import 'package:afletes_app_v1/models/transportists_location.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/pages/register_vehicle.dart';
@@ -9,8 +7,6 @@ import 'package:afletes_app_v1/ui/pages/validate_code.dart';
 import 'package:afletes_app_v1/ui/pages/wait_habilitacion.dart';
 import 'package:afletes_app_v1/utils/api.dart';
 import 'package:afletes_app_v1/utils/constants.dart';
-import 'package:afletes_app_v1/utils/notifications_api.dart';
-import 'package:afletes_app_v1/utils/pusher.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -86,11 +82,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             await SharedPreferences.getInstance();
         Map user = jsonDecode(sharedPreferences.getString('user')!);
         //TOKEN PARA MENSAJES PUSH
-        try {
-          String? token = await FirebaseMessaging.instance.getToken();
-          await Api().postData('user/set-device-token',
-              {'id': user['id'], 'device_token': token ?? ''});
-        } catch (e) {}
+        // try {
+        //   String? token = await FirebaseMessaging.instance.getToken();
+        //   await Api().postData('user/set-device-token',
+        //       {'id': user['id'], 'device_token': token ?? ''});
+        // } catch (e) {}
         if (user['confirmed']) {
           if (user['habilitado']) {
             if (user['is_carrier']) {
@@ -102,7 +98,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               );
               await sharedPreferences.setBool('pusher_connected', true);
 
-              try {
+              /* try {
                 if (PusherApi().pusher.connectionState != '') {
                   if (PusherApi().pusher.connectionState == 'CONNECTED') {
                     PusherApi().disconnect();
@@ -115,7 +111,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         context.read<ChatProvider>());
                   }
                 }
-              } catch (e) {}
+              } catch (e) {} */
               if (sharedPreferences.getInt('vehicles')! > 0) {
                 Navigator.of(context).pushNamedAndRemoveUntil(
                     '/loads', ModalRoute.withName('/loads'));
@@ -129,7 +125,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               }
             } else {
               await sharedPreferences.setBool('pusher_connected', true);
-              try {
+              /*  try {
                 if (PusherApi().pusher.connectionState != '') {
                   if (PusherApi().pusher.connectionState == 'CONNECTED') {
                     PusherApi().disconnect();
@@ -150,7 +146,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       context.read<ChatProvider>(),
                       true);
                 }
-              } catch (e) {}
+              } catch (e) {} */
               Navigator.of(context).pushNamedAndRemoveUntil(
                   '/vehicles', ModalRoute.withName('/vehicles'));
             }

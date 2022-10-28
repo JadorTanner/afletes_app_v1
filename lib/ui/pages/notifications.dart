@@ -56,10 +56,49 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 }
 
-class NotificationsPanel extends StatelessWidget {
-  const NotificationsPanel({
-    Key? key,
-  }) : super(key: key);
+class NotificationsPanel extends StatefulWidget {
+  const NotificationsPanel({Key? key}) : super(key: key);
+
+  @override
+  State<NotificationsPanel> createState() => _NotificationsPanelState();
+}
+
+class _NotificationsPanelState extends State<NotificationsPanel> {
+  bool isLoading = false;
+  int page = 1;
+  ScrollController scrollController = ScrollController();
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      scrollController.addListener(() async {
+        if (scrollController.offset >=
+            (scrollController.position.maxScrollExtent -
+                MediaQuery.of(context).size.height * 0.1)) {
+          if (isLoading) return;
+
+          setState(() {
+            isLoading = true;
+            page++;
+          });
+
+          await context
+              .read<NotificationsApi>()
+              .getNotifications(context, page: page);
+
+          setState(() {
+            isLoading = false;
+          });
+        }
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(() {});
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +114,7 @@ class NotificationsPanel extends StatelessWidget {
         right: 20,
       ),
       child: ListView(
+          controller: scrollController,
           padding: const EdgeInsets.only(
             top: 20,
             bottom: 20,
@@ -82,56 +122,85 @@ class NotificationsPanel extends StatelessWidget {
             right: 20,
           ),
           children: context.watch<NotificationsApi>().notifications.isNotEmpty
-              ? context
-                  .watch<NotificationsApi>()
-                  .notifications
-                  .map(
-                    (e) => GestureDetector(
-                      onTap: () {
-                        context
-                            .read<NotificationsApi>()
-                            .readNotification(e, context);
-                      },
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(100),
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 3),
-                                )
-                              ],
-                              color: Colors.white,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+              ? [
+                  ...context
+                      .watch<NotificationsApi>()
+                      .notifications
+                      .map(
+                        (e) => Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          child: GestureDetector(
+                            onTap: () {
+                              context
+                                  .read<NotificationsApi>()
+                                  .readNotification(e, context);
+                            },
+                            child: Stack(
                               children: [
-                                Text(
-                                  e.mensaje,
-                                  style: Theme.of(context).textTheme.subtitle1,
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 25),
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(100),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
+                                      )
+                                    ],
+                                    color: Colors.white,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        e.mensaje,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle1,
+                                      ),
+                                      Text(
+                                        e.sentAt,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                Text(
-                                  e.sentAt,
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                Positioned(
+                                  bottom: 3,
+                                  right: 3,
+                                  child: Text(
+                                    'Negociación:' + e.negotiationId.toString(),
+                                  ),
                                 ),
+                                if (!e.visto)
+                                  const Positioned(
+                                    top: 3,
+                                    right: 3,
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.red,
+                                      radius: 10,
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
-                          Positioned(
-                            top: 3,
-                            right: 3,
-                            child: Text(
-                                'Negociación:' + e.negotiationId.toString()),
-                          ),
-                        ],
+                        ),
+                      )
+                      .toList(),
+                  if (isLoading)
+                    const Center(
+                      child: SizedBox(
+                        child: CircularProgressIndicator(),
+                        width: 30,
+                        height: 30,
                       ),
                     ),
-                  )
-                  .toList()
+                ]
               : [const Text('No hay notificaciones')]),
     );
   }

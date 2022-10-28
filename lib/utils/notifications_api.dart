@@ -69,29 +69,36 @@ class NotificationsApi extends ChangeNotifier {
   }
 
   removeNotification(NotificationModel notification) {
-    notifications.removeWhere((item) => (notification.id == item.id ||
-        notification.negotiationId == item.negotiationId));
+    List<NotificationModel> wherenotification = notifications
+        .where((item) => (notification.id == item.id ||
+            notification.negotiationId == item.negotiationId))
+        .toList();
+    for (var element in wherenotification) {
+      element.visto = true;
+    }
     notifyListeners();
   }
 
-  getNotifications(BuildContext context) async {
+  getNotifications(BuildContext context, {int page = 1}) async {
     Api api = Api();
-    Response response = await api.getData('get-notifications');
+    Response response = await api.getData('get-notifications?page=$page');
     Map jsonResponse = jsonDecode(response.body);
     if (response.statusCode == 200) {
       if (jsonResponse['success']) {
         List nots = jsonResponse['data'];
-        notifications.clear();
+        if (page == 1) notifications.clear();
         for (Map element in nots) {
           addNotification(
             NotificationModel(
-                id: element['id'],
-                mensaje:
-                    element['mensaje'].replaceAll(Constants.htmlTagRegExp, ''),
-                negotiationId: element['negotiation_id'],
-                userId: element['user_id'],
-                senderId: element['created_by'],
-                sentAt: element['created_at']),
+              id: element['id'],
+              mensaje:
+                  element['mensaje'].replaceAll(Constants.htmlTagRegExp, ''),
+              negotiationId: element['negotiation_id'],
+              userId: element['user_id'],
+              senderId: element['created_by'],
+              sentAt: element['created_at'],
+              visto: element['visto'],
+            ),
           );
         }
       } else {
@@ -107,7 +114,7 @@ class NotificationsApi extends ChangeNotifier {
     try {
       Api api = Api();
       context.read<NotificationsApi>().removeNotification(notification);
-      await api.postData('read-notification', {
+      api.postData('read-notification', {
         'negotiation_id': id,
       });
       Navigator.of(context).pushNamed('/negotiation_id/' + id.toString());
