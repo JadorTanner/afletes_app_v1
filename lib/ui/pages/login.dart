@@ -33,7 +33,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString('user') != null) {
       int permission = await Constants.determinePosition();
-      print('PERMISSION INTEGER $permission');
       if (permission == 1) {
         context.read<User>().setLocationEnabled(true);
         LocationSettings locationSettings = const LocationSettings(
@@ -82,11 +81,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             await SharedPreferences.getInstance();
         Map user = jsonDecode(sharedPreferences.getString('user')!);
         //TOKEN PARA MENSAJES PUSH
-        // try {
-        //   String? token = await FirebaseMessaging.instance.getToken();
-        //   await Api().postData('user/set-device-token',
-        //       {'id': user['id'], 'device_token': token ?? ''});
-        // } catch (e) {}
+        try {
+          String? token = await FirebaseMessaging.instance.getToken();
+          await Api().postData('user/set-device-token',
+              {'id': user['id'], 'device_token': token ?? ''});
+        } catch (e) {}
         if (user['confirmed']) {
           if (user['habilitado']) {
             if (user['is_carrier']) {

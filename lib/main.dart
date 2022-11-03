@@ -330,12 +330,11 @@ class _AfletesAppState extends State<AfletesApp>
       context.read<User>().setUser(User.userFromArray(jsonDecode(user)));
       context.read<User>().setOnline(jsonDecode(user)['online']);
       int permission = await Constants.determinePosition();
-      print('PERMISSION INTEGER $permission');
       if (permission == 1) {
         context.read<User>().setLocationEnabled(true);
         LocationSettings locationSettings = const LocationSettings(
           accuracy: LocationAccuracy.best,
-          distanceFilter: 20,
+          distanceFilter: 10,
         );
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position? position) {
@@ -416,7 +415,6 @@ class _AfletesAppState extends State<AfletesApp>
 
     NotificationsApi.onNotifications.stream.listen((event) async {
       Map data = jsonDecode(event!);
-
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       String? user = sharedPreferences.getString('user');
@@ -500,43 +498,43 @@ class _AfletesAppState extends State<AfletesApp>
       Map data = message.data;
 
       try {
-        if (notification != null && (android != null || apple != null)) {
-          if (data.containsKey('alta')) {
-            SharedPreferences shared = await SharedPreferences.getInstance();
-            if (shared.getString('user') != null) {
-              Map user = jsonDecode(shared.getString('user')!);
-              user['habilitado'] = true;
-              shared.setString('user', jsonEncode(user));
-            }
+        if (notification == null && (android == null && apple == null)) {
+          return;
+        }
+        if (data.containsKey('alta')) {
+          SharedPreferences shared = await SharedPreferences.getInstance();
+          if (shared.getString('user') != null) {
+            Map user = jsonDecode(shared.getString('user')!);
+            user['habilitado'] = true;
+            shared.setString('user', jsonEncode(user));
           }
+        }
 
-          if (data.containsKey('negotiation_id')) {
-            if (chatProvider.negotiationId !=
-                int.parse(data['negotiation_id'])) {
+        if (data.containsKey('negotiation_id')) {
+          if (chatProvider.negotiationId != int.parse(data['negotiation_id'])) {
+            NotificationsApi.showNotification(
+              id: 1,
+              title: notification!.title,
+              body: notification.body,
+              payload:
+                  '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
+            );
+          }
+        }
+        if (message.from == '/topics/new-loads' ||
+            message.from == 'new-loads') {
+          SharedPreferences shared = await SharedPreferences.getInstance();
+          if (shared.getString('user') != null) {
+            Map user = jsonDecode(shared.getString('user')!);
+            if (user['is_carrier']) {
               NotificationsApi.showNotification(
-                id: 1,
-                title: notification.title,
+                id: notification.hashCode,
+                title: notification!.title,
                 body: notification.body,
-                payload:
-                    '{"route": "chat", "id":"${data["negotiation_id"].toString()}"}',
               );
             }
           }
-          if (message.from == '/topics/new-loads' ||
-              message.from == 'new-loads') {
-            SharedPreferences shared = await SharedPreferences.getInstance();
-            if (shared.getString('user') != null) {
-              Map user = jsonDecode(shared.getString('user')!);
-              if (user['is_carrier']) {
-                NotificationsApi.showNotification(
-                  id: notification.hashCode,
-                  title: notification.title,
-                  body: notification.body,
-                );
-              }
-            }
-          }
-        } else {}
+        }
       } catch (e) {}
     });
 

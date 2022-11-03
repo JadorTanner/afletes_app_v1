@@ -16,16 +16,15 @@ class NotificationsApi extends ChangeNotifier {
   static final onNotifications = BehaviorSubject<String?>();
   final List<NotificationModel> notifications = [];
 
-  static Future _notificationDetails() async {
-    return const NotificationDetails(
+  static Future _notificationDetails(String bigText) async {
+    return NotificationDetails(
       android: AndroidNotificationDetails(
-        'notificationchannel',
-        'notifications',
-        channelDescription: 'canal de notificaciones',
-        importance: Importance.max,
-        channelShowBadge: true,
-      ),
-      iOS: IOSNotificationDetails(),
+          'notificationchannel', 'notifications',
+          channelDescription: 'canal de notificaciones',
+          importance: Importance.max,
+          channelShowBadge: true,
+          styleInformation: BigTextStyleInformation(bigText)),
+      iOS: const IOSNotificationDetails(),
     );
   }
 
@@ -59,7 +58,7 @@ class NotificationsApi extends ChangeNotifier {
     String? body,
     String? payload,
   }) async {
-    _notifications.show(id, title, body, await _notificationDetails(),
+    _notifications.show(id, title, body, await _notificationDetails(body ?? ''),
         payload: payload);
   }
 

@@ -9,6 +9,7 @@ import 'package:afletes_app_v1/models/common.dart';
 import 'package:afletes_app_v1/models/user.dart';
 import 'package:afletes_app_v1/ui/components/base_app.dart';
 import 'package:afletes_app_v1/ui/components/chat_bubble.dart';
+import 'package:afletes_app_v1/ui/components/form_field.dart';
 import 'package:afletes_app_v1/ui/components/trayecto_carga.dart';
 import 'package:afletes_app_v1/ui/pages/negotiations/payment.dart';
 import 'package:afletes_app_v1/utils/api.dart';
@@ -373,6 +374,50 @@ Future cancelNegotiation(id, context) async {
   );
 }
 
+Future cancelService(id, BuildContext context, String forgiveMessage) async {
+  Api api = Api();
+  Response response = await api.postData('negotiation/cancel-service', {
+    'id': id,
+    'negotiation_id': id,
+    'forgive': forgiveMessage,
+  });
+
+  Map jsonResponse = jsonDecode(response.body);
+  if (jsonResponse['success']) {
+    context.read<ChatProvider>().setCanOffer(false);
+    context.read<ChatProvider>().setToPay(false);
+    context.read<ChatProvider>().setPaid(false);
+    context.read<ChatProvider>().setShowDefaultMessages(false);
+    context.read<ChatProvider>().setLoadState(6);
+    context.read<ChatProvider>().setNegState(user.isCarrier ? 3 : 4);
+
+    DateTime time = DateTime.now();
+    context.read<ChatProvider>().addMessage(
+          id,
+          ChatMessage(
+            'Se ha cancelado el servicio. ' + forgiveMessage,
+            "${time.year.toString()}-${time.month.toString()}-${time.day > 10 ? '0' + time.day.toString() : time.day.toString()} ${time.hour.toString()}:${time.minute.toString()}:${time.second.toString()}",
+            user.id,
+            id,
+            false,
+          ),
+        );
+    Navigator.of(context).pop();
+  } else {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: Text(jsonResponse['message']),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future setLoadState(int negotiationId, int loadId, int state,
     BuildContext context, ChatProvider chat) async {
   FocusManager.instance.primaryFocus?.unfocus();
@@ -702,6 +747,7 @@ class ButtonsSection extends StatelessWidget {
   final NegotiationChat widget;
 
   ButtonStyle buttonStyle = const ButtonStyle();
+  int negState = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -710,6 +756,7 @@ class ButtonsSection extends StatelessWidget {
     loadState = context.watch<ChatProvider>().loadState;
     canVote = context.watch<ChatProvider>().canVote;
     canOffer = context.watch<ChatProvider>().canOffer;
+    negState = context.watch<ChatProvider>().negState;
 
     List<Widget> children = [
       const SizedBox(
@@ -1058,7 +1105,11 @@ class ButtonsSection extends StatelessWidget {
         ),
         Row(
           children: children.map((e) => Flexible(flex: 1, child: e)).toList(),
-        )
+        ),
+        if (negState == 2 || negState == 7 || negState == 8)
+          CancelButton(
+            buttonStyle: buttonStyle,
+          ),
       ],
     );
   }
@@ -1246,6 +1297,91 @@ class _StarsState extends State<Stars> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class CancelButton extends StatefulWidget {
+  CancelButton({required this.buttonStyle, Key? key}) : super(key: key);
+  ButtonStyle buttonStyle;
+  @override
+  State<CancelButton> createState() => _CancelButtonState();
+}
+
+class _CancelButtonState extends State<CancelButton> {
+  bool mantenerCarga = true;
+  @override
+  Widget build(BuildContext context) {
+    return LoadingButton(
+      clickEvent: () async {
+        TextEditingController forgiveController = TextEditingController();
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Quieres enviar un mensaje a ' +
+                        context.read<ChatProvider>().negotiationWith +
+                        '?',
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  CustomFormField(
+                    forgiveController,
+                    'mensaje',
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  if (user.isLoadGenerator)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Mantener la carga?'),
+                        Checkbox(
+                          value: mantenerCarga,
+                          onChanged: (value) {
+                            setState(() {
+                              mantenerCarga = value ?? true;
+                            });
+                          },
+                        ),
+                      ],
+                    )
+                ],
+              ),
+            ),
+            actions: [
+              LoadingButton(
+                clickEvent: () async {
+                  await cancelService(
+                    context.read<ChatProvider>().negotiationId,
+                    context,
+                    forgiveController.text,
+                  );
+                },
+                title: 'Continuar',
+              ),
+              LoadingButton(
+                clickEvent: () {
+                  Navigator.of(context).pop();
+                },
+                title: 'Cancelar',
+              )
+            ],
+          ),
+        );
+      },
+      title: 'Cancelar servicio',
+      buttonStyle: widget.buttonStyle.copyWith(
+        backgroundColor: MaterialStateProperty.all(Colors.red),
+      ),
+      textStyle: const TextStyle(color: Colors.white),
     );
   }
 }

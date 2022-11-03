@@ -9,7 +9,7 @@ class Constants {
 //casa
   // static String baseUrl = 'http://181.120.66.16:8000/';
 //oficina
-  static String baseUrl = 'http://192.168.1.118:8000/';
+  static String baseUrl = 'http://192.168.1.155:8001/';
 //producción
   // static String baseUrl = 'https://www.afletes.com/';
 
@@ -55,7 +55,6 @@ class Constants {
   static Future<Position?> getPosition(BuildContext context) async {
     try {
       int permission = await determinePosition();
-      print('LOCATION PERMISSION $permission');
       Position? position;
       if (permission == 1) {
         return await Geolocator.getCurrentPosition();
