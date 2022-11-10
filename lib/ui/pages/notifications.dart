@@ -174,7 +174,8 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
                                   bottom: 3,
                                   right: 3,
                                   child: Text(
-                                    'Negociación:' + e.negotiationId.toString(),
+                                    '${e.visto ? 'Visto - ' : ''}Negociación:' +
+                                        e.negotiationId.toString(),
                                   ),
                                 ),
                                 if (!e.visto)

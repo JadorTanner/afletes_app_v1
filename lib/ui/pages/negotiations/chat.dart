@@ -374,12 +374,14 @@ Future cancelNegotiation(id, context) async {
   );
 }
 
-Future cancelService(id, BuildContext context, String forgiveMessage) async {
+Future cancelService(id, BuildContext context, String forgiveMessage,
+    {bool maintain = true}) async {
   Api api = Api();
   Response response = await api.postData('negotiation/cancel-service', {
     'id': id,
     'negotiation_id': id,
     'forgive': forgiveMessage,
+    'maintain': maintain,
   });
 
   Map jsonResponse = jsonDecode(response.body);
@@ -406,13 +408,15 @@ Future cancelService(id, BuildContext context, String forgiveMessage) async {
   } else {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: Text(jsonResponse['message']),
-          ),
-        ),
+      builder: (context) => SimpleDialog(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(jsonResponse['message']),
+            ),
+          )
+        ],
       ),
     );
   }
@@ -1067,18 +1071,6 @@ class ButtonsSection extends StatelessWidget {
                 ],
               ),
             ),
-            TextButton(
-              style: buttonStyle,
-              onPressed: () => cancelNegotiation(widget.id, context),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  Icon(Icons.cancel),
-                  Text('Rechazar'),
-                ],
-              ),
-            ),
           ];
         } else {
           children = [
@@ -1106,9 +1098,19 @@ class ButtonsSection extends StatelessWidget {
         Row(
           children: children.map((e) => Flexible(flex: 1, child: e)).toList(),
         ),
-        if (negState == 2 || negState == 7 || negState == 8)
-          CancelButton(
-            buttonStyle: buttonStyle,
+        if (negState <= 2 || negState >= 6)
+          LoadingButton(
+            clickEvent: () async {
+              showDialog(
+                context: context,
+                builder: (context) => const CancelContent(),
+              );
+            },
+            title: 'Cancelar servicio',
+            buttonStyle: buttonStyle.copyWith(
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+            ),
+            textStyle: const TextStyle(color: Colors.white),
           ),
       ],
     );
@@ -1301,87 +1303,70 @@ class _StarsState extends State<Stars> {
   }
 }
 
-class CancelButton extends StatefulWidget {
-  CancelButton({required this.buttonStyle, Key? key}) : super(key: key);
-  ButtonStyle buttonStyle;
+class CancelContent extends StatefulWidget {
+  const CancelContent({Key? key}) : super(key: key);
+
   @override
-  State<CancelButton> createState() => _CancelButtonState();
+  State<CancelContent> createState() => _CancelContentState();
 }
 
-class _CancelButtonState extends State<CancelButton> {
+class _CancelContentState extends State<CancelContent> {
   bool mantenerCarga = true;
+  TextEditingController forgiveController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return LoadingButton(
-      clickEvent: () async {
-        TextEditingController forgiveController = TextEditingController();
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Quieres enviar un mensaje a ' +
-                        context.read<ChatProvider>().negotiationWith +
-                        '?',
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  CustomFormField(
-                    forgiveController,
-                    'mensaje',
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  if (user.isLoadGenerator)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Mantener la carga?'),
-                        Checkbox(
-                          value: mantenerCarga,
-                          onChanged: (value) {
-                            setState(() {
-                              mantenerCarga = value ?? true;
-                            });
-                          },
-                        ),
-                      ],
-                    )
-                ],
-              ),
+    return AlertDialog(
+      content: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Quieres enviar un mensaje a ' +
+                  context.read<ChatProvider>().negotiationWith +
+                  '?',
             ),
-            actions: [
-              LoadingButton(
-                clickEvent: () async {
-                  await cancelService(
-                    context.read<ChatProvider>().negotiationId,
-                    context,
-                    forgiveController.text,
-                  );
+            const SizedBox(
+              height: 20,
+            ),
+            CustomFormField(
+              forgiveController,
+              'mensaje',
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            if (user.isLoadGenerator)
+              CheckboxListTile(
+                value: mantenerCarga,
+                title: const Text('Mantener la carga?'),
+                onChanged: (value) {
+                  mantenerCarga = !mantenerCarga;
+                  setState(() {});
                 },
-                title: 'Continuar',
               ),
-              LoadingButton(
-                clickEvent: () {
-                  Navigator.of(context).pop();
-                },
-                title: 'Cancelar',
-              )
-            ],
-          ),
-        );
-      },
-      title: 'Cancelar servicio',
-      buttonStyle: widget.buttonStyle.copyWith(
-        backgroundColor: MaterialStateProperty.all(Colors.red),
+          ],
+        ),
       ),
-      textStyle: const TextStyle(color: Colors.white),
+      actions: [
+        LoadingButton(
+          clickEvent: () async {
+            await cancelService(
+              context.read<ChatProvider>().negotiationId,
+              context,
+              forgiveController.text,
+              maintain: mantenerCarga,
+            );
+          },
+          title: 'Continuar',
+        ),
+        LoadingButton(
+          clickEvent: () {
+            Navigator.of(context).pop();
+          },
+          title: 'Cancelar',
+        )
+      ],
     );
   }
 }
