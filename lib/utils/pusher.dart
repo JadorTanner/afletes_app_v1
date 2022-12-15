@@ -40,7 +40,7 @@ class PusherApi extends ChangeNotifier {
     if (PusherApi().pusher.connectionState == 'DISCONNECTED') {
       _pusher.init(
         apiKey: Constants.pusherKey,
-        cluster: 'us2',
+        cluster: 'sa1',
         onConnectionStateChange: (currentState, previousState) async {
           if (currentState == 'DISCONNECTED') {
             await sharedPreferences.setBool('pusher_connected', false);

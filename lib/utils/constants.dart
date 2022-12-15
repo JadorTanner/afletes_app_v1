@@ -19,10 +19,10 @@ class Constants {
   static String vehicleImgUrl = baseUrl + 'images/vehicle_images/';
 
 //PRODUCCION
-  static String pusherKey = 'db7228c00ec8ff09b106';
+  static String pusherKey = '9f469d32486e7abb9090';
 
 //DEVELOPMENT
-  // static String pusherKey = '4a54c4ccefa7c6413910';
+  // static String pusherKey = 'a68c2d1804b2358f84a0';
 
   static String googleMapKey = 'AIzaSyABWbV1Hy-mBKOhuhaIzzgBP32mloFhhBs';
 
